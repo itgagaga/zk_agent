@@ -3,8 +3,8 @@ import { Link, NavLink } from 'react-router-dom'
 const links = [
   { to: '/', label: '首页' },
   { to: '/chat', label: '智能问答' },
-  { to: '/downloads', label: '资料下载' },
-  { to: '/services', label: '服务导航' },
+  { to: '/downloads', label: '资料智库' },
+  { to: '/services', label: '办事助手' },
   { to: '/documents', label: '智能文档' },
 ]
 

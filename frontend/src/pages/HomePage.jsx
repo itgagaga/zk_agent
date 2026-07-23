@@ -8,6 +8,7 @@ import {
   Download,
   FileSearch,
   GraduationCap,
+  MapPin,
   MessageCircleMore,
   School,
 } from 'lucide-react'
@@ -15,6 +16,10 @@ import studentIllustration from '../assets/roles/student.svg'
 import graduateIllustration from '../assets/roles/graduate.svg'
 import teacherIllustration from '../assets/roles/teacher.svg'
 import familyIllustration from '../assets/roles/family.svg'
+import campusPhoto from '../assets/campus-gate.webp'
+import campusLibrary from '../assets/campus/library.webp'
+import campusGarden from '../assets/campus/garden.webp'
+import campusNight from '../assets/campus/night.webp'
 
 const FEATURES = [
   {
@@ -33,17 +38,17 @@ const FEATURES = [
   },
   {
     Icon: Download,
-    title: '资料下载',
-    desc: '按关键词和分类检索校内可下载资料，快速找到所需表格和文件',
+    title: '资料智库',
+    desc: '智能定位资料、核对官网来源，并辅助整理材料清单与办理步骤',
     link: '/downloads',
-    linkText: '搜索资料',
+    linkText: '进入智库',
   },
   {
     Icon: Compass,
-    title: '服务导航',
-    desc: '按角色和分类查找校内服务入口，一键直达目标系统',
+    title: '办事助手',
+    desc: '理解办事需求，按角色推荐服务入口、流程与公开联系方式',
     link: '/services',
-    linkText: '浏览服务',
+    linkText: '开始办理',
   },
 ]
 
@@ -93,6 +98,27 @@ const POPULAR_QS = [
   { q: '数学与数据科学学院电话是多少？', cat: '联系方式' },
   { q: '补办学生证申请表在哪里？', cat: '教务资料' },
   { q: '就业协议书怎么申请？', cat: '就业服务' },
+]
+
+const CAMPUS_SCENES = [
+  {
+    title: '白云校区图书馆',
+    meta: '学习空间',
+    image: campusLibrary,
+    source: 'https://news.zhku.edu.cn/info/1050/95573.htm',
+  },
+  {
+    title: '木本花木专类园',
+    meta: '校园生态',
+    image: campusGarden,
+    source: 'https://news.zhku.edu.cn/info/1050/95593.htm',
+  },
+  {
+    title: '白云校区夜景',
+    meta: '校园风光',
+    image: campusNight,
+    source: 'https://news.zhku.edu.cn/info/1050/95653.htm',
+  },
 ]
 
 function useCountUp(target, duration = 1200) {
@@ -177,6 +203,12 @@ export default function HomePage() {
             智能文档
           </Link>
         </div>
+        <div className="hero-photo-wrap">
+          <img src={campusPhoto} alt="仲恺农业工程学院校园风光" className="hero-photo" />
+          <div className="hero-photo-caption">
+            仲恺农业工程学院 · 仲恺路 501 号
+          </div>
+        </div>
       </section>
 
       {/* 角色入口 */}
@@ -247,6 +279,52 @@ export default function HomePage() {
             </Link>
           ))}
         </div>
+      </section>
+
+      {/* 校园印象：图片集中承担学校展示功能，来源均为学校官网 */}
+      <section className="section campus-section">
+        <div className="campus-section-heading">
+          <div>
+            <div className="eyebrow">CAMPUS</div>
+            <h2>校园印象</h2>
+          </div>
+          <p>
+            从学习空间到校园生态，用真实影像认识仲恺。
+            所有图片均来自学校官方新闻网。
+          </p>
+        </div>
+        <div className="campus-gallery">
+          {CAMPUS_SCENES.map((scene, index) => (
+            <a
+              key={scene.title}
+              href={scene.source}
+              target="_blank"
+              rel="noreferrer"
+              className={`campus-scene campus-scene--${index + 1}`}
+            >
+              <img src={scene.image} alt={scene.title} loading="lazy" />
+              <div className="campus-scene-shade" />
+              <div className="campus-scene-copy">
+                <span className="campus-scene-meta">
+                  <MapPin size={13} strokeWidth={1.8} />
+                  {scene.meta}
+                </span>
+                <h3>{scene.title}</h3>
+              </div>
+              <span className="campus-scene-link" aria-hidden="true">
+                <ArrowUpRight size={20} strokeWidth={1.8} />
+              </span>
+            </a>
+          ))}
+        </div>
+        <a
+          className="campus-source-link"
+          href="https://news.zhku.edu.cn/gyzk/xyfg.htm"
+          target="_blank"
+          rel="noreferrer"
+        >
+          查看学校官网“校园风光”专题 <ArrowUpRight size={15} />
+        </a>
       </section>
 
       {/* 热门问题 */}
