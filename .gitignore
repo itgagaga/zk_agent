@@ -1,0 +1,60 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+.venv/
+*.egg-info/
+*.egg
+dist/
+build/
+.installed.cfg
+*.egg
+
+# 环境变量
+.env
+.env.local
+.env.*.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# 数据与缓存
+data/raw/*
+data/cleaned/*
+data/metadata/*
+data/sqlite/*
+data/vector_store/*
+!data/**/.gitkeep
+!data/**/README.md
+
+# 日志
+logs/
+*.log
+
+# 测试与覆盖率
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# 前端
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# Playwright
+playwright-report/
+test-results/
+
+# Jupyter
+.ipynb_checkpoints/
