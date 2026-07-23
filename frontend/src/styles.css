@@ -344,6 +344,7 @@ button {
   max-width: 860px;
   margin: 0 auto;
   padding: 0 24px;
+  overflow: hidden;
 }
 
 /* 顶部标题区 */
@@ -365,10 +366,15 @@ button {
   justify-content: space-between;
 }
 
-.chat-clear-btn {
+.chat-header-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.chat-header-btn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   background: transparent;
   border: 1px solid var(--color-dust-taupe);
   border-radius: var(--radius-pill);
@@ -380,14 +386,74 @@ button {
   font-family: inherit;
 }
 
-.chat-clear-btn:hover:not(:disabled) {
+.chat-header-btn:hover:not(:disabled) {
   border-color: var(--color-signal-orange);
   color: var(--color-signal-orange);
 }
 
-.chat-clear-btn:disabled {
+.chat-header-btn:disabled {
   opacity: 0.4;
   cursor: not-allowed;
+}
+
+/* 消息操作按钮（复制/删除） */
+.msg-actions {
+  display: flex;
+  gap: 4px;
+  margin-left: auto;
+}
+
+.msg-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px 6px;
+  border: none;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--color-slate);
+  font-size: 11px;
+  cursor: pointer;
+  opacity: 0;
+  transition: all 0.15s;
+}
+
+.msg-row:hover .msg-action-btn {
+  opacity: 0.55;
+}
+
+.msg-action-btn:hover {
+  opacity: 1 !important;
+  background: var(--color-dust-taupe);
+  color: var(--color-ink);
+}
+
+/* 用户消息删除按钮 */
+.msg-action-user {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border-radius: 50%;
+  background: var(--color-canvas);
+  border: 1px solid var(--color-dust-taupe);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: all 0.15s;
+}
+
+.msg-row-user:hover .msg-action-user {
+  opacity: 0.65;
+}
+
+.msg-action-user:hover {
+  opacity: 1 !important;
+  border-color: #dc2626;
+  color: #dc2626;
 }
 
 .chat-saved-hint {
@@ -574,6 +640,7 @@ button {
 }
 
 .msg-bubble-user {
+  position: relative;
   background: var(--color-ink);
   color: var(--color-canvas);
   border-bottom-right-radius: 6px;
@@ -1194,6 +1261,231 @@ button {
   .suggestion-chip {
     font-size: 13px;
     padding: 8px 16px;
+  }
+}
+
+/* ========================================
+ * 首页统计横幅 + 功能卡片 + 流程 + 热门问题
+ * ======================================== */
+
+/* 统计横幅 */
+.stats-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  padding: 32px 24px;
+  background: var(--color-white);
+  border: 1px solid var(--color-dust-taupe);
+  border-radius: 16px;
+  flex-wrap: wrap;
+}
+
+.stat-item {
+  text-align: center;
+  padding: 8px 28px;
+  min-width: 100px;
+}
+
+.stat-num {
+  font-size: 36px;
+  font-weight: 700;
+  color: var(--color-ink);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.stat-label {
+  font-size: 13px;
+  color: var(--color-slate);
+  margin-top: 4px;
+}
+
+.stat-divider {
+  width: 1px;
+  height: 40px;
+  background: var(--color-dust-taupe);
+}
+
+/* 功能卡片 */
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+}
+
+.feature-card {
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+  background: var(--color-white);
+  border: 1px solid var(--color-dust-taupe);
+  border-radius: 14px;
+  text-decoration: none;
+  color: var(--color-ink);
+  transition: all 0.25s ease;
+}
+
+.feature-card:hover {
+  border-color: var(--color-signal-orange);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+}
+
+.feature-icon {
+  font-size: 32px;
+  margin-bottom: 14px;
+}
+
+.feature-title {
+  font-size: 17px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.feature-desc {
+  font-size: 13px;
+  color: var(--color-slate);
+  line-height: 1.5;
+  flex: 1;
+}
+
+.feature-link {
+  font-size: 13px;
+  color: var(--color-signal-orange);
+  font-weight: 500;
+  margin-top: 14px;
+}
+
+/* 热门问题 */
+.popular-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.popular-card {
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  background: var(--color-white);
+  border: 1px solid var(--color-dust-taupe);
+  border-radius: 12px;
+  text-decoration: none;
+  color: var(--color-ink);
+  transition: all 0.2s ease;
+}
+
+.popular-card:hover {
+  border-color: var(--color-signal-orange);
+  transform: translateY(-2px);
+}
+
+.popular-cat {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-signal-orange);
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.popular-q {
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.4;
+  flex: 1;
+}
+
+.popular-arrow {
+  font-size: 12px;
+  color: var(--color-slate);
+  margin-top: 12px;
+}
+
+/* 追问建议 */
+.msg-followups {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--color-dust-taupe);
+}
+
+.msg-followups-label {
+  font-size: 12px;
+  color: var(--color-slate);
+  margin-bottom: 8px;
+}
+
+.msg-followups-chips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.followup-chip {
+  padding: 6px 14px;
+  border: 1px solid var(--color-dust-taupe);
+  border-radius: var(--radius-pill);
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.followup-chip:hover {
+  border-color: var(--color-signal-orange);
+  color: var(--color-signal-orange);
+  background: var(--color-white);
+}
+
+/* 文档中心统计 */
+.doc-stats-row {
+  display: flex;
+  gap: 0;
+  margin-bottom: 28px;
+  padding: 20px 24px;
+  background: var(--color-white);
+  border: 1px solid var(--color-dust-taupe);
+  border-radius: 12px;
+  flex-wrap: wrap;
+}
+
+.doc-stat-item {
+  flex: 1;
+  text-align: center;
+  min-width: 100px;
+  padding: 4px 12px;
+}
+
+.doc-stat-num {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--color-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.doc-stat-label {
+  font-size: 12px;
+  color: var(--color-slate);
+  margin-top: 2px;
+}
+
+/* 响应式补充 */
+@media (max-width: 768px) {
+  .stats-banner {
+    gap: 12px;
+  }
+  .stat-divider {
+    display: none;
+  }
+  .stat-item {
+    padding: 8px 12px;
+    min-width: 80px;
+  }
+  .stat-num {
+    font-size: 28px;
   }
 }
 

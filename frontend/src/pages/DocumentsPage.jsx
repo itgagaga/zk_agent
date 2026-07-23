@@ -10,6 +10,7 @@ export default function DocumentsPage() {
   const [docs, setDocs] = useState([])
   const [uploading, setUploading] = useState(false)
   const [department, setDepartment] = useState('文档库')
+  const [stats, setStats] = useState(null)
   const fileInputRef = useRef(null)
 
   // 加载已上传文档列表
@@ -22,6 +23,7 @@ export default function DocumentsPage() {
 
   useEffect(() => {
     loadDocs()
+    axios.get('/api/stats').then((r) => setStats(r.data)).catch(() => {})
   }, [])
 
   async function handleUpload(file) {
@@ -80,11 +82,33 @@ export default function DocumentsPage() {
       <div className="eyebrow">DOCUMENTS</div>
       <h2 style={{ marginTop: 16, marginBottom: 16 }}>智能文档中心</h2>
 
-      <p style={{ color: 'var(--color-slate)', maxWidth: 720, marginBottom: 32, lineHeight: 1.6 }}>
+      <p style={{ color: 'var(--color-slate)', maxWidth: 720, marginBottom: 24, lineHeight: 1.6 }}>
         上传培养方案、章程、手册等文档到永久知识库，系统自动解析并向量化。
         以后任何用户提问涉及这些文档内容时，RAG 会自动检索并基于文档内容回答——
         无关问题不会命中，不影响日常问答。
       </p>
+
+      {/* 知识库统计 */}
+      {stats && (
+        <div className="doc-stats-row">
+          <div className="doc-stat-item">
+            <div className="doc-stat-num">{stats.document_chunks}</div>
+            <div className="doc-stat-label">文档库片段</div>
+          </div>
+          <div className="doc-stat-item">
+            <div className="doc-stat-num">{stats.campus_chunks}</div>
+            <div className="doc-stat-label">官网资料片段</div>
+          </div>
+          <div className="doc-stat-item">
+            <div className="doc-stat-num">{stats.uploaded_docs}</div>
+            <div className="doc-stat-label">已上传文档</div>
+          </div>
+          <div className="doc-stat-item">
+            <div className="doc-stat-num">{stats.total_chunks}</div>
+            <div className="doc-stat-label">知识库总量</div>
+          </div>
+        </div>
+      )}
 
       {/* 上传区 */}
       <div className="doc-upload-zone">

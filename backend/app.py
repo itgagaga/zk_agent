@@ -62,3 +62,24 @@ async def root() -> dict:
         "docs": "/docs",
         "health": "/health",
     }
+
+
+@app.get("/api/stats", tags=["meta"])
+async def stats() -> dict:
+    """知识库统计数据。"""
+    from backend.rag.vector_store import get_vector_store
+    from backend.api.upload import _load_manifest
+
+    store = get_vector_store()
+    campus_chunks = store.count_documents(collection="zhku")
+    doc_chunks = store.count_documents(collection="document")
+    manifest = _load_manifest()
+
+    return {
+        "campus_chunks": campus_chunks,
+        "document_chunks": doc_chunks,
+        "uploaded_docs": len(manifest),
+        "total_chunks": campus_chunks + doc_chunks,
+        "tools": ["major_search", "download_search", "contact_search", "service_link_search"],
+        "departments": list({d.get("department", "文档库") for d in manifest}),
+    }

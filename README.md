@@ -105,4 +105,4 @@ npm run dev
 
 - [项目说明](docs/ZHKU_Campus_Agent.md)
 - [开发顺序建议](docs/仲恺校园信息服务智能体_开发顺序建议.md)
-- [设计规范](docs/DESIGN-mastercard.md)
+- [设计规范](backend/docs/DESIGN-mastercard.md)

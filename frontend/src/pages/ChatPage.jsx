@@ -1,7 +1,16 @@
-import { useEffect, useRef, useState, useCallback } from 'react'
+import { useEffect, useRef, useState, useCallback, useSyncExternalStore } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import {
+  subscribe,
+  getState,
+  ask as storeAsk,
+  stopGenerating as storeStop,
+  clearChat as storeClear,
+  deleteMessage as storeDelete,
+  recoverIfNeeded,
+} from '../chatStore.js'
 
 const SUGGESTIONS = [
   '仲恺农业工程学院有几个校区？',
@@ -25,34 +34,43 @@ const CONFIDENCE_LABELS = {
   low: { text: '低可信', color: '#dc2626' },
 }
 
-const STORAGE_KEY = 'zhku_chat_messages'
-const SESSION_KEY = 'zhku_session_id'
-
-function getSessionId() {
-  let id = localStorage.getItem(SESSION_KEY)
-  if (!id) {
-    id = 's_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10)
-    localStorage.setItem(SESSION_KEY, id)
-  }
-  return id
+function generateFollowUps(question) {
+  if (!question) return []
+  if (/电话|联系/.test(question))
+    return ['其他部门的联系方式', '办公时间是什么时候？', '如何线下咨询？']
+  if (/招生|录取|报考/.test(question))
+    return ['招生计划是多少？', '有哪些专业可以选？', '录取分数线是多少？']
+  if (/培养方案|学分|课程/.test(question))
+    return ['有哪些必修课？', '毕业要求是什么？', '可以转专业吗？']
+  if (/下载|表格|申请表/.test(question))
+    return ['还有哪些表格可以下载？', '申请流程是什么？', '需要哪些材料？']
+  if (/校区|地址|在哪/.test(question))
+    return ['怎么去学校？', '校区之间有校车吗？', '周边有什么？']
+  if (/就业|实习|毕业/.test(question))
+    return ['就业率怎么样？', '有校园招聘吗？', '实习怎么安排？']
+  return ['能详细说明一下吗？', '还有其他相关要求吗？', '这个信息的来源是什么？']
 }
 
 export default function ChatPage() {
   const [searchParams] = useSearchParams()
   const [question, setQuestion] = useState('')
-  const [messages, setMessages] = useState([])
-  const [loading, setLoading] = useState(false)
+  // 订阅模块级 store：组件卸载后状态保留，重新挂载时拿回完整消息
+  const state = useSyncExternalStore(subscribe, getState, getState)
+  const messages = state.messages
+  const loading = state.loading
   const messagesEndRef = useRef(null)
   const messagesWrapRef = useRef(null)
   const inputRef = useRef(null)
-  const sessionIdRef = useRef(getSessionId())
   const initRef = useRef(false)
   // 是否自动跟随滚动到底部。初始为 false，避免进入页面时强制滚到底；
   // 用户发送新问题、或已处于底部附近时才会置为 true。
   const autoStickRef = useRef(false)
 
   const scrollToBottom = useCallback((behavior = 'smooth') => {
-    messagesEndRef.current?.scrollIntoView({ behavior })
+    const wrap = messagesWrapRef.current
+    if (wrap) {
+      wrap.scrollTo({ top: wrap.scrollHeight, behavior })
+    }
   }, [])
 
   // 滚动容器监听：用户主动上滑时停止自动跟随，重新回到底部附近时恢复
@@ -76,157 +94,56 @@ export default function ChatPage() {
     }
   }, [messages, scrollToBottom])
 
-  // 加载时从 localStorage 恢复聊天记录
+  // 挂载时恢复：若有残留的 streaming 消息（页面刷新前请求未完成），
+  // 标记为已中断；否则检查 URL 参数发起提问
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY)
-      if (saved) {
-        const parsed = JSON.parse(saved)
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setMessages(parsed)
-          // 恢复历史时不自动滚动，让用户从顶部开始阅读
-          autoStickRef.current = false
-          return
-        }
+    if (initRef.current) return
+    initRef.current = true
+    recoverIfNeeded()
+    if (messages.length === 0 || !messages.some((m) => m.streaming)) {
+      const q = searchParams.get('q')
+      if (q) {
+        // 通过 URL 参数发起提问时，自动跟随到底部
+        autoStickRef.current = true
+        storeAsk(q, () => { autoStickRef.current = true })
       }
-    } catch {
-      // localStorage 读取失败，忽略
-    }
-    // 没有历史记录时，检查 URL 参数
-    const q = searchParams.get('q')
-    if (q && !initRef.current) {
-      initRef.current = true
-      // 通过 URL 参数发起提问时，自动跟随到底部
-      autoStickRef.current = true
-      ask(q)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // 消息变化时保存到 localStorage（只保存已完成的非流式消息）
-  useEffect(() => {
-    if (messages.length === 0) return
-    const toSave = messages.filter((m) => !m.streaming)
-    if (toSave.length > 0) {
-      // 只保存必要字段，减小存储体积
-      const slim = toSave.map((m) => ({
-        role: m.role,
-        content: m.content,
-        data: m.data,
-      }))
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(slim))
-      } catch {
-        // 存储空间不足，忽略
-      }
-    }
-  }, [messages])
-
-  function clearChat() {
-    if (loading) return
-    if (messages.length > 0 && !confirm('确定要清除所有聊天记录吗？')) return
-    localStorage.removeItem(STORAGE_KEY)
-    setMessages([])
-  }
-
-  // 构建历史对话（取最近 6 条 = 3 轮）
-  function buildHistory() {
-    return messages
+  function exportChat() {
+    const lines = messages
       .filter((m) => !m.streaming && m.content)
-      .slice(-6)
-      .map((m) => ({ role: m.role, content: m.content }))
+      .map((m) =>
+        m.role === 'user'
+          ? `## 🧑 用户\n\n${m.content}`
+          : `## 🤖 助手\n\n${m.content}`
+      )
+    if (lines.length === 0) return
+    const md = `# 仲恺校园智能问答记录\n\n> 导出时间：${new Date().toLocaleString('zh-CN')}\n\n${lines.join('\n\n---\n\n')}`
+    const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `zhku_chat_${new Date().toISOString().slice(0, 10)}.md`
+    a.click()
+    URL.revokeObjectURL(url)
   }
 
   async function ask(q) {
     const text = (q || question).trim()
     if (!text || loading) return
-
-    setLoading(true)
     setQuestion('')
     // 用户主动发问时跟随到底部
     autoStickRef.current = true
-    setMessages((prev) => [...prev, { role: 'user', content: text }])
-
-    // 占位助手消息
-    const assistantMsg = { role: 'assistant', content: '', data: null, streaming: true }
-    setMessages((prev) => [...prev, assistantMsg])
-
-    // 构建历史对话（在添加新消息之前）
-    const history = buildHistory()
-
-    try {
-      const resp = await fetch('/api/chat/stream', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question: text, user_role: 'student', history, session_id: sessionIdRef.current }),
-      })
-
-      if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
-
-      const reader = resp.body.getReader()
-      const decoder = new TextDecoder()
-      let buffer = ''
-      let idx = -1
-
-      setMessages((prev) => {
-        idx = prev.length - 1
-        return prev
-      })
-
-      while (true) {
-        const { done, value } = await reader.read()
-        if (done) break
-        buffer += decoder.decode(value, { stream: true })
-        const lines = buffer.split('\n')
-        buffer = lines.pop() || ''
-
-        for (const line of lines) {
-          if (!line.startsWith('data: ')) continue
-          try {
-            const data = JSON.parse(line.slice(6))
-            if (data.type === 'meta') {
-              setMessages((prev) => {
-                const next = [...prev]
-                next[idx] = { ...next[idx], data }
-                return next
-              })
-            } else if (data.type === 'token') {
-              setMessages((prev) => {
-                const next = [...prev]
-                next[idx] = { ...next[idx], content: next[idx].content + data.content }
-                return next
-              })
-            } else if (data.type === 'done') {
-              setMessages((prev) => {
-                const next = [...prev]
-                next[idx] = { ...next[idx], streaming: false }
-                return next
-              })
-            }
-          } catch {
-            // skip malformed
-          }
-        }
-      }
-    } catch (err) {
-      setMessages((prev) => {
-        const next = [...prev]
-        const last = next[next.length - 1]
-        if (last && last.role === 'assistant') {
-          next[next.length - 1] = {
-            ...last,
-            content: '⚠️ 请求失败：' + (err?.message || '未知错误'),
-            streaming: false,
-          }
-        }
-        return next
-      })
-    } finally {
-      setLoading(false)
-    }
+    await storeAsk(text, () => { autoStickRef.current = true })
   }
 
   const hasMessages = messages.length > 0
+
+  const clearChat = storeClear
+  const deleteMessage = storeDelete
+  const stopGenerating = storeStop
 
   return (
     <div className="chat-page">
@@ -238,12 +155,20 @@ export default function ChatPage() {
               ZHKU Agent
             </div>
             {hasMessages && (
-              <button className="chat-clear-btn" onClick={clearChat} disabled={loading} title="清除聊天记录">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
-                </svg>
-                清除记录
-              </button>
+              <div className="chat-header-actions">
+                <button className="chat-header-btn" onClick={exportChat} disabled={loading} title="导出对话为 Markdown">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" />
+                  </svg>
+                  导出
+                </button>
+                <button className="chat-header-btn" onClick={clearChat} disabled={loading} title="清除聊天记录">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
+                  </svg>
+                  清除
+                </button>
+              </div>
             )}
           </div>
           <h1 className="chat-title">仲恺校园智能问答</h1>
@@ -277,7 +202,15 @@ export default function ChatPage() {
           )}
 
           {messages.map((m, i) => (
-            <MessageBubble key={i} message={m} />
+            <MessageBubble
+              key={i}
+              message={m}
+              index={i}
+              onDelete={deleteMessage}
+              onAsk={ask}
+              loading={loading}
+              prevQuestion={i > 0 && messages[i - 1].role === 'user' ? messages[i - 1].content : ''}
+            />
           ))}
 
           <div ref={messagesEndRef} />
@@ -303,11 +236,14 @@ export default function ChatPage() {
           />
           <button
             className="chat-send-btn"
-            onClick={() => ask()}
-            disabled={loading || !question.trim()}
+            onClick={() => (loading ? stopGenerating() : ask())}
+            disabled={!loading && !question.trim()}
+            title={loading ? '停止生成' : '发送'}
           >
             {loading ? (
-              <span className="send-spinner" />
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <rect x="6" y="6" width="12" height="12" rx="2" />
+              </svg>
             ) : (
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                 <path
@@ -329,17 +265,32 @@ export default function ChatPage() {
   )
 }
 
-function MessageBubble({ message }) {
+function MessageBubble({ message, index, onDelete, onAsk, loading, prevQuestion }) {
   const isUser = message.role === 'user'
   const data = message.data
   const streaming = message.streaming
   const showThinking = !isUser && streaming && !message.content
+  const [copied, setCopied] = useState(false)
+  const followUps = !isUser && !streaming && prevQuestion ? generateFollowUps(prevQuestion) : []
+
+  function handleCopy() {
+    navigator.clipboard.writeText(message.content || '')
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
 
   if (isUser) {
     return (
       <div className="msg-row msg-row-user">
         <div className="msg-avatar msg-avatar-user">你</div>
-        <div className="msg-bubble msg-bubble-user">{message.content}</div>
+        <div className="msg-bubble msg-bubble-user">
+          {message.content}
+          {!streaming && (
+            <button className="msg-action-btn msg-action-user" onClick={() => onDelete(index)} title="删除此条">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            </button>
+          )}
+        </div>
       </div>
     )
   }
@@ -387,6 +338,33 @@ function MessageBubble({ message }) {
                 >
                   ● {conf.text}
                 </span>
+                <div className="msg-actions">
+                  <button className="msg-action-btn" onClick={handleCopy} title="复制回答">
+                    {copied ? '✓ 已复制' : (
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                    )}
+                  </button>
+                  <button className="msg-action-btn" onClick={() => onDelete(index)} title="删除此条">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {followUps.length > 0 && !loading && (
+              <div className="msg-followups">
+                <div className="msg-followups-label">相关问题</div>
+                <div className="msg-followups-chips">
+                  {followUps.map((fq) => (
+                    <button
+                      key={fq}
+                      className="followup-chip"
+                      onClick={() => onAsk(fq)}
+                    >
+                      {fq}
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
           </>
