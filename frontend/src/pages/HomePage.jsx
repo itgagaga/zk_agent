@@ -1,30 +1,45 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
+import {
+  ArrowUpRight,
+  BookOpenText,
+  BriefcaseBusiness,
+  Compass,
+  Download,
+  FileSearch,
+  GraduationCap,
+  MessageCircleMore,
+  School,
+} from 'lucide-react'
+import studentIllustration from '../assets/roles/student.svg'
+import graduateIllustration from '../assets/roles/graduate.svg'
+import teacherIllustration from '../assets/roles/teacher.svg'
+import familyIllustration from '../assets/roles/family.svg'
 
 const FEATURES = [
   {
-    icon: '💬',
+    Icon: MessageCircleMore,
     title: '智能问答',
     desc: '基于官网真实资料的 AI 问答，支持流式输出、来源追溯、多轮对话',
     link: '/chat',
     linkText: '开始提问',
   },
   {
-    icon: '📄',
+    Icon: FileSearch,
     title: '文档中心',
     desc: '上传培养方案、章程等文档到永久知识库，RAG 自动检索回答',
     link: '/documents',
     linkText: '管理文档',
   },
   {
-    icon: '📥',
+    Icon: Download,
     title: '资料下载',
     desc: '按关键词和分类检索校内可下载资料，快速找到所需表格和文件',
     link: '/downloads',
     linkText: '搜索资料',
   },
   {
-    icon: '🧭',
+    Icon: Compass,
     title: '服务导航',
     desc: '按角色和分类查找校内服务入口，一键直达目标系统',
     link: '/services',
@@ -35,18 +50,38 @@ const FEATURES = [
 const roleEntries = [
   {
     role: '学生',
+    kicker: '学习与校园生活',
+    illustration: studentIllustration,
+    Icon: BookOpenText,
+    tone: 'amber',
+    prompt: '我是本科生，请介绍适合学生使用的校园服务和资料入口',
     items: ['教务资料', '培养方案', '专业查询', '就业信息', '校医院', '后勤服务'],
   },
   {
     role: '研究生',
+    kicker: '培养与学术支持',
+    illustration: graduateIllustration,
+    Icon: GraduationCap,
+    tone: 'blue',
+    prompt: '我是研究生，请介绍研究生培养、学位和资料下载入口',
     items: ['研究生招生', '培养管理', '学位管理', '相关下载', '导师队伍'],
   },
   {
     role: '教师',
+    kicker: '教学与科研办公',
+    illustration: teacherIllustration,
+    Icon: BriefcaseBusiness,
+    tone: 'green',
+    prompt: '我是教师，请介绍教学、科研和办公相关的校园服务入口',
     items: ['OA 系统', '邮箱', 'VPN', '人力资源系统', '科研项目系统', '教务部'],
   },
   {
     role: '考生 / 家长',
+    kicker: '了解仲恺与招生',
+    illustration: familyIllustration,
+    Icon: School,
+    tone: 'rose',
+    prompt: '我是考生或家长，请介绍学校概况、学院专业和招生信息',
     items: ['学校简介', '学院专业', '本科招生', '研究生招生', '录取情况'],
   },
 ]
@@ -145,35 +180,54 @@ export default function HomePage() {
       </section>
 
       {/* 角色入口 */}
-      <section className="section">
-        <div className="eyebrow">SERVICES</div>
-        <h2 style={{ marginTop: 16, marginBottom: 48 }}>按角色选择入口</h2>
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-            gap: 32,
-          }}
+      <section className="section role-section">
+        <div className="role-section-heading">
+          <div>
+            <div className="eyebrow">SERVICES</div>
+            <h2>按角色选择入口</h2>
+          </div>
+          <p>选择与你最接近的身份，快速找到常用服务与可信校园信息。</p>
+        </div>
+        <svg
+          className="role-orbit"
+          viewBox="0 0 1200 420"
+          preserveAspectRatio="none"
+          aria-hidden="true"
         >
+          <path d="M-40 300 C 160 30, 340 390, 570 176 S 920 50, 1240 260" />
+          <path d="M80 390 C 290 210, 410 310, 620 270 S 980 170, 1160 34" />
+        </svg>
+        <div className="role-grid">
           {roleEntries.map((entry) => (
-            <div key={entry.role} style={{ textAlign: 'center' }}>
-              <div className="portrait-card" style={{ margin: '0 auto 24px' }}>
-                <span style={{ fontSize: 24, fontWeight: 500 }}>{entry.role}</span>
-                <Link
-                  to="/chat"
-                  className="satellite-cta"
-                  style={{ position: 'absolute', bottom: -10, right: -10 }}
-                >
-                  →
-                </Link>
+            <Link
+              key={entry.role}
+              to={`/chat?q=${encodeURIComponent(entry.prompt)}`}
+              className={`role-card role-card--${entry.tone}`}
+            >
+              <div className="role-visual">
+                <div className="role-number">0{roleEntries.indexOf(entry) + 1}</div>
+                <img src={entry.illustration} alt="" className="role-illustration" />
+                <span className="role-arrow" aria-hidden="true">
+                  <ArrowUpRight size={22} strokeWidth={1.8} />
+                </span>
               </div>
-              <div style={{ fontSize: 14, color: 'var(--color-slate)', lineHeight: 1.8 }}>
+              <div className="role-card-copy">
+                <div className="role-kicker">
+                  <entry.Icon size={15} strokeWidth={1.8} />
+                  {entry.kicker}
+                </div>
+                <h3>{entry.role}</h3>
+                <div className="role-tags">
                 {entry.items.map((item) => (
-                  <div key={item}>{item}</div>
+                    <span key={item}>{item}</span>
                 ))}
+                </div>
               </div>
-            </div>
+            </Link>
           ))}
+        </div>
+        <div className="asset-credit">
+          项目内置原创 SVG · 视觉风格参考 Open Peeps
         </div>
       </section>
 
@@ -184,7 +238,9 @@ export default function HomePage() {
         <div className="feature-grid">
           {FEATURES.map((f) => (
             <Link key={f.title} to={f.link} className="feature-card">
-              <div className="feature-icon">{f.icon}</div>
+              <div className="feature-icon">
+                <f.Icon size={28} strokeWidth={1.7} />
+              </div>
               <div className="feature-title">{f.title}</div>
               <div className="feature-desc">{f.desc}</div>
               <div className="feature-link">{f.linkText} →</div>

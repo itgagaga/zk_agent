@@ -1268,6 +1268,231 @@ button {
  * 首页统计横幅 + 功能卡片 + 流程 + 热门问题
  * ======================================== */
 
+/* 角色入口：拱廊式人物卡片 */
+.role-section {
+  position: relative;
+  overflow: hidden;
+}
+
+.role-section-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 48px;
+  margin-bottom: 56px;
+}
+
+.role-section-heading h2 {
+  margin-top: 16px;
+}
+
+.role-section-heading p {
+  max-width: 360px;
+  color: var(--color-slate);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.role-orbit {
+  position: absolute;
+  z-index: 0;
+  top: 190px;
+  left: -4%;
+  width: 108%;
+  height: 430px;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.role-orbit path {
+  fill: none;
+  stroke: var(--color-light-orange);
+  stroke-width: 1.2;
+  stroke-linecap: round;
+  opacity: 0.46;
+}
+
+.role-grid {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 32px;
+}
+
+.role-card {
+  --role-bg: #efe0c1;
+  --role-accent: #ad5f16;
+  min-height: 264px;
+  display: grid;
+  grid-template-columns: minmax(180px, 42%) 1fr;
+  overflow: hidden;
+  color: var(--color-ink);
+  background: rgba(252, 251, 250, 0.92);
+  border: 1px solid rgba(20, 20, 19, 0.12);
+  border-radius: 999px;
+  text-decoration: none;
+  box-shadow: 0 20px 44px rgba(20, 20, 19, 0.06);
+  transition: transform 260ms ease, box-shadow 260ms ease, border-color 260ms ease;
+}
+
+.role-card:nth-child(even) {
+  transform: translateY(48px);
+}
+
+.role-card:hover {
+  text-decoration: none;
+  border-color: color-mix(in srgb, var(--role-accent) 52%, transparent);
+  box-shadow: 0 28px 58px rgba(20, 20, 19, 0.11);
+  transform: translateY(-7px);
+}
+
+.role-card:nth-child(even):hover {
+  transform: translateY(41px);
+}
+
+.role-card--blue {
+  --role-bg: #dbe4e7;
+  --role-accent: #386071;
+}
+
+.role-card--green {
+  --role-bg: #dce3cd;
+  --role-accent: #526c35;
+}
+
+.role-card--rose {
+  --role-bg: #ead7d2;
+  --role-accent: #9a493b;
+}
+
+.role-visual {
+  position: relative;
+  min-height: 264px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 24% 20%, rgba(255, 255, 255, 0.7) 0 4px, transparent 5px),
+    var(--role-bg);
+  border-radius: 999px 42% 42% 999px;
+}
+
+.role-visual::before,
+.role-visual::after {
+  content: '';
+  position: absolute;
+  border: 1px solid rgba(20, 20, 19, 0.14);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.role-visual::before {
+  width: 154px;
+  height: 154px;
+  left: -66px;
+  top: 52px;
+}
+
+.role-visual::after {
+  width: 74px;
+  height: 74px;
+  right: -24px;
+  top: 28px;
+}
+
+.role-illustration {
+  position: absolute;
+  z-index: 1;
+  width: 105%;
+  height: 106%;
+  left: -3%;
+  bottom: -12%;
+  object-fit: contain;
+  filter: saturate(0.7) contrast(1.03);
+  transition: transform 320ms ease;
+}
+
+.role-card:hover .role-illustration {
+  transform: scale(1.035) translateX(3px);
+}
+
+.role-number {
+  position: absolute;
+  z-index: 2;
+  top: 24px;
+  left: 28px;
+  color: var(--role-accent);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.role-arrow {
+  position: absolute;
+  z-index: 3;
+  right: 14px;
+  bottom: 14px;
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  color: var(--color-canvas);
+  background: var(--color-ink);
+  border-radius: 999px;
+  transition: background 180ms ease, transform 180ms ease;
+}
+
+.role-card:hover .role-arrow {
+  background: var(--role-accent);
+  transform: rotate(5deg);
+}
+
+.role-card-copy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 36px 34px 36px 26px;
+}
+
+.role-kicker {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--role-accent);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.role-card-copy h3 {
+  margin-top: 8px;
+  font-size: 28px;
+}
+
+.role-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px 6px;
+  margin-top: 15px;
+}
+
+.role-tags span {
+  padding: 5px 10px;
+  color: var(--color-granite);
+  background: var(--color-white);
+  border: 1px solid rgba(20, 20, 19, 0.1);
+  border-radius: 999px;
+  font-size: 12px;
+}
+
+.asset-credit {
+  margin-top: 88px;
+  color: var(--color-slate);
+  font-size: 11px;
+  text-align: right;
+  opacity: 0.72;
+}
+
 /* 统计横幅 */
 .stats-banner {
   display: flex;
@@ -1333,7 +1558,13 @@ button {
 }
 
 .feature-icon {
-  font-size: 32px;
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  color: var(--color-clay-brown);
+  background: rgba(207, 69, 0, 0.08);
+  border-radius: 20px 20px 20px 6px;
   margin-bottom: 14px;
 }
 
@@ -1474,6 +1705,29 @@ button {
 
 /* 响应式补充 */
 @media (max-width: 768px) {
+  .role-section-heading {
+    align-items: start;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  .role-grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  .role-card:nth-child(even) {
+    transform: none;
+  }
+  .role-card:nth-child(even):hover {
+    transform: translateY(-7px);
+  }
+  .role-orbit {
+    display: none;
+  }
+  .asset-credit {
+    margin-top: 32px;
+    text-align: left;
+  }
   .stats-banner {
     gap: 12px;
   }
@@ -1486,6 +1740,61 @@ button {
   }
   .stat-num {
     font-size: 28px;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1080px) {
+  .role-grid {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+  .role-card:nth-child(even) {
+    transform: none;
+  }
+  .role-card:nth-child(even):hover {
+    transform: translateY(-7px);
+  }
+}
+
+@media (max-width: 540px) {
+  .container {
+    padding-right: 20px;
+    padding-left: 20px;
+  }
+  .role-card {
+    min-height: 220px;
+    grid-template-columns: 42% 1fr;
+    border-radius: 110px 40px 40px 110px;
+  }
+  .role-visual {
+    min-height: 220px;
+  }
+  .role-card-copy {
+    padding: 26px 20px 26px 16px;
+  }
+  .role-card-copy h3 {
+    font-size: 22px;
+  }
+  .role-tags {
+    gap: 5px;
+    margin-top: 10px;
+  }
+  .role-tags span {
+    padding: 3px 7px;
+    font-size: 10px;
+  }
+  .role-arrow {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .role-card,
+  .role-visual,
+  .role-illustration,
+  .role-arrow {
+    transition: none;
   }
 }
 
