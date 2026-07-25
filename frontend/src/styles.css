@@ -2018,6 +2018,1070 @@ button {
 }
 
 /* ========================================
+ * 简历生成器页面
+ * ======================================== */
+
+.resume-page {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 24px 96px;
+}
+
+.resume-page-header {
+  text-align: center;
+  padding: 40px 0 32px;
+}
+
+.resume-page-header h1 {
+  margin-top: 12px;
+}
+
+.resume-page-header p {
+  color: var(--color-slate);
+  font-size: 15px;
+  margin-top: 8px;
+}
+
+.resume-page-body {
+  display: grid;
+  grid-template-columns: minmax(340px, 420px) 1fr;
+  gap: 32px;
+  align-items: start;
+}
+
+/* ===== 左侧表单 ===== */
+.resume-page-left {
+  position: sticky;
+  top: 24px;
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-dust-taupe) transparent;
+}
+
+.resume-page-left::-webkit-scrollbar {
+  width: 4px;
+}
+
+.resume-page-left::-webkit-scrollbar-thumb {
+  background: var(--color-dust-taupe);
+  border-radius: 2px;
+}
+
+.resume-form {
+  background: var(--color-white);
+  border: 1px solid var(--color-dust-taupe);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* 照片上传 */
+.rf-photo-upload {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.rf-photo-preview {
+  width: 80px;
+  height: 106px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1.5px dashed var(--color-dust-taupe);
+  position: relative;
+  flex-shrink: 0;
+  background: var(--color-canvas);
+}
+
+.rf-photo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.rf-photo-remove {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(220, 38, 38, 0.85);
+  color: #fff;
+  border: none;
+  font-size: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.rf-photo-preview:hover .rf-photo-remove {
+  opacity: 1;
+}
+
+.rf-photo-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  cursor: pointer;
+  font-size: 11px;
+  color: var(--color-slate);
+  transition: color 0.2s;
+}
+
+.rf-photo-placeholder:hover {
+  color: var(--color-signal-orange);
+}
+
+.rf-photo-placeholder span:first-child {
+  font-size: 22px;
+}
+
+.rf-photo-hint {
+  font-size: 11px;
+  color: var(--color-slate);
+  line-height: 1.4;
+}
+
+.rf-section {
+  border: 1px solid var(--color-dust-taupe);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.rf-section-toggle {
+  width: 100%;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-ink);
+  background: var(--color-canvas);
+  cursor: pointer;
+  border: none;
+  text-align: left;
+}
+
+.rf-section-toggle:hover {
+  background: var(--color-canvas-lifted);
+}
+
+.rf-toggle-icon {
+  display: inline-block;
+  transition: transform 0.2s;
+  font-size: 12px;
+  color: var(--color-slate);
+}
+
+.rf-toggle-icon.open {
+  transform: rotate(90deg);
+}
+
+.rf-section-body {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.rf-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.rf-field label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-granite);
+  letter-spacing: 0.01em;
+}
+
+.rf-field input,
+.rf-field select,
+.rf-field textarea {
+  padding: 9px 12px;
+  border: 1px solid var(--color-dust-taupe);
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  color: var(--color-ink);
+  background: var(--color-white);
+  transition: border-color 0.2s;
+}
+
+.rf-field input:focus,
+.rf-field select:focus,
+.rf-field textarea:focus {
+  outline: none;
+  border-color: var(--color-signal-orange);
+}
+
+.rf-field textarea {
+  resize: vertical;
+  min-height: 60px;
+}
+
+.rf-row-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.rf-row-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+}
+
+.rf-repeat-item {
+  padding: 14px;
+  background: var(--color-canvas);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.rf-repeat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-slate);
+}
+
+.rf-remove-btn {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(220, 38, 38, 0.08);
+  color: #dc2626;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.rf-remove-btn:hover {
+  background: rgba(220, 38, 38, 0.2);
+}
+
+.rf-add-btn {
+  padding: 10px;
+  border: 1.5px dashed var(--color-dust-taupe);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--color-granite);
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.rf-add-btn:hover {
+  border-color: var(--color-signal-orange);
+  color: var(--color-signal-orange);
+}
+
+.rf-enhance-btn {
+  margin-top: 8px;
+  padding: 14px 24px;
+  background: var(--color-ink);
+  color: var(--color-canvas);
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 16px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s;
+}
+
+.rf-enhance-btn:hover:not(:disabled) {
+  background: var(--color-signal-orange);
+  transform: translateY(-1px);
+}
+
+.rf-enhance-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.rf-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: var(--color-canvas);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  display: inline-block;
+}
+
+/* ===== 右侧预览 ===== */
+.resume-page-right {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.resume-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.rp-template-bar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  background: var(--color-white);
+  border: 1px solid var(--color-dust-taupe);
+  border-radius: 12px;
+}
+
+.rp-template-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-slate);
+  white-space: nowrap;
+}
+
+.rp-template-options {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.rp-template-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border: 1px solid var(--color-dust-taupe);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  font-size: 13px;
+  font-family: inherit;
+  color: var(--color-granite);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.rp-template-btn:hover {
+  border-color: var(--color-signal-orange);
+  color: var(--color-signal-orange);
+}
+
+.rp-template-btn.active {
+  background: var(--color-ink);
+  color: var(--color-canvas);
+  border-color: var(--color-ink);
+}
+
+.rp-template-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.rp-preview-wrap {
+  background: var(--color-canvas-lifted);
+  border: 1px solid var(--color-dust-taupe);
+  border-radius: var(--radius-md);
+  padding: 24px;
+  display: flex;
+  justify-content: center;
+  overflow: auto;
+  min-height: 500px;
+}
+
+.rp-preview-scaler {
+  transform-origin: top center;
+  transform: scale(0.75);
+  width: 210mm;
+}
+
+.rp-preview-page {
+  background: white;
+  width: 210mm;
+  min-height: 297mm;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+}
+
+.rp-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+/* ===== 简历模板通用样式 ===== */
+.resume-tpl {
+  padding: 32px 36px;
+  font-family: 'Source Han Sans CN', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  font-size: 10.5pt;
+  line-height: 1.55;
+  color: #222;
+}
+
+.resume-tpl h1 {
+  font-size: 22pt;
+  letter-spacing: 0.02em;
+  margin: 0;
+}
+
+.resume-tpl h2 {
+  font-size: 11pt;
+  margin: 0 0 4px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.resume-tpl h3 {
+  font-size: 10.5pt;
+  margin: 0;
+}
+
+.tpl-bullets {
+  margin: 4px 0 0;
+  padding-left: 18px;
+  list-style-type: disc;
+}
+
+.tpl-bullets li {
+  margin-bottom: 2px;
+  line-height: 1.5;
+}
+
+/* 通用简历照片 */
+.tpl-photo {
+  width: 72px;
+  height: 96px;
+  object-fit: cover;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+/* 模板1 照片：右侧 */
+.resume-tpl-classic .tpl-header-main {
+  flex: 1;
+}
+
+/* 模板2 照片：侧栏头像 */
+.tpl-modern-avatar-img {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+/* 模板3 照片：头部右侧 */
+.resume-tpl-business .tpl-biz-header-left {
+  flex: 1;
+}
+
+/* 模板4 照片：横幅右侧 */
+.tpl-cre-photo {
+  width: 80px;
+  height: 106px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  flex-shrink: 0;
+}
+
+/* 模板5 照片：头部右侧 */
+.resume-tpl-academic .tpl-ac-header-left {
+  flex: 1;
+}
+
+/* ===== 模板1：经典简约 ===== */
+.resume-tpl-classic .tpl-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border-bottom: 2px solid #222;
+  padding-bottom: 12px;
+  margin-bottom: 16px;
+}
+
+.resume-tpl-classic .tpl-name {
+  font-weight: 700;
+}
+
+.resume-tpl-classic .tpl-contact {
+  display: flex;
+  gap: 16px;
+  margin-top: 6px;
+  font-size: 9.5pt;
+  color: #555;
+}
+
+.resume-tpl-classic .tpl-section {
+  margin-bottom: 14px;
+}
+
+.resume-tpl-classic .tpl-section-title {
+  border-bottom: 1px solid #ccc;
+  padding-bottom: 3px;
+  margin-bottom: 8px;
+  font-weight: 700;
+  color: #222;
+}
+
+.resume-tpl-classic .tpl-section-content {
+  /* content */
+}
+
+.resume-tpl-classic .tpl-entry {
+  margin-bottom: 10px;
+}
+
+.resume-tpl-classic .tpl-entry-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.resume-tpl-classic .tpl-entry-title {
+  font-weight: 600;
+  font-size: 10.5pt;
+}
+
+.resume-tpl-classic .tpl-entry-date {
+  font-size: 9pt;
+  color: #777;
+}
+
+.resume-tpl-classic .tpl-entry-sub {
+  font-size: 9.5pt;
+  color: #555;
+  margin-top: 1px;
+}
+
+.resume-tpl-classic .tpl-skill-group {
+  margin-bottom: 4px;
+}
+
+.resume-tpl-classic .tpl-skill-cat {
+  font-weight: 600;
+  margin-right: 4px;
+}
+
+.resume-tpl-classic .tpl-skill-items {
+  color: #444;
+}
+
+.resume-tpl-classic .tpl-intro {
+  text-indent: 2em;
+  color: #333;
+  margin: 0;
+}
+
+/* ===== 模板2：现代双栏 ===== */
+.resume-tpl-modern {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  padding: 0;
+  min-height: 297mm;
+}
+
+.resume-tpl-modern .tpl-modern-sidebar {
+  background: #1a1a2e;
+  color: #e0e0e0;
+  padding: 28px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.resume-tpl-modern .tpl-modern-avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28pt;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 auto 10px;
+}
+
+.resume-tpl-modern .tpl-modern-name {
+  font-size: 14pt;
+  text-align: center;
+  color: #fff;
+  font-weight: 700;
+}
+
+.resume-tpl-modern .tpl-modern-contact-item {
+  font-size: 8.5pt;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #bbb;
+  word-break: break-all;
+}
+
+.resume-tpl-modern .tpl-modern-icon {
+  flex-shrink: 0;
+}
+
+.resume-tpl-modern .tpl-modern-skills {
+  margin-top: 18px;
+}
+
+.resume-tpl-modern .tpl-modern-sidebar-title {
+  font-size: 9pt;
+  font-weight: 700;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  padding-bottom: 4px;
+  margin-bottom: 10px;
+}
+
+.resume-tpl-modern .tpl-modern-skill-group {
+  margin-bottom: 10px;
+}
+
+.resume-tpl-modern .tpl-modern-skill-cat {
+  font-size: 8.5pt;
+  font-weight: 600;
+  color: #eee;
+}
+
+.resume-tpl-modern .tpl-modern-skill-items {
+  font-size: 8pt;
+  color: #aaa;
+  margin-top: 2px;
+  line-height: 1.4;
+}
+
+.resume-tpl-modern .tpl-modern-main {
+  padding: 28px 28px;
+}
+
+.resume-tpl-modern .tpl-modern-section {
+  margin-bottom: 18px;
+}
+
+.resume-tpl-modern .tpl-modern-section-title {
+  font-size: 10pt;
+  font-weight: 700;
+  color: #1a1a2e;
+  border-bottom: 2px solid #1a1a2e;
+  padding-bottom: 3px;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.resume-tpl-modern .tpl-modern-entry {
+  margin-bottom: 12px;
+}
+
+.resume-tpl-modern .tpl-modern-entry-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.resume-tpl-modern .tpl-modern-entry-header strong {
+  font-size: 10.5pt;
+}
+
+.resume-tpl-modern .tpl-modern-entry-header span {
+  font-size: 8.5pt;
+  color: #777;
+}
+
+.resume-tpl-modern .tpl-modern-entry-sub {
+  font-size: 9pt;
+  color: #555;
+  margin-top: 1px;
+}
+
+.resume-tpl-modern .tpl-modern-intro {
+  color: #444;
+  margin: 0;
+}
+
+/* ===== 模板3：商务雅致 ===== */
+.resume-tpl-business {
+  font-family: 'Source Han Serif CN', 'Noto Serif SC', 'STSong', Georgia, serif;
+}
+
+.resume-tpl-business .tpl-biz-header {
+  margin-bottom: 6px;
+}
+
+.resume-tpl-business .tpl-biz-header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.resume-tpl-business .tpl-biz-name {
+  font-weight: 700;
+  color: #2c3e50;
+}
+
+.resume-tpl-business .tpl-biz-contact {
+  display: flex;
+  gap: 14px;
+  font-size: 9pt;
+  color: #555;
+}
+
+.resume-tpl-business .tpl-biz-divider {
+  height: 2px;
+  background: linear-gradient(90deg, #2c3e50 0%, #bdc3c7 100%);
+  margin-top: 8px;
+}
+
+.resume-tpl-business .tpl-biz-section {
+  margin-top: 14px;
+}
+
+.resume-tpl-business .tpl-biz-section-title {
+  font-size: 10pt;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 2px;
+}
+
+.resume-tpl-business .tpl-biz-section-line {
+  height: 1px;
+  background: #2c3e50;
+  margin-bottom: 8px;
+}
+
+.resume-tpl-business .tpl-biz-entry {
+  margin-bottom: 10px;
+}
+
+.resume-tpl-business .tpl-biz-entry-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.resume-tpl-business .tpl-biz-entry-title {
+  font-weight: 600;
+  font-size: 10.5pt;
+  color: #2c3e50;
+}
+
+.resume-tpl-business .tpl-biz-entry-date {
+  font-size: 9pt;
+  color: #777;
+}
+
+.resume-tpl-business .tpl-biz-entry-sub {
+  font-size: 9.5pt;
+  color: #555;
+  margin-top: 1px;
+}
+
+.resume-tpl-business .tpl-biz-skills-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.resume-tpl-business .tpl-biz-skill-group {
+  display: flex;
+  gap: 4px;
+}
+
+.resume-tpl-business .tpl-biz-skill-cat {
+  font-weight: 600;
+  color: #2c3e50;
+  white-space: nowrap;
+}
+
+.resume-tpl-business .tpl-biz-skill-items {
+  color: #444;
+}
+
+.resume-tpl-business .tpl-biz-intro {
+  text-indent: 2em;
+  color: #333;
+  margin: 0;
+}
+
+/* ===== 模板4：创意彩页 ===== */
+.resume-tpl-creative .tpl-cre-header {
+  background: linear-gradient(135deg, #cf4500 0%, #f37338 100%);
+  color: #fff;
+  padding: 28px 36px;
+  margin: -32px -36px 20px;
+  border-radius: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.resume-tpl-creative .tpl-cre-header-content {
+  flex: 1;
+}
+
+.resume-tpl-creative .tpl-cre-name {
+  color: #fff;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.resume-tpl-creative .tpl-cre-contact {
+  display: flex;
+  gap: 14px;
+  font-size: 9pt;
+  flex-wrap: wrap;
+}
+
+.resume-tpl-creative .tpl-cre-section {
+  margin-bottom: 14px;
+}
+
+.resume-tpl-creative .tpl-cre-section-title {
+  font-size: 11pt;
+  font-weight: 700;
+  color: #cf4500;
+  margin-bottom: 8px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid #f0d0c0;
+}
+
+.resume-tpl-creative .tpl-cre-entry {
+  margin-bottom: 10px;
+}
+
+.resume-tpl-creative .tpl-cre-entry-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.resume-tpl-creative .tpl-cre-entry-title {
+  font-weight: 600;
+  font-size: 10.5pt;
+}
+
+.resume-tpl-creative .tpl-cre-entry-date {
+  font-size: 9pt;
+  color: #777;
+}
+
+.resume-tpl-creative .tpl-cre-entry-sub {
+  font-size: 9.5pt;
+  color: #555;
+  margin-top: 1px;
+}
+
+.resume-tpl-creative .tpl-cre-intro {
+  color: #444;
+  margin: 0;
+}
+
+.resume-tpl-creative .tpl-cre-skills-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.resume-tpl-creative .tpl-cre-skill-chip-group {
+  margin-bottom: 4px;
+}
+
+.resume-tpl-creative .tpl-cre-skill-cat {
+  font-weight: 600;
+  font-size: 9.5pt;
+  margin-right: 6px;
+}
+
+.resume-tpl-creative .tpl-cre-skill-chips {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.resume-tpl-creative .tpl-cre-skill-chip {
+  display: inline-block;
+  padding: 2px 10px;
+  background: rgba(207, 69, 0, 0.08);
+  border: 1px solid rgba(207, 69, 0, 0.2);
+  border-radius: 12px;
+  font-size: 8.5pt;
+  color: #9a3a0a;
+}
+
+/* ===== 模板5：学术研究 ===== */
+.resume-tpl-academic {
+  font-family: 'Source Han Serif CN', 'Noto Serif SC', 'STSong', Georgia, serif;
+  padding: 36px 40px;
+}
+
+.resume-tpl-academic .tpl-ac-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 4px;
+}
+
+.resume-tpl-academic .tpl-ac-name {
+  font-weight: 700;
+  font-size: 20pt;
+}
+
+.resume-tpl-academic .tpl-ac-contact {
+  display: flex;
+  gap: 16px;
+  font-size: 9pt;
+  color: #555;
+  margin-top: 4px;
+}
+
+.resume-tpl-academic .tpl-ac-hr {
+  border: none;
+  border-top: 1px solid #999;
+  margin: 8px 0 16px;
+}
+
+.resume-tpl-academic .tpl-ac-section {
+  margin-bottom: 16px;
+}
+
+.resume-tpl-academic .tpl-ac-section-title {
+  font-size: 10.5pt;
+  font-weight: 700;
+  color: #333;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border-bottom: 1px solid #bbb;
+  padding-bottom: 2px;
+  margin-bottom: 8px;
+}
+
+.resume-tpl-academic .tpl-ac-entry {
+  margin-bottom: 12px;
+}
+
+.resume-tpl-academic .tpl-ac-entry-row {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.resume-tpl-academic .tpl-ac-entry-row strong {
+  font-size: 10.5pt;
+}
+
+.resume-tpl-academic .tpl-ac-entry-row em {
+  font-style: normal;
+  font-size: 9.5pt;
+  color: #555;
+}
+
+.resume-tpl-academic .tpl-ac-entry-row span {
+  margin-left: auto;
+  font-size: 9pt;
+  color: #777;
+}
+
+.resume-tpl-academic .tpl-ac-entry-role {
+  font-size: 9pt;
+  color: #555;
+  margin-top: 2px;
+}
+
+.resume-tpl-academic .tpl-ac-entry-tech {
+  font-size: 9pt;
+  color: #555;
+  margin-top: 1px;
+}
+
+.resume-tpl-academic .tpl-ac-skills {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 9.5pt;
+}
+
+.resume-tpl-academic .tpl-ac-skills strong {
+  color: #333;
+}
+
+.resume-tpl-academic .tpl-ac-intro {
+  text-indent: 2em;
+  color: #333;
+  margin: 0;
+  line-height: 1.65;
+}
+
+/* ===== 简历页面响应式 ===== */
+@media (max-width: 1024px) {
+  .resume-page-body {
+    grid-template-columns: 1fr;
+  }
+
+  .resume-page-left {
+    position: static;
+    max-height: none;
+  }
+
+  .rp-preview-scaler {
+    transform: scale(0.55);
+  }
+}
+
+@media (max-width: 640px) {
+  .resume-page {
+    padding: 0 12px 48px;
+  }
+
+  .rf-row-2,
+  .rf-row-3 {
+    grid-template-columns: 1fr;
+  }
+
+  .rp-preview-scaler {
+    transform: scale(0.4);
+  }
+
+  .resume-tpl-modern {
+    grid-template-columns: 140px 1fr;
+  }
+}
+
+/* ========================================
  * 智能体能力页：资料智库 / 校园办事助手
  * ======================================== */
 .agent-page {

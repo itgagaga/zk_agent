@@ -4,6 +4,7 @@ import ChatPage from './pages/ChatPage.jsx'
 import DownloadsPage from './pages/DownloadsPage.jsx'
 import ServicesPage from './pages/ServicesPage.jsx'
 import DocumentsPage from './pages/DocumentsPage.jsx'
+import ResumePage from './pages/ResumePage.jsx'
 import Footer from './components/Footer.jsx'
 import NavPill from './components/NavPill.jsx'
 
@@ -18,6 +19,7 @@ export default function App() {
           <Route path="/downloads" element={<DownloadsPage />} />
           <Route path="/services" element={<ServicesPage />} />
           <Route path="/documents" element={<DocumentsPage />} />
+          <Route path="/resume" element={<ResumePage />} />
         </Routes>
       </main>
       <Footer />

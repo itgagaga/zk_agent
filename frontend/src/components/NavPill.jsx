@@ -6,6 +6,7 @@ const links = [
   { to: '/downloads', label: '资料智库' },
   { to: '/services', label: '办事助手' },
   { to: '/documents', label: '智能文档' },
+  { to: '/resume', label: '简历生成' },
 ]
 
 export default function NavPill() {
