@@ -1,6 +1,5 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import axios from 'axios'
-import { Link } from 'react-router-dom'
 import {
   ArrowUpRight,
   BookOpenText,
@@ -11,7 +10,6 @@ import {
   MapPinned,
   Phone,
   Search,
-  Sparkles,
   Users,
   Wrench,
 } from 'lucide-react'
@@ -32,38 +30,73 @@ const SCENARIOS = [
     title: '教务与学籍',
     desc: '培养方案、学籍学位、考试与常用表格。',
     category: '教务',
-    query: '我想办理教务或学籍相关事项，请告诉我入口、材料和步骤',
   },
   {
     Icon: Laptop,
     title: '网络与数字服务',
     desc: '校园网、VPN、邮箱和常用信息系统。',
     category: '网络',
-    query: '请介绍校园网络、VPN和邮箱服务的入口与使用说明',
   },
   {
     Icon: Wrench,
     title: '后勤与报修',
     desc: '校区后勤服务、报修与生活保障信息。',
     category: '后勤',
-    query: '我需要校园后勤或报修服务，请帮我查找入口和联系方式',
   },
   {
     Icon: HeartPulse,
     title: '医疗与健康',
     desc: '校医院、就医指引和公开医疗服务信息。',
     category: '医疗',
-    query: '请介绍校医院就医流程、所需材料和公开联系方式',
   },
 ]
 
+function extractDomain(url) {
+  try {
+    return new URL(url).hostname
+  } catch {
+    return ''
+  }
+}
+
+function ServicePreview({ url }) {
+  if (!url) return null
+  const domain = extractDomain(url)
+  if (!domain) return null
+  return (
+    <div className="service-link-preview">
+      <img
+        className="service-link-preview-favicon"
+        src={`https://www.google.com/s2/favicons?domain=${domain}`}
+        alt=""
+        width={20}
+        height={20}
+      />
+      <span className="service-link-preview-domain">{domain}</span>
+      <a
+        className="service-link-preview-visit"
+        href={url}
+        target="_blank"
+        rel="noreferrer"
+      >
+        访问网站 <ArrowUpRight size={12} />
+      </a>
+    </div>
+  )
+}
+
 export default function ServicesPage() {
+  const directoryRef = useRef(null)
   const [category, setCategory] = useState('')
   const [userRole, setUserRole] = useState('')
   const [items, setItems] = useState([])
   const [contacts, setContacts] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+
+  function scrollToDirectory() {
+    directoryRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
 
   async function load(nextCategory = category, nextRole = userRole) {
     setLoading(true)
@@ -82,7 +115,7 @@ export default function ServicesPage() {
     } catch {
       setItems([])
       setContacts([])
-      setError('暂时无法连接服务目录，你仍可直接询问智能体。')
+      setError('暂时无法连接服务目录，请稍后再试。')
     } finally {
       setLoading(false)
     }
@@ -97,22 +130,22 @@ export default function ServicesPage() {
     <div className="container agent-page">
       <section className="agent-page-hero agent-page-hero--service">
         <div className="agent-page-hero-copy">
-          <div className="eyebrow">CAMPUS AGENT</div>
+          <div className="eyebrow">CAMPUS SERVICES</div>
           <h1>校园办事助手</h1>
           <p>
-            从“我要办什么”出发，智能体帮你找到服务入口、所需材料、
+            从"我要办什么"出发，找到服务入口、所需材料、
             办理步骤与公开联系方式，并始终附上官网来源。
           </p>
-          <Link
-            to="/chat?q=我想办理一项校园事务，请先询问我的需求，再给出入口、材料、步骤和联系方式"
+          <button
             className="btn-primary agent-hero-cta"
+            onClick={scrollToDirectory}
           >
-            <Sparkles size={17} /> 开始智能办理
-          </Link>
+            浏览服务
+          </button>
         </div>
         <div className="agent-page-hero-mark" aria-hidden="true">
           <MapPinned size={112} strokeWidth={1.05} />
-          <span>理解需求 · 路由服务 · 核验来源</span>
+          <span>查找入口 · 浏览服务 · 核验来源</span>
         </div>
       </section>
 
@@ -122,7 +155,7 @@ export default function ServicesPage() {
             <div className="eyebrow">FOR YOU</div>
             <h2>先告诉我你的身份</h2>
           </div>
-          <p>智能体会据此调整推荐的服务和回答方式。</p>
+          <p>系统会据此调整推荐的服务和展示方式。</p>
         </div>
         <div className="role-filter-row">
           {ROLES.map(({ label, value, Icon }) => (
@@ -138,17 +171,14 @@ export default function ServicesPage() {
         </div>
 
         <div className="service-scenario-grid">
-          {SCENARIOS.map(({ Icon, title, desc, category: itemCategory, query }) => (
+          {SCENARIOS.map(({ Icon, title, desc, category: itemCategory }) => (
             <article key={title} className="service-scenario-card">
               <span className="agent-capability-icon"><Icon size={24} /></span>
               <h3>{title}</h3>
               <p>{desc}</p>
               <div className="service-scenario-actions">
-                <Link to={`/chat?q=${encodeURIComponent(`${userRole ? `我是${userRole}，` : ''}${query}`)}`}>
-                  问智能体 <Sparkles size={14} />
-                </Link>
-                <button onClick={() => { setCategory(itemCategory); load(itemCategory, userRole) }}>
-                  查服务 <ArrowUpRight size={14} />
+                <button onClick={() => { setCategory(itemCategory); load(itemCategory, userRole); scrollToDirectory() }}>
+                  查看服务 <ArrowUpRight size={14} />
                 </button>
               </div>
             </article>
@@ -156,7 +186,7 @@ export default function ServicesPage() {
         </div>
       </section>
 
-      <section className="agent-subsection">
+      <section className="agent-subsection" ref={directoryRef}>
         <div className="agent-search-panel">
           <div className="agent-search-heading">
             <div>
@@ -183,9 +213,9 @@ export default function ServicesPage() {
           <div className="agent-empty-state compact">
             <MapPinned size={30} />
             <h3>{error}</h3>
-            <Link to="/chat?q=请帮我寻找校园服务入口和联系方式" className="btn-secondary">
-              询问智能体
-            </Link>
+            <button className="btn-secondary" onClick={() => { setCategory(''); load('', userRole) }}>
+              换个分类试试
+            </button>
           </div>
         )}
 
@@ -195,7 +225,7 @@ export default function ServicesPage() {
               <h3 className="service-result-label">服务入口</h3>
               <div className="service-link-grid">
                 {items.length === 0 ? (
-                  <div className="service-list-empty">当前分类暂无入口数据</div>
+                  <div className="service-list-empty">当前分类暂无入口数据，换个分类试试</div>
                 ) : items.map((item, i) => (
                   <a
                     key={`${item.name}-${i}`}
@@ -208,6 +238,7 @@ export default function ServicesPage() {
                       <span>{item.category || category || '校园服务'}</span>
                       <h3>{item.name}</h3>
                       {item.department && <p>{item.department}</p>}
+                      <ServicePreview url={item.url} />
                     </div>
                     <ArrowUpRight size={19} />
                   </a>

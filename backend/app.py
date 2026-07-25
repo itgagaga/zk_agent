@@ -11,7 +11,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-from backend.api import admin, chat, resources, resume, search, upload
+from backend.api import admin, chat, interview, resources, resume, search, upload
 from backend.config import settings
 
 
@@ -47,6 +47,7 @@ app.include_router(resources.router, prefix="/api/resources", tags=["resources"]
 app.include_router(upload.router, prefix="/api/upload", tags=["upload"])
 app.include_router(admin.router, prefix="/api/admin", tags=["admin"])
 app.include_router(resume.router, prefix="/api/resume", tags=["resume"])
+app.include_router(interview.router, prefix="/api/interview", tags=["interview"])
 
 
 @app.get("/health", tags=["meta"])

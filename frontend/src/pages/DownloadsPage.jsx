@@ -1,53 +1,96 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import axios from 'axios'
-import { Link } from 'react-router-dom'
 import {
   ArrowUpRight,
   ClipboardCheck,
   Download,
+  ExternalLink,
   FileSearch,
   FileText,
   ListChecks,
   Search,
-  Sparkles,
 } from 'lucide-react'
+import EmbeddedChat from '../components/EmbeddedChat'
+
+const CHAT_SUGGESTIONS = [
+  '帮我查找缓考申请表',
+  '补办学生证需要什么材料？',
+  '培养方案在哪下载？',
+  '研究生学位申请流程',
+]
 
 const QUICK_TASKS = [
   {
     Icon: FileSearch,
     title: '帮我找资料',
-    desc: '用自然语言描述事项，由智能体定位表格、附件和官网出处。',
-    query: '请帮我查找我要办理事项所需的官方表格和下载入口',
+    desc: '输入事项或关键词，快速定位官方表格、附件和下载入口。',
   },
   {
     Icon: ListChecks,
     title: '生成材料清单',
     desc: '根据公开办事指南，整理办理前需要准备的材料。',
-    query: '请根据学校公开资料，帮我整理办事所需的材料清单',
   },
   {
     Icon: ClipboardCheck,
     title: '梳理办理步骤',
     desc: '把分散的通知和附件整理成清晰、可执行的步骤。',
-    query: '请帮我梳理校园事项的办理步骤，并附上官方来源',
   },
   {
     Icon: FileText,
     title: '解读文件内容',
     desc: '找到文件后，可进入智能文档继续摘要、问答与对比。',
-    link: '/documents',
   },
 ]
 
 const CATEGORIES = ['学生下载', '学籍学位', '考务', '培养方案', '研究生培养', '研究生招生']
 
+function extractDomain(url) {
+  try {
+    return new URL(url).hostname
+  } catch {
+    return url
+  }
+}
+
+function LinkPreview({ url }) {
+  const domain = extractDomain(url)
+  const faviconUrl = `https://www.google.com/s2/favicons?domain=${domain}&sz=32`
+
+  return (
+    <div className="resource-link-preview">
+      <img
+        className="resource-link-preview-favicon"
+        src={faviconUrl}
+        alt=""
+        width={20}
+        height={20}
+        onError={(e) => { e.target.style.display = 'none' }}
+      />
+      <span className="resource-link-preview-domain">{domain}</span>
+      <a
+        className="resource-link-preview-visit"
+        href={url}
+        target="_blank"
+        rel="noreferrer"
+      >
+        访问网站 <ExternalLink size={13} />
+      </a>
+    </div>
+  )
+}
+
 export default function DownloadsPage() {
+  const searchRef = useRef(null)
   const [keyword, setKeyword] = useState('')
   const [category, setCategory] = useState('')
   const [items, setItems] = useState([])
   const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+
+  function scrollToSearch() {
+    searchRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
 
   async function load(nextKeyword = keyword, nextCategory = category) {
     setLoading(true)
@@ -61,7 +104,7 @@ export default function DownloadsPage() {
     } catch {
       setItems([])
       setTotal(0)
-      setError('暂时无法连接资料库，你仍可让智能体帮助检索。')
+      setError('暂时无法连接资料库，请稍后再试。')
     } finally {
       setLoading(false)
     }
@@ -79,15 +122,15 @@ export default function DownloadsPage() {
           <div className="eyebrow">AGENT LIBRARY</div>
           <h1>办事资料智库</h1>
           <p>
-            不只提供下载链接。让智能体帮你定位资料、核对来源、整理材料，
+            快速定位资料、核对来源、整理材料，
             再把复杂文件交给智能文档继续解读。
           </p>
-          <Link
-            to="/chat?q=请帮我查找办理校园事项所需的资料，并说明材料和步骤"
+          <button
             className="btn-primary agent-hero-cta"
+            onClick={scrollToSearch}
           >
-            <Sparkles size={17} /> 让智能体帮我找
-          </Link>
+            <Search size={17} /> 搜索资料
+          </button>
         </div>
         <div className="agent-page-hero-mark" aria-hidden="true">
           <FileSearch size={112} strokeWidth={1.05} />
@@ -99,27 +142,27 @@ export default function DownloadsPage() {
         <div className="agent-section-title">
           <div>
             <div className="eyebrow">WORKFLOWS</div>
-            <h2>你想完成什么？</h2>
+            <h2>你能做什么？</h2>
           </div>
           <p>从目标出发，而不是从文件名开始。</p>
         </div>
         <div className="agent-capability-grid">
-          {QUICK_TASKS.map(({ Icon, title, desc, query, link }) => (
-            <Link
+          {QUICK_TASKS.map(({ Icon, title, desc }) => (
+            <button
               key={title}
-              to={link || `/chat?q=${encodeURIComponent(query)}`}
               className="agent-capability-card"
+              onClick={scrollToSearch}
             >
               <span className="agent-capability-icon"><Icon size={24} /></span>
               <h3>{title}</h3>
               <p>{desc}</p>
-              <span className="agent-card-action">开始处理 <ArrowUpRight size={15} /></span>
-            </Link>
+              <span className="agent-card-action">开始搜索 <ArrowUpRight size={15} /></span>
+            </button>
           ))}
         </div>
       </section>
 
-      <section className="agent-subsection">
+      <section className="agent-subsection" ref={searchRef}>
         <div className="agent-search-panel">
           <div className="agent-search-heading">
             <div>
@@ -166,13 +209,7 @@ export default function DownloadsPage() {
             <div className="agent-empty-state">
               <FileSearch size={34} strokeWidth={1.4} />
               <h3>{error || '当前条件下暂未找到资料'}</h3>
-              <p>换个关键词，或直接描述你想办理的事情。</p>
-              <Link
-                to={`/chat?q=${encodeURIComponent(`请帮我查找“${keyword || category || '校园办事'}”相关资料`)}`}
-                className="btn-secondary"
-              >
-                询问智能体
-              </Link>
+              <p>换个关键词试试，或尝试不同的分类筛选。</p>
             </div>
           ) : (
             items.map((item, i) => (
@@ -188,12 +225,10 @@ export default function DownloadsPage() {
                     {item.category && <span>{item.category}</span>}
                     {item.publish_date && <span>{item.publish_date}</span>}
                   </div>
+                  {item.source_page_url && (
+                    <LinkPreview url={item.source_page_url} />
+                  )}
                   <div className="resource-result-actions">
-                    {item.source_page_url && (
-                      <a href={item.source_page_url} target="_blank" rel="noreferrer">
-                        查看来源 <ArrowUpRight size={14} />
-                      </a>
-                    )}
                     {item.file_url && (
                       <a href={item.file_url} target="_blank" rel="noreferrer">
                         <Download size={14} /> 下载附件
@@ -206,6 +241,12 @@ export default function DownloadsPage() {
           )}
         </div>
       </section>
+
+      <EmbeddedChat
+        title="资料智库助手"
+        contextHint="资料智库"
+        suggestions={CHAT_SUGGESTIONS}
+      />
     </div>
   )
 }

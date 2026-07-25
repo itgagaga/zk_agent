@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react'
 import axios from 'axios'
 import ResumeForm from '../components/ResumeForm'
 import ResumePreview from '../components/ResumePreview'
+import InterviewChat from '../components/InterviewChat'
 
 const INITIAL_DATA = {
   basic: { name: '', phone: '', email: '', address: '', website: '', photo: '' },
@@ -42,6 +43,8 @@ export default function ResumePage() {
   const [data, setData] = useState(INITIAL_DATA)
   const [templateId, setTemplateId] = useState('classic')
   const [enhancing, setEnhancing] = useState(false)
+  // 子标签：resume | interview
+  const [activeTab, setActiveTab] = useState('resume')
 
   const handleChange = useCallback((newData) => {
     setData(newData)
@@ -95,30 +98,63 @@ export default function ResumePage() {
   return (
     <div className="resume-page">
       <div className="resume-page-header">
-        <div className="eyebrow">RESUME BUILDER</div>
-        <h1>简历生成器</h1>
-        <p>填写个人信息，AI 帮你优化内容，选择模板一键导出 PDF</p>
+        <div className="eyebrow">RESUME & INTERVIEW</div>
+        <h1>简历 & 面试</h1>
+        <p>填写简历信息，AI 优化内容并导出 PDF；或基于简历进行模拟面试</p>
+        {/* 子标签切换 */}
+        <div className="resume-tabs">
+          <button
+            className={`resume-tab ${activeTab === 'resume' ? 'active' : ''}`}
+            onClick={() => setActiveTab('resume')}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+              <polyline points="14 2 14 8 20 8" />
+              <line x1="16" y1="13" x2="8" y2="13" />
+              <line x1="16" y1="17" x2="8" y2="17" />
+              <polyline points="10 9 9 9 8 9" />
+            </svg>
+            简历生成
+          </button>
+          <button
+            className={`resume-tab ${activeTab === 'interview' ? 'active' : ''}`}
+            onClick={() => setActiveTab('interview')}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+            </svg>
+            模拟面试
+          </button>
+        </div>
       </div>
 
-      <div className="resume-page-body">
-        <div className="resume-page-left">
-          <ResumeForm
-            data={data}
-            onChange={handleChange}
-            onEnhance={handleEnhance}
-            enhancing={enhancing}
-          />
+      {activeTab === 'resume' && (
+        <div className="resume-page-body">
+          <div className="resume-page-left">
+            <ResumeForm
+              data={data}
+              onChange={handleChange}
+              onEnhance={handleEnhance}
+              enhancing={enhancing}
+            />
+          </div>
+          <div className="resume-page-right">
+            <ResumePreview
+              data={data}
+              templateId={templateId}
+              onTemplateChange={setTemplateId}
+              onEnhance={handleEnhance}
+              enhancing={enhancing}
+            />
+          </div>
         </div>
-        <div className="resume-page-right">
-          <ResumePreview
-            data={data}
-            templateId={templateId}
-            onTemplateChange={setTemplateId}
-            onEnhance={handleEnhance}
-            enhancing={enhancing}
-          />
-        </div>
-      </div>
+      )}
+
+      {activeTab === 'interview' && (
+        <InterviewChat
+          onBack={() => setActiveTab('resume')}
+        />
+      )}
     </div>
   )
 }

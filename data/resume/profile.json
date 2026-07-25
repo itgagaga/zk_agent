@@ -1,0 +1,58 @@
+{
+  "basic": {
+    "name": "郑梓浠",
+    "phone": "138****0000",
+    "email": "example@email.com",
+    "address": "广东省广州市"
+  },
+  "education": [
+    {
+      "school": "仲恺农业工程学院",
+      "major": "信息与计算科学",
+      "degree": "本科",
+      "start": "2023.9.1",
+      "end": ""
+    }
+  ],
+  "skills": [
+    {
+      "category": "编程语言",
+      "items": "Java, Python, JavaScript, SQL"
+    },
+    {
+      "category": "框架与工具",
+      "items": "Spring Boot, Django, Vue.js, Git, Docker"
+    },
+    {
+      "category": "数据库与缓存",
+      "items": "MySQL, Redis, MongoDB"
+    },
+    {
+      "category": "其他",
+      "items": "Linux, RESTfulAPI设计, 算法与数据结构"
+    }
+  ],
+  "projects": [
+    {
+      "name": "校园图书管理系统",
+      "role": "全栈开发",
+      "start": "2023-03",
+      "end": "",
+      "description": "基于Spring Boot与Vue.js搭建图书借还管理平台；设计MySQL表结构并优化查询索引，页面加载时间缩短40%；实现角色权限模块，支持管理员与普通用户分权操作，保障数据安全。",
+      "tech_stack": "Spring Boot, Vue.js, MySQL, Redis"
+    },
+    {
+      "name": "外卖系统",
+      "role": "后端开发实习生",
+      "start": "2023-09",
+      "end": "",
+      "description": "使用SpringBoot实现购物车、订单管理等核心业务逻辑；设计Redis缓存热点数据，接口响应时间降低35%；集成Docker容器化部署，提升系统可维护性。",
+      "tech_stack": "Spring Boot, MySQL, Redis, Docker"
+    }
+  ],
+  "target_position": "后端开发工程师",
+  "intro_keywords": "2年后端开发经验；精通Java/Spring Boot；数据库优化与Redis缓存；全栈开发能力；团队协作",
+  "raw_text": "郑梓浠\n138****0000\nexample@email.com\n广东省广州市\n教育背景\n仲恺农业工程学院信息与计算科学，本科\n2023.9.1-20\n研究项目\n校园图书管理系统\n2023-03 — 2(\n全栈开发\n技术/方法：Spring Boot,Vue.js,MySQL,Redis\n·基于Spring Boot与Vue.js搭建图书借还管理平台\n：设计MySQL表结构并优化查询索引，页面加载时间缩短40%\n·实现角色权限模块，支持管理员与普通用户分权操作，保障数据安全\n外卖系统\n2023-09—2(\n后端开发实习生\n技术/方法：Spring Boot, MySQL,Redis, Docker\n·使用SpringBoot实现购物车、订单管理等核心业务逻辑\n：设计Redis缓存热点数据，接口响应时间降低35%\n·集成Docker容器化部署，提升系统可维护性\n专业技能\n编程语言：Java,Python,JavaScript, SQL\n框架与工具: Spring Boot, Django, Vue.js, Git, Docker\n数据库与缓存：MySQL,Redis，MongoDB\n其他：Linux，RESTfulAPI设计，算法与数据结构\n个人陈述\n拥有2年后端开发经验，精通Java及Spring Boot框架，熟悉微服务架构与RESTfulAPI设计。具备扎实的\n与数据结构基础，能高效优化数据库查询与系统性能。在校园图书管理系统项目中，通过索引优化与Redis缓存\n页面加载时间缩短40%；在外卖系统中独立完成购物车、订单等核心模块设计与开发。善于团队协作，热爱技\n研，业余通过羽毛球运动保持高效工作状态。期待在后端开发岗位中持续深耕，用技术解决实际问题。",
+  "filename": "郑梓浠_学术研究.pdf",
+  "upload_time": "2026-07-25 17:45:43"
+}

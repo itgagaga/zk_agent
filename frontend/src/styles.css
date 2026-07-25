@@ -3081,6 +3081,831 @@ button {
   }
 }
 
+/* ===== 简历 & 面试子标签 ===== */
+.resume-tabs {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 24px;
+}
+
+.resume-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 24px;
+  border: 1.5px solid var(--color-dust-taupe);
+  border-radius: var(--radius-pill);
+  background: var(--color-white);
+  color: var(--color-granite);
+  font-size: 15px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.resume-tab:hover {
+  border-color: var(--color-signal-orange);
+  color: var(--color-signal-orange);
+}
+
+.resume-tab.active {
+  background: var(--color-ink);
+  color: var(--color-canvas);
+  border-color: var(--color-ink);
+}
+
+.resume-tab.active svg {
+  stroke: var(--color-canvas);
+}
+
+/* ========================================
+ * 模拟面试对话界面
+ * ======================================== */
+
+.interview-chat {
+  max-width: 860px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 280px);
+}
+
+.interview-header {
+  text-align: center;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--color-dust-taupe);
+}
+
+.interview-header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.interview-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border: 1px solid var(--color-dust-taupe);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--color-slate);
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.interview-back-btn:hover {
+  border-color: var(--color-signal-orange);
+  color: var(--color-signal-orange);
+}
+
+.interview-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-signal-orange);
+}
+
+.interview-logo-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-signal-orange);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.iv-header-reupload {
+  margin-left: auto;
+  padding: 4px 12px;
+  font-size: 12px;
+  color: var(--color-signal-orange);
+  background: rgba(207, 69, 0, 0.06);
+  border: 1px solid rgba(207, 69, 0, 0.2);
+  border-radius: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.iv-header-reupload:hover:not(:disabled) {
+  background: rgba(207, 69, 0, 0.12);
+}
+
+.iv-header-reupload:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.interview-title {
+  font-size: 28px;
+  line-height: 1.2;
+  margin-top: 4px;
+}
+
+.interview-subtitle {
+  font-size: 14px;
+  color: var(--color-slate);
+}
+
+.interview-progress {
+  color: var(--color-signal-orange);
+  font-weight: 600;
+}
+
+/* 消息区域 */
+.interview-messages-wrap {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px 0;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-dust-taupe) transparent;
+}
+
+.interview-messages-wrap::-webkit-scrollbar {
+  width: 6px;
+}
+
+.interview-messages-wrap::-webkit-scrollbar-thumb {
+  background: var(--color-dust-taupe);
+  border-radius: 3px;
+}
+
+.interview-messages {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* 欢迎屏 */
+.interview-welcome {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 48px 24px;
+  flex: 1;
+}
+
+.interview-welcome-icon {
+  font-size: 56px;
+  margin-bottom: 16px;
+}
+
+/* 上传区域 */
+.iv-upload-zone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.iv-upload-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 32px;
+  background: var(--color-ink);
+  color: var(--color-canvas);
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 16px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.iv-upload-btn:hover:not(:disabled) {
+  background: var(--color-signal-orange);
+  transform: translateY(-1px);
+}
+
+.iv-upload-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.iv-upload-hint {
+  font-size: 13px;
+  color: var(--color-slate);
+}
+
+/* 准备面试操作 */
+.iv-ready-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-top: 24px;
+}
+
+.iv-reupload-btn {
+  padding: 10px 20px;
+  background: transparent;
+  color: var(--color-slate);
+  border: 1.5px solid var(--color-dust-taupe);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 450;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.iv-reupload-btn:hover {
+  border-color: var(--color-signal-orange);
+  color: var(--color-signal-orange);
+}
+
+/* 简历摘要 */
+.iv-resume-summary {
+  text-align: center;
+  padding: 16px 24px;
+  background: rgba(207, 69, 0, 0.04);
+  border: 1px solid rgba(207, 69, 0, 0.12);
+  border-radius: var(--radius-md);
+  max-width: 480px;
+  margin: 16px 0;
+}
+
+.iv-resume-summary-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-clay-brown);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 8px;
+}
+
+.iv-resume-summary-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+
+.iv-resume-name {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-ink);
+}
+
+.iv-resume-position {
+  font-size: 14px;
+  color: var(--color-signal-orange);
+  font-weight: 500;
+  padding: 2px 10px;
+  background: rgba(207, 69, 0, 0.08);
+  border-radius: var(--radius-pill);
+}
+
+.iv-resume-skills {
+  font-size: 13px;
+  color: var(--color-slate);
+  line-height: 1.5;
+}
+
+/* 简历分析中状态 */
+.iv-analyzing-icon {
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+  background: rgba(207, 69, 0, 0.08);
+  border-radius: 50%;
+}
+
+.iv-analyzing-spinner {
+  width: 28px;
+  height: 28px;
+  border-width: 3px;
+}
+
+/* 流式输出 */
+.iv-bubble-streaming {
+  border-left: 3px solid var(--color-signal-orange);
+}
+
+.iv-interrupted-hint {
+  margin-top: 10px;
+  padding: 8px 0;
+  font-size: 12px;
+  color: #888;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.iv-retry-btn {
+  padding: 3px 12px;
+  font-size: 12px;
+  color: var(--color-signal-orange);
+  background: rgba(207, 69, 0, 0.06);
+  border: 1px solid rgba(207, 69, 0, 0.2);
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.iv-retry-btn:hover {
+  background: rgba(207, 69, 0, 0.12);
+}
+
+.iv-streaming-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--color-signal-orange);
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.iv-streaming-text {
+  white-space: pre-wrap;
+  word-break: break-word;
+  opacity: 0.6;
+  font-size: 13px;
+  max-height: 120px;
+  overflow: hidden;
+}
+
+.interview-welcome h2 {
+  font-size: 24px;
+  margin-bottom: 8px;
+}
+
+.interview-welcome p {
+  font-size: 15px;
+  color: var(--color-slate);
+  margin-bottom: 32px;
+  max-width: 480px;
+}
+
+.interview-start-btn {
+  padding: 14px 40px;
+  background: var(--color-ink);
+  color: var(--color-canvas);
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 16px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+}
+
+.interview-start-btn:hover:not(:disabled) {
+  background: var(--color-signal-orange);
+  transform: translateY(-1px);
+}
+
+.interview-start-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* 消息行通用 */
+.iv-msg {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  animation: ivFadeIn 0.3s ease;
+}
+
+@keyframes ivFadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* 系统消息 */
+.iv-msg-system {
+  justify-content: center;
+}
+
+.iv-system-bubble {
+  padding: 8px 20px;
+  background: rgba(207, 69, 0, 0.06);
+  border-radius: var(--radius-pill);
+  color: var(--color-clay-brown);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.iv-error-bubble {
+  padding: 8px 20px;
+  background: rgba(220, 38, 38, 0.08);
+  border-radius: var(--radius-pill);
+  color: #dc2626;
+  font-size: 13px;
+}
+
+/* 面试官消息 */
+.iv-msg-interviewer {
+  /* default left-aligned */
+}
+
+.iv-msg-candidate {
+  flex-direction: row-reverse;
+}
+
+/* 头像 */
+.iv-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.iv-avatar-interviewer {
+  background: linear-gradient(135deg, var(--color-signal-orange), var(--color-light-orange));
+  position: relative;
+}
+
+.iv-avatar-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--color-white);
+}
+
+.iv-avatar-candidate {
+  background: var(--color-ink);
+  color: var(--color-canvas);
+}
+
+/* 气泡 */
+.iv-bubble {
+  padding: 16px 20px;
+  border-radius: 20px;
+  line-height: 1.6;
+  font-size: 15px;
+}
+
+.iv-bubble-interviewer {
+  background: var(--color-white);
+  color: var(--color-ink);
+  border: 1px solid var(--color-dust-taupe);
+  border-bottom-left-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  max-width: 680px;
+}
+
+.iv-bubble-candidate {
+  position: relative;
+  background: var(--color-ink);
+  color: var(--color-canvas);
+  border-bottom-right-radius: 6px;
+  max-width: 75%;
+}
+
+/* 问题头部 */
+.iv-question-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.iv-question-index {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--color-signal-orange);
+  color: var(--color-white);
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.iv-question-cat {
+  padding: 3px 10px;
+  background: rgba(207, 69, 0, 0.08);
+  color: var(--color-clay-brown);
+  border-radius: var(--radius-pill);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.iv-question-text {
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.6;
+}
+
+/* 评分结果气泡 */
+.iv-msg-result {
+  /* left-aligned like interviewer */
+}
+
+.iv-bubble-result {
+  background: var(--color-white);
+  color: var(--color-ink);
+  border: 1px solid var(--color-dust-taupe);
+  border-bottom-left-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  max-width: 680px;
+}
+
+.iv-score-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.iv-score-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 28px;
+  border-radius: var(--radius-pill);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.iv-score-label {
+  font-size: 13px;
+  color: var(--color-slate);
+}
+
+.iv-skip-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 14px;
+  background: rgba(107, 114, 128, 0.1);
+  color: #6b7280;
+  border-radius: var(--radius-pill);
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 14px;
+}
+
+.iv-result-section-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-charcoal);
+  margin-bottom: 6px;
+  margin-top: 12px;
+}
+
+.iv-result-text {
+  font-size: 14px;
+  color: var(--color-granite);
+  line-height: 1.65;
+  white-space: pre-wrap;
+}
+
+.iv-feedback,
+.iv-reference,
+.iv-tips {
+  padding-top: 8px;
+  border-top: 1px dashed var(--color-dust-taupe);
+}
+
+/* 回答输入区域 */
+.interview-action-area {
+  margin-top: 8px;
+  padding: 20px;
+  background: var(--color-white);
+  border: 1px solid var(--color-dust-taupe);
+  border-radius: var(--radius-md);
+}
+
+.interview-answer-row {
+  margin-bottom: 12px;
+}
+
+.interview-answer-input {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1.5px solid var(--color-dust-taupe);
+  border-radius: 14px;
+  font-size: 15px;
+  font-family: inherit;
+  color: var(--color-ink);
+  background: var(--color-canvas);
+  resize: vertical;
+  min-height: 100px;
+  line-height: 1.6;
+  transition: border-color 0.2s;
+}
+
+.interview-answer-input:focus {
+  outline: none;
+  border-color: var(--color-signal-orange);
+}
+
+.interview-answer-input:disabled {
+  opacity: 0.6;
+}
+
+.interview-btn-row {
+  display: flex;
+  gap: 12px;
+}
+
+.interview-submit-btn {
+  flex: 1;
+  padding: 12px 24px;
+  background: var(--color-ink);
+  color: var(--color-canvas);
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 15px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s;
+}
+
+.interview-submit-btn:hover:not(:disabled) {
+  background: var(--color-signal-orange);
+  transform: translateY(-1px);
+}
+
+.interview-submit-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.interview-skip-btn {
+  padding: 12px 24px;
+  background: transparent;
+  color: var(--color-slate);
+  border: 1.5px solid var(--color-dust-taupe);
+  border-radius: var(--radius-md);
+  font-size: 15px;
+  font-weight: 450;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.interview-skip-btn:hover:not(:disabled) {
+  border-color: var(--color-signal-orange);
+  color: var(--color-signal-orange);
+}
+
+.interview-skip-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.interview-input-hint {
+  text-align: right;
+  font-size: 12px;
+  color: var(--color-slate);
+  margin-top: 8px;
+}
+
+/* 下一题 */
+.interview-next-area,
+.interview-finished-area {
+  display: flex;
+  justify-content: center;
+  margin-top: 8px;
+}
+
+.interview-next-btn {
+  padding: 12px 32px;
+  background: var(--color-ink);
+  color: var(--color-canvas);
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 15px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.interview-next-btn:hover {
+  background: var(--color-signal-orange);
+  transform: translateY(-1px);
+}
+
+.interview-restart-btn {
+  padding: 12px 32px;
+  background: transparent;
+  color: var(--color-ink);
+  border: 1.5px solid var(--color-ink);
+  border-radius: var(--radius-md);
+  font-size: 15px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.interview-restart-btn:hover {
+  background: var(--color-ink);
+  color: var(--color-canvas);
+}
+
+/* 面试总结卡片 */
+.iv-msg-summary {
+  justify-content: center;
+}
+
+.iv-summary-card {
+  text-align: center;
+  padding: 32px 40px;
+  background: var(--color-white);
+  border: 1px solid var(--color-dust-taupe);
+  border-radius: var(--radius-md);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+  max-width: 400px;
+}
+
+.iv-summary-icon {
+  font-size: 48px;
+  margin-bottom: 8px;
+}
+
+.iv-summary-card h3 {
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+.iv-summary-stats {
+  display: flex;
+  gap: 24px;
+  justify-content: center;
+}
+
+.iv-summary-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.iv-summary-num {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--color-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.iv-summary-label {
+  font-size: 13px;
+  color: var(--color-slate);
+}
+
+/* 面试响应式 */
+@media (max-width: 768px) {
+  .interview-chat {
+    padding: 0 16px;
+  }
+  .interview-title {
+    font-size: 22px;
+  }
+  .iv-bubble-candidate {
+    max-width: 85%;
+  }
+  .interview-btn-row {
+    flex-direction: column;
+  }
+  .iv-summary-stats {
+    gap: 16px;
+  }
+  .iv-summary-num {
+    font-size: 24px;
+  }
+}
+
 /* ========================================
  * 智能体能力页：资料智库 / 校园办事助手
  * ======================================== */
@@ -3226,6 +4051,11 @@ button {
   border-radius: 40px 40px 40px 12px;
   text-decoration: none;
   transition: transform 220ms ease, border-color 220ms ease, box-shadow 220ms ease;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: inherit;
+  text-align: left;
+  width: 100%;
 }
 
 .agent-capability-card:nth-child(even) {
@@ -3418,6 +4248,49 @@ button {
   color: var(--color-clay-brown);
   font-size: 12px;
   font-weight: 600;
+}
+
+.resource-link-preview {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+  padding: 8px 12px;
+  background: var(--color-canvas-subtle, #f8f7f5);
+  border: 1px solid rgba(20, 20, 19, 0.08);
+  border-radius: 12px;
+}
+
+.resource-link-preview-favicon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  border-radius: 4px;
+}
+
+.resource-link-preview-domain {
+  flex: 1;
+  min-width: 0;
+  font-size: 12px;
+  color: var(--color-slate);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.resource-link-preview-visit {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-clay-brown);
+  text-decoration: none;
+}
+
+.resource-link-preview-visit:hover {
+  text-decoration: underline;
 }
 
 .agent-empty-state {
@@ -3681,5 +4554,60 @@ button {
   .service-scenario-card {
     min-height: 220px;
   }
+}
+
+/* 服务入口网站预览 */
+.service-link-preview {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+  padding: 8px 14px;
+  background: var(--color-canvas);
+  border-radius: 12px;
+  border: 1px solid var(--color-dust-taupe);
+  transition: border-color 0.2s ease;
+}
+
+.service-link-preview:hover {
+  border-color: var(--color-signal-orange);
+}
+
+.service-link-preview-favicon {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.service-link-preview-domain {
+  flex: 1;
+  font-size: 12px;
+  color: var(--color-slate);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.service-link-preview-visit {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  background: var(--color-white);
+  border: 1px solid var(--color-dust-taupe);
+  border-radius: var(--radius-pill);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-clay-brown);
+  text-decoration: none;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.service-link-preview-visit:hover {
+  border-color: var(--color-signal-orange);
+  color: var(--color-signal-orange);
+  text-decoration: none;
 }
 

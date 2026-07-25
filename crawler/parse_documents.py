@@ -12,7 +12,7 @@ from typing import Any
 def parse_pdf(file_path: str | Path) -> dict[str, Any]:
     """解析 PDF 文件，返回文本和章节信息。
 
-    使用 pymupdf（fitz）。
+    使用 pymupdf（fitz）。若提取文本为空（扫描版 PDF），自动降级用 OCR。
     """
     import fitz  # type: ignore[import-not-found]
 
@@ -26,12 +26,47 @@ def parse_pdf(file_path: str | Path) -> dict[str, Any]:
         full_text_parts.append(text)
 
     full_text = "\n".join(full_text_parts)
+
+    # 扫描版 PDF 降级：pymupdf 提取为空时使用 OCR
+    if not full_text.strip():
+        full_text = _ocr_pdf(doc)
+        # 同步更新 pages 信息
+        if full_text.strip():
+            # OCR 结果按页重新分配（简化处理：全部放在第 1 页）
+            pages = [{"page_number": 1, "text": full_text}]
+
     return {
         "file_path": str(file_path),
-        "page_count": len(pages),
+        "page_count": len(pages) if pages else doc.page_count,
         "pages": pages,
         "full_text": full_text,
     }
+
+
+def _ocr_pdf(doc: Any) -> str:
+    """对扫描版 PDF 使用 RapidOCR 提取文字。
+
+    逐页渲染为图片后 OCR，返回全部文本。
+    """
+    try:
+        from rapidocr_onnxruntime import RapidOCR  # type: ignore[import-not-found]
+    except ImportError:
+        print("[OCR] rapidocr-onnxruntime 未安装，跳过 OCR")
+        return ""
+
+    ocr = RapidOCR()
+    all_text: list[str] = []
+
+    for page in doc:
+        pix = page.get_pixmap(dpi=200)
+        img_bytes = pix.tobytes("png")
+        result, _ = ocr(img_bytes)
+        if result:
+            for line in result:
+                # result 每项: ([坐标], text, confidence)
+                all_text.append(line[1])
+
+    return "\n".join(all_text)
 
 
 def parse_docx(file_path: str | Path) -> dict[str, Any]:
