@@ -10,6 +10,7 @@ from typing import Any
 from fastapi import APIRouter, Query
 from pydantic import BaseModel, Field
 
+from backend.agents.answer_generator import AnswerGenerator
 from backend.tools.academic_search_tool import AcademicSearchTool
 from backend.tools.contact_tool import ContactTool
 from backend.tools.download_tool import DownloadTool
@@ -24,6 +25,7 @@ _download_tool = DownloadTool()
 _contact_tool = ContactTool()
 _service_link_tool = ServiceLinkTool()
 _academic_search_tool = AcademicSearchTool()
+_answer_generator = AnswerGenerator()
 
 
 class MajorItem(BaseModel):
@@ -267,3 +269,55 @@ async def search_academic(
             }
         )
     return ListResponse(total=len(items), items=items)
+
+
+class AcademicAnalyzeRequest(BaseModel):
+    """学术搜索 AI 解读请求。"""
+    keyword: str = Field(..., description="搜索关键词")
+    papers: list[dict[str, Any]] = Field(..., description="搜索结果论文列表")
+
+
+@router.post("/academic/analyze")
+async def analyze_academic(req: AcademicAnalyzeRequest):
+    """AI 解读学术搜索结果。
+
+    将搜索到的论文列表发送给 LLM，生成研究脉络梳理和推荐分析。
+    """
+    if _answer_generator.llm is None:
+        return {"analysis": "(LLM 未初始化，请检查 DEEPSEEK_API_KEY 配置)"}
+
+    # 构建论文摘要文本
+    papers_text = ""
+    for i, p in enumerate(req.papers[:10], 1):
+        papers_text += f"{i}. {p.get('title', '')}\n"
+        if p.get("authors"):
+            papers_text += f"   作者：{p['authors']}\n"
+        if p.get("year"):
+            papers_text += f"   年份：{p['year']}\n"
+        if p.get("cited"):
+            papers_text += f"   被引用：{p['cited']} 次\n"
+        if p.get("snippet"):
+            papers_text += f"   摘要：{p['snippet']}\n"
+        if p.get("doi"):
+            papers_text += f"   DOI：{p['doi']}\n"
+        papers_text += "\n"
+
+    prompt = f"""你是一位学术研究助手，请对以下关于「{req.keyword}」的搜索结果进行解读分析。
+
+要求：
+1. 用中文回答，语言简洁专业
+2. 梳理该领域的研究脉络和主要方向
+3. 标注高引用经典论文和前沿趋势
+4. 为本科生/研究生推荐最值得阅读的 2-3 篇论文，并说明推荐理由
+5. 提供进一步研究的建议方向
+
+【搜索结果】
+{papers_text}
+
+【AI 解读】
+"""
+    try:
+        response = await _answer_generator.llm.ainvoke(prompt)
+        return {"analysis": response.content}
+    except Exception as e:
+        return {"analysis": f"(AI 解读失败: {e})"}

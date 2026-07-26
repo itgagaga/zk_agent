@@ -22,8 +22,12 @@ export default function AcademicSearchPanel() {
   const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(false)
   const [searched, setSearched] = useState(false)
+  const [analysis, setAnalysis] = useState('')
+  const [analyzing, setAnalyzing] = useState(false)
+  const [showAnalysis, setShowAnalysis] = useState(false)
   const inputRef = useRef(null)
   const resultsRef = useRef(null)
+  const analysisRef = useRef(null)
 
   async function doSearch(keyword) {
     const q = (keyword || query).trim()
@@ -32,6 +36,8 @@ export default function AcademicSearchPanel() {
 
     setLoading(true)
     setSearched(true)
+    setAnalysis('')
+    setShowAnalysis(false)
     try {
       const resp = await axios.get('/api/resources/academic', {
         params: { keyword: q, top_k: 8 },
@@ -47,6 +53,25 @@ export default function AcademicSearchPanel() {
     }
   }
 
+  async function doAnalyze() {
+    if (results.length === 0) return
+    setAnalyzing(true)
+    setShowAnalysis(true)
+    setAnalysis('')
+    try {
+      const resp = await axios.post('/api/resources/academic/analyze', {
+        keyword: query,
+        papers: results,
+      })
+      setAnalysis(resp.data.analysis || '')
+    } catch (err) {
+      console.error('AI 解读失败:', err)
+      setAnalysis('(AI 解读请求失败，请稍后重试)')
+    } finally {
+      setAnalyzing(false)
+    }
+  }
+
   function handleSearch(e) {
     e?.preventDefault()
     doSearch()
@@ -58,6 +83,13 @@ export default function AcademicSearchPanel() {
       resultsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
     }
   }, [results, searched])
+
+  // AI 解读完成后滚动
+  useEffect(() => {
+    if (showAnalysis && analysisRef.current) {
+      analysisRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }, [analysis, showAnalysis])
 
   return (
     <div className="academic-search-panel">
@@ -148,17 +180,75 @@ export default function AcademicSearchPanel() {
       {searched && (
         <div className="as-results" ref={resultsRef}>
           <div className="as-results-header">
-            {loading ? (
-              <div className="as-results-loading">
-                <span className="rf-spinner" />
-                <span>正在搜索 Crossref 和 arXiv...</span>
-              </div>
-            ) : (
-              <div className="as-results-summary">
-                <span className="as-results-count">{total}</span> 篇相关论文
-              </div>
-            )}
+            <div className="as-results-header-row">
+              {loading ? (
+                <div className="as-results-loading">
+                  <span className="rf-spinner" />
+                  <span>正在搜索 Crossref 和 arXiv...</span>
+                </div>
+              ) : (
+                <div className="as-results-summary">
+                  <span className="as-results-count">{total}</span> 篇相关论文
+                </div>
+              )}
+              {!loading && results.length > 0 && (
+                <button
+                  className="as-ai-btn"
+                  onClick={doAnalyze}
+                  disabled={analyzing}
+                >
+                  {analyzing ? (
+                    <><span className="rf-spinner" /> AI 解读中</>
+                  ) : (
+                    <>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M12 2a7 7 0 017 7c0 2.38-1.19 4.47-3 5.74V17a1 1 0 01-1 1H9a1 1 0 01-1-1v-2.26C6.19 13.47 5 11.38 5 9a7 7 0 017-7z" />
+                        <line x1="9" y1="21" x2="15" y2="21" />
+                      </svg>
+                      AI 解读
+                    </>
+                  )}
+                </button>
+              )}
+            </div>
           </div>
+
+          {/* AI 解读区 */}
+          {showAnalysis && (
+            <div className="as-analysis" ref={analysisRef}>
+              <div className="as-analysis-header">
+                <div className="as-analysis-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 2a7 7 0 017 7c0 2.38-1.19 4.47-3 5.74V17a1 1 0 01-1 1H9a1 1 0 01-1-1v-2.26C6.19 13.47 5 11.38 5 9a7 7 0 017-7z" />
+                    <line x1="9" y1="21" x2="15" y2="21" />
+                  </svg>
+                </div>
+                <span className="as-analysis-title">AI 学术解读</span>
+                {!analyzing && analysis && (
+                  <button className="as-analysis-close" onClick={() => setShowAnalysis(false)}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <line x1="18" y1="6" x2="6" y2="18" />
+                      <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                  </button>
+                )}
+              </div>
+              <div className="as-analysis-body">
+                {analyzing ? (
+                  <div className="as-analysis-loading">
+                    <span className="rf-spinner" />
+                    <span>正在分析论文，生成研究脉络与推荐...</span>
+                  </div>
+                ) : (
+                  <div className="as-analysis-content">
+                    {analysis.split('\n').map((line, i) => (
+                      <p key={i}>{line}</p>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           {results.length > 0 && (
             <div className="as-results-list">
