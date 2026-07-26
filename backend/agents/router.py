@@ -54,6 +54,18 @@ _RULES: list[tuple[list[str], IntentResult]] = [
             path="tool", tool="service_link_search", intent_label="服务入口查询"
         ),
     ),
+    (
+        ["天气", "气温", "温度", "下雨", "下雪", "台风", "刮风", "要带伞", "穿什么", "冷不冷", "热不热"],
+        IntentResult(
+            path="tool", tool="weather_search", intent_label="天气查询"
+        ),
+    ),
+    (
+        ["论文", "文献", "学术搜索", "研究方向", "参考文献", "论文搜索", "前沿论文"],
+        IntentResult(
+            path="tool", tool="academic_search", intent_label="学术搜索"
+        ),
+    ),
 ]
 
 
