@@ -1,7 +1,17 @@
-import { useState, useRef, useEffect, useCallback } from 'react'
+import { useState, useRef, useEffect, useCallback, useSyncExternalStore } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { MessageCircle, X, Send, Square } from 'lucide-react'
+import {
+  subscribe,
+  getState,
+  ask as storeAsk,
+  stopGenerating as storeStop,
+  clearChat as storeClear,
+  openPanel,
+  closePanel,
+  recoverIfNeeded,
+} from '../embeddedChatStore.js'
 
 const TOOL_LABELS = {
   major_search: '专业查询',
@@ -18,22 +28,68 @@ const CONFIDENCE_LABELS = {
 
 /**
  * 页面内嵌智能体对话组件
- * - 独立消息状态，不与 /chat 共享
- * - 浮动按钮 + 右侧滑出面板
+ * - 状态提升到 embeddedChatStore（模块级），切标签不丢失
+ * - 流式请求在后台继续消费，回来即可看到进行中或已完成的回复
+ * - 消息持久化到 localStorage
  * - props.title: 面板标题
- * - props.contextHint: 发送给后端的上下文提示（如 "资料智库"）
+ * - props.contextHint: 上下文提示（如 "资料智库"），也用作 store 实例 key
  * - props.suggestions: 初始建议标签
  */
 export default function EmbeddedChat({ title = '智能体助手', contextHint = '', suggestions = [] }) {
-  const [open, setOpen] = useState(false)
-  const [messages, setMessages] = useState([])
-  const [input, setInput] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [sessionId] = useState(() => 'emb_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8))
+  const key = contextHint || title
+
+  // 订阅模块级 store：组件卸载后状态保留，重新挂载时拿回完整消息
+  const storeSubscribe = useCallback(listener => subscribe(key, listener), [key])
+  const state = useSyncExternalStore(storeSubscribe, () => getState(key), () => getState(key))
+  const messages = state.messages
+  const loading = state.loading
+  const open = state.open
+
+  // 输入框状态持久化，切标签不丢失正在输入的内容
+  const [input, setInput] = useStickyInput(key)
   const messagesEndRef = useRef(null)
   const inputRef = useRef(null)
-  const abortRef = useRef(null)
+  const initRef = useRef(false)
   const panelRef = useRef(null)
+
+  // 拖拽：鼠标在 header 上按下时开始
+  const dragRef = useRef({ dragging: false, ox: 0, oy: 0 })
+
+  function onDragStart(e) {
+    // 忽略按钮点击
+    if (e.target.closest('button')) return
+    const panel = panelRef.current
+    if (!panel) return
+    const rect = panel.getBoundingClientRect()
+    dragRef.current = { dragging: true, ox: e.clientX - rect.left, oy: e.clientY - rect.top }
+    document.addEventListener('mousemove', onDragMove)
+    document.addEventListener('mouseup', onDragEnd)
+  }
+
+  function onDragMove(e) {
+    if (!dragRef.current.dragging) return
+    const panel = panelRef.current
+    if (!panel) return
+    const x = Math.max(0, Math.min(e.clientX - dragRef.current.ox, window.innerWidth - panel.offsetWidth))
+    const y = Math.max(0, Math.min(e.clientY - dragRef.current.oy, window.innerHeight - panel.offsetHeight))
+    panel.style.left = x + 'px'
+    panel.style.top = y + 'px'
+    panel.style.right = 'auto'
+    panel.style.bottom = 'auto'
+  }
+
+  function onDragEnd() {
+    dragRef.current.dragging = false
+    document.removeEventListener('mousemove', onDragMove)
+    document.removeEventListener('mouseup', onDragEnd)
+  }
+
+  // 挂载时恢复残留 streaming 消息
+  useEffect(() => {
+    if (initRef.current) return
+    initRef.current = true
+    recoverIfNeeded(key)
+  }, [key])
 
   // 打开面板时聚焦输入
   useEffect(() => {
@@ -47,23 +103,11 @@ export default function EmbeddedChat({ title = '智能体助手', contextHint = 
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  // 点击面板外关闭
-  useEffect(() => {
-    if (!open) return
-    function handleClick(e) {
-      if (panelRef.current && !panelRef.current.contains(e.target)) {
-        // 不关闭，只处理 ESC
-      }
-    }
-    document.addEventListener('mousedown', handleClick)
-    return () => document.removeEventListener('mousedown', handleClick)
-  }, [open])
-
   // ESC 关闭
   useEffect(() => {
     if (!open) return
     function handleKey(e) {
-      if (e.key === 'Escape') setOpen(false)
+      if (e.key === 'Escape') closePanel(key)
     }
     document.addEventListener('keydown', handleKey)
     return () => document.removeEventListener('keydown', handleKey)
@@ -73,151 +117,36 @@ export default function EmbeddedChat({ title = '智能体助手', contextHint = 
     const text = (q || input).trim()
     if (!text || loading) return
     setInput('')
-
-    const userMsg = { role: 'user', content: text }
-    const assistantMsg = { role: 'assistant', content: '', data: null, streaming: true }
-    setMessages(prev => [...prev, userMsg, assistantMsg])
-    setLoading(true)
-
-    const history = messages
-      .filter(m => !m.streaming && m.content)
-      .slice(-6)
-      .map(m => ({ role: m.role, content: m.content }))
-
-    let idx = -1
-    setMessages(prev => { idx = prev.length - 1; return prev })
-
-    try {
-      abortRef.current = new AbortController()
-      const resp = await fetch('/api/chat/stream', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          question: text,
-          user_role: 'student',
-          history,
-          session_id: sessionId,
-          context_hint: contextHint,
-        }),
-        signal: abortRef.current.signal,
-      })
-
-      if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
-
-      const reader = resp.body.getReader()
-      const decoder = new TextDecoder()
-      let buffer = ''
-
-      while (true) {
-        const { done, value } = await reader.read()
-        if (done) break
-        buffer += decoder.decode(value, { stream: true })
-        const lines = buffer.split('\n')
-        buffer = lines.pop() || ''
-
-        for (const line of lines) {
-          if (!line.startsWith('data: ')) continue
-          try {
-            const data = JSON.parse(line.slice(6))
-            if (data.type === 'meta') {
-              setMessages(prev => {
-                if (idx < 0 || idx >= prev.length) return prev
-                const next = [...prev]
-                next[idx] = { ...next[idx], data }
-                return next
-              })
-            } else if (data.type === 'token') {
-              setMessages(prev => {
-                if (idx < 0 || idx >= prev.length) return prev
-                const next = [...prev]
-                next[idx] = { ...next[idx], content: next[idx].content + data.content }
-                return next
-              })
-            } else if (data.type === 'done') {
-              setMessages(prev => {
-                if (idx < 0 || idx >= prev.length) return prev
-                const next = [...prev]
-                next[idx] = { ...next[idx], streaming: false }
-                return next
-              })
-            }
-          } catch {
-            // skip malformed
-          }
-        }
-      }
-      // 兜底
-      setMessages(prev => {
-        if (idx < 0 || idx >= prev.length) return prev
-        if (!prev[idx].streaming) return prev
-        const next = [...prev]
-        next[idx] = { ...next[idx], streaming: false }
-        return next
-      })
-    } catch (err) {
-      if (err?.name === 'AbortError') {
-        setMessages(prev => {
-          const next = [...prev]
-          if (next[idx]) next[idx] = { ...next[idx], content: next[idx].content || '（已停止生成）', streaming: false }
-          return next
-        })
-      } else {
-        setMessages(prev => {
-          const next = [...prev]
-          if (next[idx]) next[idx] = { ...next[idx], content: '请求失败：' + (err?.message || '未知错误'), streaming: false }
-          return next
-        })
-      }
-    } finally {
-      abortRef.current = null
-      setLoading(false)
-    }
-  }
-
-  function stopGenerating() {
-    abortRef.current?.abort()
-  }
-
-  function clearChat() {
-    if (loading) return
-    setMessages([])
+    await storeAsk(key, text)
   }
 
   return (
     <>
-      {/* 浮动触发按钮 */}
       {!open && (
-        <button
-          className="emb-chat-fab"
-          onClick={() => setOpen(true)}
-          title="打开智能体助手"
-        >
+        <button className="emb-chat-fab" onClick={() => openPanel(key)} title="打开智能体助手">
           <MessageCircle size={22} />
         </button>
       )}
 
-      {/* 对话面板 */}
       {open && (
         <div className="emb-chat-panel" ref={panelRef}>
-          {/* 头部 */}
-          <div className="emb-chat-header">
+          <div className="emb-chat-header" onMouseDown={onDragStart}>
             <div className="emb-chat-header-info">
               <span className="emb-chat-dot" />
               <span className="emb-chat-title">{title}</span>
             </div>
             <div className="emb-chat-header-actions">
               {messages.length > 0 && (
-                <button className="emb-chat-header-btn" onClick={clearChat} disabled={loading} title="清除对话">
+                <button className="emb-chat-header-btn" onClick={() => storeClear(key)} disabled={loading} title="清除对话">
                   清除
                 </button>
               )}
-              <button className="emb-chat-header-btn emb-chat-close-btn" onClick={() => setOpen(false)} title="关闭">
+              <button className="emb-chat-header-btn emb-chat-close-btn" onClick={() => closePanel(key)} title="关闭">
                 <X size={16} />
               </button>
             </div>
           </div>
 
-          {/* 消息区 */}
           <div className="emb-chat-messages">
             {messages.length === 0 && (
               <div className="emb-chat-welcome">
@@ -227,12 +156,7 @@ export default function EmbeddedChat({ title = '智能体助手', contextHint = 
                 {suggestions.length > 0 && (
                   <div className="emb-chat-suggestions">
                     {suggestions.map(s => (
-                      <button
-                        key={s}
-                        className="emb-chat-suggestion-chip"
-                        onClick={() => ask(s)}
-                        disabled={loading}
-                      >
+                      <button key={s} className="emb-chat-suggestion-chip" onClick={() => ask(s)} disabled={loading}>
                         {s}
                       </button>
                     ))}
@@ -247,7 +171,6 @@ export default function EmbeddedChat({ title = '智能体助手', contextHint = 
             <div ref={messagesEndRef} />
           </div>
 
-          {/* 输入栏 */}
           <div className="emb-chat-input-bar">
             <input
               ref={inputRef}
@@ -266,7 +189,7 @@ export default function EmbeddedChat({ title = '智能体助手', contextHint = 
             />
             <button
               className="emb-chat-send-btn"
-              onClick={() => loading ? stopGenerating() : ask()}
+              onClick={() => loading ? storeStop(key) : ask()}
               title={loading ? '停止生成' : '发送'}
             >
               {loading ? <Square size={16} /> : <Send size={16} />}
@@ -277,6 +200,20 @@ export default function EmbeddedChat({ title = '智能体助手', contextHint = 
     </>
   )
 }
+
+// ---------- 持久化 hooks ----------
+
+function useStickyInput(key) {
+  const sk = 'zhku_emb_input_' + key
+  const [value, setValueRaw] = useState(() => localStorage.getItem(sk) || '')
+  function setValue(v) {
+    try { localStorage.setItem(sk, v) } catch {}
+    setValueRaw(v)
+  }
+  return [value, setValue]
+}
+
+// ---------- 消息气泡 ----------
 
 function EmbMessageBubble({ message }) {
   const isUser = message.role === 'user'
@@ -310,9 +247,7 @@ function EmbMessageBubble({ message }) {
             {data && !streaming && data.tools_used?.length > 0 && (
               <div className="emb-tools">
                 {data.tools_used.map(t => (
-                  <span key={t} className="emb-tool-chip">
-                    {TOOL_LABELS[t] || t}
-                  </span>
+                  <span key={t} className="emb-tool-chip">{TOOL_LABELS[t] || t}</span>
                 ))}
               </div>
             )}

@@ -38,8 +38,12 @@ def run_all(skip_job: bool = False) -> None:
         from crawler.crawl_job import main as run_job
 
         run_job()
-    print("\n[5/5] 公共服务模块（后勤 / 网络 / 校医院）")
+    print("\n[5/6] 公共服务模块（后勤 / 网络 / 校医院）")
     run_services()
+    print("\n[6/6] 新增模块（学生处 / 招生网 / 研究生补充 / 财务部）")
+    from crawler.crawl_extra import main as run_extra
+
+    run_extra()
 
     print("\n" + "=" * 60)
     print("采集完成，可执行 python -m crawler.build_kb 构建知识库")

@@ -126,6 +126,8 @@ def _department_from_subdir(subdir: str) -> str:
         "xys": "校医院",
         "job": "就业指导中心",
         "zsb": "招生办公室",
+        "xsc": "学生工作部",
+        "cwc": "财务部",
     }
     return mapping.get(subdir, subdir)
 

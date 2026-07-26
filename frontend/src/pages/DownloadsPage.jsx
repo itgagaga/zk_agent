@@ -11,6 +11,7 @@ import {
   Search,
 } from 'lucide-react'
 import EmbeddedChat from '../components/EmbeddedChat'
+import { askAndOpen } from '../embeddedChatStore'
 
 const CHAT_SUGGESTIONS = [
   '帮我查找缓考申请表',
@@ -24,23 +25,29 @@ const QUICK_TASKS = [
     Icon: FileSearch,
     title: '帮我找资料',
     desc: '输入事项或关键词，快速定位官方表格、附件和下载入口。',
+    prompt: '帮我找资料，我想找相关的官方表格、附件和下载入口',
   },
   {
     Icon: ListChecks,
     title: '生成材料清单',
     desc: '根据公开办事指南，整理办理前需要准备的材料。',
+    prompt: '请帮我生成办事需要的材料清单',
   },
   {
     Icon: ClipboardCheck,
     title: '梳理办理步骤',
     desc: '把分散的通知和附件整理成清晰、可执行的步骤。',
+    prompt: '请帮我梳理办事的具体步骤',
   },
   {
     Icon: FileText,
     title: '解读文件内容',
     desc: '找到文件后，可进入智能文档继续摘要、问答与对比。',
+    prompt: '请帮我解读相关文件的内容',
   },
 ]
+
+const STORE_KEY = '资料智库'
 
 const CATEGORIES = ['学生下载', '学籍学位', '考务', '培养方案', '研究生培养', '研究生招生']
 
@@ -147,16 +154,16 @@ export default function DownloadsPage() {
           <p>从目标出发，而不是从文件名开始。</p>
         </div>
         <div className="agent-capability-grid">
-          {QUICK_TASKS.map(({ Icon, title, desc }) => (
+          {QUICK_TASKS.map(({ Icon, title, desc, prompt }) => (
             <button
               key={title}
               className="agent-capability-card"
-              onClick={scrollToSearch}
+              onClick={() => askAndOpen(STORE_KEY, prompt)}
             >
               <span className="agent-capability-icon"><Icon size={24} /></span>
               <h3>{title}</h3>
               <p>{desc}</p>
-              <span className="agent-card-action">开始搜索 <ArrowUpRight size={15} /></span>
+              <span className="agent-card-action">开始对话 <ArrowUpRight size={15} /></span>
             </button>
           ))}
         </div>

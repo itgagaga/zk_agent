@@ -527,6 +527,16 @@ export default function InterviewChat({ onBack }) {
               {uploading ? <><span className="rf-spinner" /> 分析中</> : '换简历'}
             </button>
           )}
+          {messages.length > 0 && phase !== 'upload' && phase !== 'ready' && (
+            <button
+              className="iv-header-clear"
+              onClick={handleRestart}
+              disabled={loading}
+              title="清除对话，重新开始"
+            >
+              清除
+            </button>
+          )}
         </div>
         <h1 className="interview-title">AI 模拟面试</h1>
         <p className="interview-subtitle">
