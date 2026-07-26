@@ -13,6 +13,15 @@ import {
   Users,
   Wrench,
 } from 'lucide-react'
+import EmbeddedChat from '../components/EmbeddedChat'
+import { askAndOpen } from '../embeddedChatStore'
+
+const CHAT_SUGGESTIONS = [
+  '我要办理学生证相关事务',
+  '校园网怎么连？',
+  '校医院看病流程是什么？',
+  '后勤报修入口在哪？',
+]
 
 const ROLES = [
   { label: '全部', value: '', Icon: Users },
@@ -30,26 +39,32 @@ const SCENARIOS = [
     title: '教务与学籍',
     desc: '培养方案、学籍学位、考试与常用表格。',
     category: '教务',
+    prompt: '我想了解教务与学籍相关的服务，包括培养方案、学籍学位、考试与常用表格',
   },
   {
     Icon: Laptop,
     title: '网络与数字服务',
     desc: '校园网、VPN、邮箱和常用信息系统。',
     category: '网络',
+    prompt: '我想了解网络与数字服务，包括校园网、VPN、邮箱和常用信息系统',
   },
   {
     Icon: Wrench,
     title: '后勤与报修',
     desc: '校区后勤服务、报修与生活保障信息。',
     category: '后勤',
+    prompt: '我想了解后勤与报修相关的服务，包括校区后勤服务、报修与生活保障',
   },
   {
     Icon: HeartPulse,
     title: '医疗与健康',
     desc: '校医院、就医指引和公开医疗服务信息。',
     category: '医疗',
+    prompt: '我想了解医疗与健康相关的服务，包括校医院、就医指引和医疗服务',
   },
 ]
+
+const STORE_KEY = '校园办事助手'
 
 function extractDomain(url) {
   try {
@@ -171,14 +186,14 @@ export default function ServicesPage() {
         </div>
 
         <div className="service-scenario-grid">
-          {SCENARIOS.map(({ Icon, title, desc, category: itemCategory }) => (
+          {SCENARIOS.map(({ Icon, title, desc, category: itemCategory, prompt }) => (
             <article key={title} className="service-scenario-card">
               <span className="agent-capability-icon"><Icon size={24} /></span>
               <h3>{title}</h3>
               <p>{desc}</p>
               <div className="service-scenario-actions">
-                <button onClick={() => { setCategory(itemCategory); load(itemCategory, userRole); scrollToDirectory() }}>
-                  查看服务 <ArrowUpRight size={14} />
+                <button onClick={() => askAndOpen(STORE_KEY, prompt)}>
+                  开始对话 <ArrowUpRight size={14} />
                 </button>
               </div>
             </article>
@@ -265,6 +280,12 @@ export default function ServicesPage() {
           </div>
         )}
       </section>
+
+      <EmbeddedChat
+        title="办事助手"
+        contextHint="校园办事助手"
+        suggestions={CHAT_SUGGESTIONS}
+      />
     </div>
   )
 }
