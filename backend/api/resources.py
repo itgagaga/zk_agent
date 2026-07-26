@@ -1,7 +1,7 @@
 """资源查询 API。
 
-提供专业、机构、联系方式、服务入口、下载资料等结构化数据查询。
-数据源：metadata JSON 文件（由 crawler 模块采集生成）。
+提供专业、机构、联系方式、服务入口、下载资料、学术搜索等结构化数据查询。
+数据源：metadata JSON 文件（由 crawler 模块采集生成）+ 第三方 API。
 """
 from __future__ import annotations
 
@@ -10,6 +10,7 @@ from typing import Any
 from fastapi import APIRouter, Query
 from pydantic import BaseModel, Field
 
+from backend.tools.academic_search_tool import AcademicSearchTool
 from backend.tools.contact_tool import ContactTool
 from backend.tools.download_tool import DownloadTool
 from backend.tools.major_tool import MajorTool
@@ -22,6 +23,7 @@ _major_tool = MajorTool()
 _download_tool = DownloadTool()
 _contact_tool = ContactTool()
 _service_link_tool = ServiceLinkTool()
+_academic_search_tool = AcademicSearchTool()
 
 
 class MajorItem(BaseModel):
@@ -238,6 +240,30 @@ async def list_downloads(
                 "file_url": file_url,
                 "publish_date": item.get("publish_date"),
                 "department": item.get("department"),
+            }
+        )
+    return ListResponse(total=len(items), items=items)
+
+
+@router.get("/academic", response_model=ListResponse)
+async def search_academic(
+    keyword: str = Query(default=..., description="搜索关键词"),
+    top_k: int = Query(default=5, ge=1, le=20),
+) -> ListResponse:
+    """学术论文搜索（Crossref + arXiv，无需 API Key）。"""
+    result = await _academic_search_tool.run(keyword, top_k=top_k)
+    items: list[dict[str, Any]] = []
+    for item in result.get("items", []):
+        items.append(
+            {
+                "title": item.get("title", ""),
+                "authors": item.get("authors", ""),
+                "year": item.get("year", ""),
+                "doi": item.get("doi", ""),
+                "cited": item.get("cited", 0),
+                "url": item.get("url", ""),
+                "source": item.get("source", ""),
+                "snippet": item.get("snippet", ""),
             }
         )
     return ListResponse(total=len(items), items=items)

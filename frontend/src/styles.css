@@ -3931,6 +3931,493 @@ button {
 }
 
 /* ========================================
+ * 学术搜索面板
+ * ======================================== */
+.academic-search-panel {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 0 24px 64px;
+}
+
+/* ---- 英雄区 ---- */
+.as-hero {
+  text-align: center;
+  padding: 40px 0 32px;
+}
+
+.as-hero-icon {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 16px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #eef2ff, #e0e7ff);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #4f46e5;
+}
+
+.as-hero-title {
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0 0 8px;
+  color: var(--color-text);
+}
+
+.as-hero-desc {
+  font-size: 14px;
+  color: var(--color-slate);
+  line-height: 1.7;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+/* ---- 搜索栏 ---- */
+.as-search-form {
+  margin-bottom: 32px;
+}
+
+.as-search-row {
+  display: flex;
+  gap: 12px;
+}
+
+.as-search-input-wrap {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.as-search-icon {
+  position: absolute;
+  left: 14px;
+  color: #94a3b8;
+  pointer-events: none;
+}
+
+.as-search-input {
+  width: 100%;
+  padding: 14px 16px 14px 44px;
+  border: 2px solid var(--color-border);
+  border-radius: 14px;
+  font-size: 15px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.as-search-input:focus {
+  outline: none;
+  border-color: #6366f1;
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.12);
+}
+
+.as-search-input::placeholder {
+  color: #94a3b8;
+}
+
+.as-search-btn {
+  padding: 14px 28px;
+  border: none;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #6366f1, #4f46e5);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.25);
+}
+
+.as-search-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.35);
+}
+
+.as-search-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* ---- 空状态 ---- */
+.as-empty-state {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  padding: 32px;
+  background: linear-gradient(135deg, #fafbff, #f5f3ff);
+  border-radius: 20px;
+  border: 1px solid #e0e7ff;
+}
+
+.as-suggestions {}
+
+.as-suggestions-label,
+.as-examples-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #6366f1;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 14px;
+}
+
+.as-suggestions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.as-suggestion-item {
+  font-size: 14px;
+  color: var(--color-text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  line-height: 1.5;
+}
+
+.as-suggestion-bullet {
+  color: #6366f1;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.as-examples {}
+
+.as-examples-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.as-example-chip {
+  padding: 8px 16px;
+  border: 1px solid #c7d2fe;
+  border-radius: 24px;
+  background: #fff;
+  color: #4f46e5;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.as-example-chip:hover {
+  background: #6366f1;
+  color: #fff;
+  border-color: #6366f1;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.25);
+}
+
+/* ---- 搜索结果 ---- */
+.as-results {}
+
+.as-results-header {
+  margin-bottom: 20px;
+}
+
+.as-results-summary {
+  font-size: 15px;
+  color: var(--color-slate);
+}
+
+.as-results-count {
+  font-size: 22px;
+  font-weight: 700;
+  color: #4f46e5;
+}
+
+.as-results-loading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: #6366f1;
+}
+
+.as-results-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ---- 论文卡片 ---- */
+.as-paper-card {
+  padding: 0;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  background: #fff;
+  transition: all 0.25s ease;
+  overflow: hidden;
+}
+
+.as-paper-card:hover {
+  border-color: #c7d2fe;
+  box-shadow: 0 4px 24px rgba(99, 102, 241, 0.08), 0 1px 4px rgba(0, 0, 0, 0.04);
+  transform: translateY(-2px);
+}
+
+.as-paper-main {
+  display: flex;
+  gap: 16px;
+  padding: 20px 24px;
+}
+
+.as-paper-left {
+  flex-shrink: 0;
+  padding-top: 2px;
+}
+
+.as-paper-index {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #eef2ff, #e0e7ff);
+  color: #4f46e5;
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.as-paper-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.as-paper-title-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.as-paper-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-text);
+  text-decoration: none;
+  line-height: 1.55;
+  flex: 1;
+}
+
+a.as-paper-title:hover {
+  color: #4f46e5;
+  text-decoration: underline;
+}
+
+.as-paper-source {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 6px;
+  white-space: nowrap;
+  margin-top: 2px;
+}
+
+.as-paper-source--crossref {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.as-paper-source--arxiv {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.as-paper-meta {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 13px;
+  color: var(--color-slate);
+  margin-bottom: 10px;
+}
+
+.as-paper-year {
+  font-weight: 600;
+  color: var(--color-text);
+  background: #f1f5f9;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.as-paper-authors {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.as-paper-snippet {
+  font-size: 13px;
+  color: #64748b;
+  line-height: 1.65;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-bottom: 12px;
+  padding: 10px 14px;
+  background: #f8fafc;
+  border-radius: 8px;
+  border-left: 3px solid #e0e7ff;
+}
+
+.as-paper-footer {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.as-paper-cited {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #059669;
+  font-size: 13px;
+  font-weight: 500;
+  background: #ecfdf5;
+  padding: 4px 10px;
+  border-radius: 6px;
+}
+
+.as-paper-doi-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #6366f1;
+  text-decoration: none;
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: #eef2ff;
+  transition: all 0.15s;
+}
+
+.as-paper-doi-link:hover {
+  background: #e0e7ff;
+  text-decoration: none;
+}
+
+.as-doi-label {
+  padding: 1px 6px;
+  border-radius: 3px;
+  background: #6366f1;
+  color: #fff;
+  font-weight: 600;
+  font-size: 10px;
+}
+
+.as-paper-external {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #4f46e5;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 4px 12px;
+  border-radius: 8px;
+  border: 1px solid #c7d2fe;
+  transition: all 0.15s;
+  margin-left: auto;
+}
+
+.as-paper-external:hover {
+  background: #6366f1;
+  color: #fff;
+  border-color: #6366f1;
+  text-decoration: none;
+}
+
+/* ---- 无结果 ---- */
+.as-no-results {
+  text-align: center;
+  padding: 56px 24px;
+  color: var(--color-slate);
+}
+
+.as-no-results-icon {
+  color: #c7d2fe;
+  margin-bottom: 16px;
+}
+
+.as-no-results-title {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--color-text);
+  margin: 0 0 8px;
+}
+
+.as-no-results-hint {
+  font-size: 14px;
+  margin: 0 0 20px;
+  color: #94a3b8;
+}
+
+.as-no-results-retry {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* ---- 响应式 ---- */
+@media (max-width: 768px) {
+  .as-empty-state {
+    grid-template-columns: 1fr;
+    gap: 24px;
+    padding: 24px;
+  }
+}
+
+@media (max-width: 640px) {
+  .as-hero {
+    padding: 24px 0 20px;
+  }
+  .as-hero-title {
+    font-size: 20px;
+  }
+  .as-search-row {
+    flex-direction: column;
+  }
+  .as-search-btn {
+    width: 100%;
+    justify-content: center;
+  }
+  .as-paper-main {
+    flex-direction: column;
+    gap: 8px;
+    padding: 16px;
+  }
+  .as-paper-meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  .as-paper-footer {
+    gap: 8px;
+  }
+  .as-paper-external {
+    margin-left: 0;
+  }
+}
+
+/* ========================================
  * 智能体能力页：资料智库 / 校园办事助手
  * ======================================== */
 .agent-page {
