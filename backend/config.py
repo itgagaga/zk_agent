@@ -57,9 +57,6 @@ class Settings(BaseSettings):
     # SQLite
     sqlite_path: Path = Field(default=DATA_DIR / "sqlite" / "zhku.db", alias="SQLITE_PATH")
 
-    # 第三方 API
-    qweather_api_key: str = Field(default="", alias="QWEATHER_API_KEY")
-
     # 采集源
     zhku_base_url: str = Field(default="https://www.zhku.edu.cn/", alias="ZHKU_BASE_URL")
     zhku_jwc_url: str = Field(

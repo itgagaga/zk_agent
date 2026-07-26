@@ -26,8 +26,6 @@ const TOOL_LABELS = {
   download_search: '资料下载',
   contact_search: '联系方式',
   service_link_search: '服务入口',
-  weather_search: '天气查询',
-  academic_search: '学术搜索',
 }
 
 const CONFIDENCE_LABELS = {
@@ -46,10 +44,6 @@ function generateFollowUps(question) {
     return ['有哪些必修课？', '毕业要求是什么？', '可以转专业吗？']
   if (/下载|表格|申请表/.test(question))
     return ['还有哪些表格可以下载？', '申请流程是什么？', '需要哪些材料？']
-  if (/天气|气温|温度|下雨/.test(question))
-    return ['明天天气怎么样？', '需要带伞吗？', '这周有台风吗？']
-  if (/论文|文献|学术|研究/.test(question))
-    return ['有哪些高引用的论文？', '能推荐相关方向的前沿论文吗？', '这些论文的DOI是什么？']
   if (/校区|地址|在哪/.test(question))
     return ['怎么去学校？', '校区之间有校车吗？', '周边有什么？']
   if (/就业|实习|毕业/.test(question))

@@ -17,8 +17,6 @@ from backend.tools.contact_tool import ContactTool
 from backend.tools.download_tool import DownloadTool
 from backend.tools.major_tool import MajorTool
 from backend.tools.service_link_tool import ServiceLinkTool
-from backend.tools.weather_tool import WeatherTool
-from backend.tools.academic_search_tool import AcademicSearchTool
 
 
 class AgentController:
@@ -39,8 +37,6 @@ class AgentController:
             "download_search": DownloadTool(),
             "contact_search": ContactTool(),
             "service_link_search": ServiceLinkTool(),
-            "weather_search": WeatherTool(),
-            "academic_search": AcademicSearchTool(),
         }
 
     @staticmethod

@@ -3,7 +3,6 @@ import axios from 'axios'
 import ResumeForm from '../components/ResumeForm'
 import ResumePreview from '../components/ResumePreview'
 import InterviewChat from '../components/InterviewChat'
-import AcademicSearchPanel from '../components/AcademicSearchPanel'
 
 const INITIAL_DATA = {
   basic: { name: '', phone: '', email: '', address: '', website: '', photo: '' },
@@ -44,7 +43,7 @@ export default function ResumePage() {
   const [data, setData] = useState(INITIAL_DATA)
   const [templateId, setTemplateId] = useState('classic')
   const [enhancing, setEnhancing] = useState(false)
-  // 子标签：resume | interview | academic
+  // 子标签：resume | interview
   const [activeTab, setActiveTab] = useState('resume')
 
   const handleChange = useCallback((newData) => {
@@ -99,9 +98,9 @@ export default function ResumePage() {
   return (
     <div className="resume-page">
       <div className="resume-page-header">
-        <div className="eyebrow">GRADUATION</div>
-        <h1>毕业季</h1>
-        <p>AI 简历优化与模拟面试，或搜索学术论文助力毕业设计</p>
+        <div className="eyebrow">RESUME & INTERVIEW</div>
+        <h1>简历 & 面试</h1>
+        <p>填写简历信息，AI 优化内容并导出 PDF；或基于简历进行模拟面试</p>
         {/* 子标签切换 */}
         <div className="resume-tabs">
           <button
@@ -125,16 +124,6 @@ export default function ResumePage() {
               <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
             </svg>
             模拟面试
-          </button>
-          <button
-            className={`resume-tab ${activeTab === 'academic' ? 'active' : ''}`}
-            onClick={() => setActiveTab('academic')}
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="11" cy="11" r="8" />
-              <line x1="21" y1="21" x2="16.65" y2="16.65" />
-            </svg>
-            学术搜索
           </button>
         </div>
       </div>
@@ -165,10 +154,6 @@ export default function ResumePage() {
         <InterviewChat
           onBack={() => setActiveTab('resume')}
         />
-      )}
-
-      {activeTab === 'academic' && (
-        <AcademicSearchPanel />
       )}
     </div>
   )

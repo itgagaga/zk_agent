@@ -59,40 +59,8 @@ def build_qa_prompt(
 
     if tool_result:
         context_parts.append("\n【结构化工具返回】")
-        tool_name = tool_result.get("tool", "")
         for item in tool_result.get("items", []) or []:
-            if tool_name == "weather_search":
-                # 天气工具：格式化展示
-                context_parts.append(f"- 城市：{item.get('city', '')}")
-                context_parts.append(f"  当前天气：{item.get('text', '')}，气温 {item.get('temp', '')}°C（体感 {item.get('feels_like', '')}°C）")
-                context_parts.append(f"  风：{item.get('wind_dir', '')} {item.get('wind_scale', '')}级，湿度：{item.get('humidity', '')}%，能见度：{item.get('visibility', '')}km")
-                if item.get("precip"):
-                    context_parts.append(f"  降水量：{item.get('precip')}mm")
-                context_parts.append(f"  数据更新时间：{item.get('update_time', '')}")
-                for fc in item.get("forecast", []) or []:
-                    context_parts.append(
-                        f"  {fc.get('date', '')}：{fc.get('text_day', '')}→{fc.get('text_night', '')}，"
-                        f"{fc.get('temp_min', '')}~{fc.get('temp_max', '')}°C，"
-                        f"{fc.get('wind_dir_day', '')} {fc.get('wind_scale_day', '')}级"
-                    )
-            elif tool_name == "academic_search":
-                # 学术搜索工具：格式化展示
-                context_parts.append(
-                    f"- [{item.get('year', '')}] {item.get('title', '')}"
-                )
-                if item.get("authors"):
-                    context_parts.append(f"  作者：{item.get('authors', '')}")
-                if item.get("cited"):
-                    context_parts.append(f"  被引用次数：{item.get('cited', 0)}")
-                if item.get("doi"):
-                    context_parts.append(f"  DOI：{item.get('doi', '')}")
-                if item.get("url"):
-                    context_parts.append(f"  链接：{item.get('url', '')}")
-                if item.get("snippet"):
-                    context_parts.append(f"  摘要：{item.get('snippet', '')}")
-                context_parts.append(f"  来源：{item.get('source', '')}")
-            else:
-                context_parts.append(f"- {item}")
+            context_parts.append(f"- {item}")
 
     context = "\n".join(context_parts) if context_parts else "(无可用资料)"
 
