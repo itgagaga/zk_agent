@@ -41,16 +41,20 @@ class AnswerGenerator:
         except Exception as e:
             print(f"[AnswerGenerator] LLM 初始化失败: {e}")
 
-    def _prepare_evidence(self, evidence: dict[str, Any]) -> tuple[list[dict], list[dict], list[str], Any, list[dict]]:
-        """从 evidence 中提取来源、附件、工具名、tool_result 和用户上传来源。
+    def _get_tool_results(self, evidence: dict[str, Any]) -> list[dict[str, Any]]:
+        """从 evidence 中提取工具结果列表（兼容单/多工具）。"""
+        tool_results = evidence.get("tool_results") or []
+        if not tool_results and evidence.get("tool_result"):
+            tool_results = [evidence["tool_result"]]
+        return tool_results
 
-        返回：(official_sources, attachments, tools_used, tool_result, user_sources)
-        user_sources 单独分离，department=="用户上传" 的来源归入此列表。
-        """
+    def _prepare_evidence(self, evidence: dict[str, Any]) -> tuple[list[dict], list[dict], list[str], list[dict], list[dict]]:
+        """从 evidence 中提取来源、附件、工具名、tool_results 和用户上传来源。"""
         sources: list[dict[str, Any]] = []
         user_sources: list[dict[str, Any]] = []
         attachments: list[dict[str, Any]] = []
         tools_used: list[str] = []
+        tool_results = self._get_tool_results(evidence)
 
         def _classify(hit: dict[str, Any], from_doc_library: bool = False) -> None:
             entry = {
@@ -60,7 +64,6 @@ class AnswerGenerator:
                 "publish_date": hit.get("publish_date"),
                 "snippet": hit.get("snippet", ""),
             }
-            # 来自文档库（zhku_documents 集合）的命中视为"上传文档"
             meta = hit.get("metadata", {}) or {}
             if from_doc_library or meta.get("doc_id"):
                 user_sources.append(entry)
@@ -73,10 +76,9 @@ class AnswerGenerator:
         for hit in evidence.get("doc_hits", []) or []:
             _classify(hit, from_doc_library=True)
 
-        tool_result = evidence.get("tool_result")
-        if tool_result:
-            tool_name = evidence.get("intent", {}).get("tool", "")
-            if tool_name:
+        for tool_result in tool_results:
+            tool_name = tool_result.get("tool", "")
+            if tool_name and tool_name not in tools_used:
                 tools_used.append(tool_name)
             for item in tool_result.get("items", []) or []:
                 if item.get("file_url") or item.get("source_page_url"):
@@ -94,11 +96,16 @@ class AnswerGenerator:
                         "department": item.get("department"),
                         "url": item.get("source_page_url") or item.get("url", ""),
                         "publish_date": item.get("publish_date"),
-                        "snippet": item.get("service_scope") or item.get("description", ""),
+                        "snippet": (
+                            item.get("snippet")
+                            or item.get("summary")
+                            or item.get("service_scope")
+                            or item.get("description", "")
+                        ),
                     }
                 )
 
-        return sources, attachments, tools_used, tool_result, user_sources
+        return sources, attachments, tools_used, tool_results, user_sources
 
     def _confidence(self, sources: list[dict]) -> str:
         """根据来源数量判断置信度。"""
@@ -109,9 +116,17 @@ class AnswerGenerator:
         return "high"
 
     async def generate(self, question: str, evidence: dict[str, Any], history: list[dict[str, str]] | None = None) -> dict[str, Any]:
-        """根据证据生成回答。"""
-        sources, attachments, tools_used, tool_result, user_sources = self._prepare_evidence(evidence)
-        prompt = build_qa_prompt(question, sources=sources, tool_result=tool_result, history=history, user_sources=user_sources)
+        """根据 Supervisor 过滤后的证据生成回答。"""
+        sources, attachments, tools_used, tool_results, user_sources = self._prepare_evidence(evidence)
+        priority = evidence.get("evidence_priority", "rag")
+        prompt = build_qa_prompt(
+            question,
+            sources=sources,
+            tool_results=tool_results,
+            history=history,
+            user_sources=user_sources,
+            evidence_priority=priority,
+        )
         answer_text = await self._call_llm(prompt)
         confidence = self._confidence(sources + user_sources)
 
@@ -123,25 +138,20 @@ class AnswerGenerator:
             "tools_used": tools_used,
             "fallback": False,
             "session_id": None,
+            "route_mode": evidence.get("route_mode", "fast"),
+            "evidence_priority": priority,
+            "supervisor_reason": evidence.get("supervisor_reason"),
         }
-        # 学术搜索：附加 LLM 关键词优化信息
         llm_query_opt = evidence.get("llm_query_optimization")
         if llm_query_opt:
             result["llm_query_optimization"] = llm_query_opt
         return result
 
     async def generate_stream(self, question: str, evidence: dict[str, Any], history: list[dict[str, str]] | None = None) -> AsyncGenerator[str, None]:
-        """流式生成回答，逐条 yield SSE 格式字符串。
-
-        事件序列：
-          1. meta  — 来源/附件/工具/置信度
-          2. token — 逐 token 返回回答文本
-          3. done  — 完成
-        """
-        sources, attachments, tools_used, tool_result, user_sources = self._prepare_evidence(evidence)
+        """流式生成回答，逐条 yield SSE 格式字符串。"""
+        sources, attachments, tools_used, tool_results, user_sources = self._prepare_evidence(evidence)
         confidence = self._confidence(sources + user_sources)
 
-        # 1. 先发 meta
         meta = {
             "type": "meta",
             "confidence": confidence,
@@ -149,15 +159,23 @@ class AnswerGenerator:
             "attachments": attachments,
             "tools_used": tools_used,
             "fallback": False,
+            "route_mode": evidence.get("route_mode", "fast"),
+            "evidence_priority": evidence.get("evidence_priority", "rag"),
+            "supervisor_reason": evidence.get("supervisor_reason"),
         }
-        # 学术搜索：附加 LLM 关键词优化信息
         llm_query_opt = evidence.get("llm_query_optimization")
         if llm_query_opt:
             meta["llm_query_optimization"] = llm_query_opt
         yield f"data: {json.dumps(meta, ensure_ascii=False)}\n\n"
 
-        # 2. 流式输出 LLM token
-        prompt = build_qa_prompt(question, sources=sources, tool_result=tool_result, history=history, user_sources=user_sources)
+        prompt = build_qa_prompt(
+            question,
+            sources=sources,
+            tool_results=tool_results,
+            history=history,
+            user_sources=user_sources,
+            evidence_priority=evidence.get("evidence_priority", "rag"),
+        )
         if self.llm is None:
             yield f'data: {json.dumps({"type": "token", "content": "(LLM 未初始化，请检查 DEEPSEEK_API_KEY 配置)"}, ensure_ascii=False)}\n\n'
         else:

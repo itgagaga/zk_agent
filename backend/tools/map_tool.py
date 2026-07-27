@@ -40,6 +40,16 @@ DEST_ALIASES: dict[str, str] = {
     "仲恺农学院": "仲恺农业工程学院海珠校区",
 }
 
+# 常见交通枢纽别名补全（高德地理编码需要完整站名）
+ORIGIN_ALIASES: dict[str, str] = {
+    "广州东": "广州东站",
+    "广州南": "广州南站",
+    "广州北": "广州北站",
+    "广州站": "广州火车站",
+    "天河客运站": "天河客运站",
+    "白云机场": "广州白云国际机场",
+}
+
 
 class MapTool:
     """地图路线规划工具。
@@ -55,6 +65,7 @@ class MapTool:
 
         流程：LLM 提取参数 → 地理编码 → 路线规划 → 返回结构化结果
         """
+        history: list[dict[str, str]] | None = kwargs.get("history")
         api_key = settings.amap_api_key
         if not api_key:
             return {
@@ -64,8 +75,8 @@ class MapTool:
                 "error": "未配置高德地图 API Key，请在 .env 中设置 AMAP_API_KEY",
             }
 
-        # 1. 从问题中提取起点、终点、出行方式
-        params = await self._extract_params(question)
+        # 1. 从问题中提取起点、终点、出行方式（结合历史对话补全追问）
+        params = await self._extract_params(question, history=history)
         if not params:
             return {
                 "tool": self.name,
@@ -141,17 +152,17 @@ class MapTool:
     #  参数提取：LLM + 规则混合策略
     # ------------------------------------------------------------------ #
 
-    async def _extract_params(self, question: str) -> dict[str, str] | None:
+    async def _extract_params(
+        self, question: str, *, history: list[dict[str, str]] | None = None
+    ) -> dict[str, str] | None:
         """从自然语言问题中提取起点、终点、出行方式。
 
-        优先使用规则匹配（快速），匹配失败则用 LLM 提取。
+        优先使用规则匹配（快速），匹配失败则用 LLM 提取（可结合历史对话）。
         """
-        # 规则匹配
         result = self._extract_by_rules(question)
         if result:
             return result
-        # LLM 兜底
-        return await self._extract_by_llm(question)
+        return await self._extract_by_llm(question, history=history)
 
     @staticmethod
     def _extract_by_rules(question: str) -> dict[str, str] | None:
@@ -205,6 +216,8 @@ class MapTool:
             r"从(.+?)前往(.+)",
             # A怎么去/走到B
             r"(.+?)(?:怎么去|怎么走到)(.+)",
+            # 去/到B怎么走（无起点，交给 LLM 或历史补全）
+            r"(?:去|到)(.+?)怎么走",
             # A到B（至少含2个字避免误匹配单字）
             r"(.{2,}?)(?:到|去)(.{2,})",
         ]
@@ -214,17 +227,26 @@ class MapTool:
         for pattern in patterns:
             m = re.search(pattern, q)
             if m:
-                origin = m.group(1).strip()
-                dest = m.group(2).strip()
+                if m.lastindex == 1:
+                    # 仅目的地（去X怎么走）
+                    dest = m.group(1).strip()
+                else:
+                    origin = m.group(1).strip()
+                    dest = m.group(2).strip()
                 break
 
-        if not origin or not dest:
+        if not dest:
             return None
+        if not origin:
+            return None  # 无起点，交给 LLM / 历史补全
 
         # 清除残留助词与尾部修饰
         for w in ["从", "坐", "乘", "搭"]:
             origin = origin.replace(w, "").strip()
             dest = dest.replace(w, "").strip()
+        origin = re.sub(r"^(明天|后天|今天|上午|下午)", "", origin).strip()
+        origin = re.sub(r"(出发)$", "", origin).strip()
+        dest = re.sub(r"^(明天|后天|今天)", "", dest).strip()
         dest = re.sub(r"的(?:交通指引|交通方式|路线|路径)$", "", dest).strip()
         dest = dest.rstrip("的").strip()
 
@@ -238,11 +260,14 @@ class MapTool:
 
         # 模糊终点解析
         dest = DEST_ALIASES.get(dest, dest)
+        origin = ORIGIN_ALIASES.get(origin, origin)
 
         return {"origin": origin, "destination": dest, "travel_mode": travel_mode}
 
-    async def _extract_by_llm(self, question: str) -> dict[str, str] | None:
-        """使用 LLM 从问题中提取起点、终点、出行方式。"""
+    async def _extract_by_llm(
+        self, question: str, *, history: list[dict[str, str]] | None = None
+    ) -> dict[str, str] | None:
+        """使用 LLM 从问题中提取起点、终点、出行方式（可结合历史对话）。"""
         if not settings.deepseek_api_key:
             return None
 
@@ -257,12 +282,26 @@ class MapTool:
                 max_tokens=200,
             )
 
+            history_block = ""
+            if history:
+                recent = history[-4:]
+                lines = []
+                for msg in recent:
+                    role = "用户" if msg.get("role") == "user" else "助手"
+                    lines.append(f"{role}: {msg.get('content', '')}")
+                history_block = "\n历史对话（用于补全追问中的起点/终点）：\n" + "\n".join(lines) + "\n"
+
             prompt = f"""从以下用户问题中提取路线规划参数，以 JSON 格式返回。
 只能返回 JSON，不要返回其他内容。
+{history_block}
+当前问题：{question}
 
-用户问题：{question}
+仲恺农业工程学院有两个校区：
+- 白云校区：广州市白云区广从八路1188号
+- 海珠校区：广州市海珠区东沙街24号
 
-仲恺农业工程学院有两个校区：白云校区（广州市白云区）、海珠校区（广州市海珠区）。
+若用户只说了起点或终点，请结合历史对话补全另一项。
+若用户只说「去白云校区怎么走」且未给起点，origin 可设为「广州」。
 
 返回格式：
 {{"origin": "起点地址", "destination": "终点地址", "travel_mode": "出行方式"}}
@@ -272,7 +311,8 @@ class MapTool:
 
 示例：
 用户问「广州南站怎么去仲恺白云校区」→ {{"origin": "广州南站", "destination": "仲恺农业工程学院白云校区", "travel_mode": "transit"}}
-用户问「从海珠校区开车到白云校区」→ {{"origin": "仲恺农业工程学院海珠校区", "destination": "仲恺农业工程学院白云校区", "travel_mode": "driving"}}"""
+用户问「从海珠校区开车到白云校区」→ {{"origin": "仲恺农业工程学院海珠校区", "destination": "仲恺农业工程学院白云校区", "travel_mode": "driving"}}
+历史：用户问过去白云校区怎么走；当前问「从广州东站」→ {{"origin": "广州东站", "destination": "仲恺农业工程学院白云校区", "travel_mode": "transit"}}"""
 
             response = await llm.ainvoke(prompt)
             text = response.content.strip()
@@ -289,6 +329,9 @@ class MapTool:
 
             if not origin or not dest:
                 return None
+
+            dest = DEST_ALIASES.get(dest, dest)
+            origin = ORIGIN_ALIASES.get(origin, origin)
 
             if mode not in ("driving", "transit", "walking", "cycling"):
                 mode = "transit"

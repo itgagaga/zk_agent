@@ -175,7 +175,37 @@ export async function ask(question, autoStick) {
             setMessages((prev) => {
               if (idx < 0 || idx >= prev.length) return prev
               const next = [...prev]
-              next[idx] = { ...next[idx], data }
+              next[idx] = { ...next[idx], data: { ...next[idx].data, ...data } }
+              return next
+            })
+          } else if (data.type === 'supervisor') {
+            setMessages((prev) => {
+              if (idx < 0 || idx >= prev.length) return prev
+              const next = [...prev]
+              next[idx] = {
+                ...next[idx],
+                data: {
+                  ...next[idx].data,
+                  evidence_priority: data.priority,
+                  supervisor_reason: data.reason,
+                  supervisor_agents: data.agents,
+                },
+              }
+              return next
+            })
+          } else if (data.type === 'agents') {
+            setMessages((prev) => {
+              if (idx < 0 || idx >= prev.length) return prev
+              const next = [...prev]
+              next[idx] = {
+                ...next[idx],
+                data: {
+                  ...next[idx].data,
+                  route_mode: data.mode,
+                  agents_used: data.agents,
+                  collab_reason: data.reason,
+                },
+              }
               return next
             })
           } else if (data.type === 'token') {

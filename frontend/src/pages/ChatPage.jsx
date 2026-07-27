@@ -28,12 +28,22 @@ const TOOL_LABELS = {
   service_link_search: '服务入口',
   weather_search: '天气查询',
   academic_search: '学术搜索',
+  map_route: '路线规划',
 }
 
 const CONFIDENCE_LABELS = {
   high: { text: '高可信', color: '#16a34a' },
   medium: { text: '中可信', color: '#ea580c' },
   low: { text: '低可信', color: '#dc2626' },
+}
+
+const PRIORITY_LABELS = {
+  api: 'API 优先',
+  tool: '结构化查询',
+  rag: '资料优先',
+  document: '文档优先',
+  affairs: '办事协作',
+  composite: '综合融合',
 }
 
 function generateFollowUps(question) {
@@ -326,11 +336,19 @@ function MessageBubble({ message, index, onDelete, onAsk, loading, prevQuestion 
               <AnswerDetails data={data} />
             )}
 
-            {data && streaming && data.tools_used?.length > 0 && (
+            {data && streaming && (data.tools_used?.length > 0 || data.agents_used?.length > 0 || data.evidence_priority) && (
               <div className="msg-tools-inline">
-                {data.tools_used.map((t) => (
+                {data.evidence_priority && (
+                  <span className="tool-chip tool-chip-supervisor">
+                    {PRIORITY_LABELS[data.evidence_priority] || data.evidence_priority}
+                  </span>
+                )}
+                {data.route_mode === 'collab' && (
+                  <span className="tool-chip tool-chip-collab">多 Agent 协作</span>
+                )}
+                {(data.agents_used || data.tools_used || []).map((t) => (
                   <span key={t} className="tool-chip">
-                    {TOOL_LABELS[t] || t}
+                    {typeof t === 'string' && !t.includes('_') ? t : (TOOL_LABELS[t] || t)}
                   </span>
                 ))}
               </div>
@@ -384,17 +402,27 @@ function AnswerDetails({ data }) {
   const [showSources, setShowSources] = useState(true)
   const hasSources = data.sources?.length > 0
   const hasAttachments = data.attachments?.length > 0
-  const hasTools = data.tools_used?.length > 0
+  const hasTools = data.tools_used?.length > 0 || data.agents_used?.length > 0
+  const hasPriority = !!data.evidence_priority
+  const agentLabels = data.agents_used || data.tools_used || []
 
-  if (!hasSources && !hasAttachments && !hasTools) return null
+  if (!hasSources && !hasAttachments && !hasTools && !hasPriority) return null
 
   return (
     <div className="answer-details">
-      {hasTools && (
+      {(hasTools || hasPriority) && (
         <div className="detail-tools">
-          {data.tools_used.map((t) => (
+          {data.evidence_priority && (
+            <span className="tool-chip tool-chip-supervisor">
+              ⚖ {PRIORITY_LABELS[data.evidence_priority] || data.evidence_priority}
+            </span>
+          )}
+          {hasTools && data.route_mode === 'collab' && (
+            <span className="tool-chip tool-chip-collab">🤝 多 Agent 协作</span>
+          )}
+          {hasTools && agentLabels.map((t) => (
             <span key={t} className="tool-chip">
-              🔧 {TOOL_LABELS[t] || t}
+              🔧 {typeof t === 'string' && !t.includes('_') ? t : (TOOL_LABELS[t] || t)}
             </span>
           ))}
         </div>

@@ -304,6 +304,20 @@ button {
   margin: 4px 6px 4px 0;
 }
 
+.tool-chip-collab,
+.emb-tool-chip-collab {
+  background: rgba(22, 163, 74, 0.12);
+  color: #15803d;
+  font-weight: 600;
+}
+
+.tool-chip-supervisor,
+.emb-tool-chip-supervisor {
+  background: rgba(37, 99, 235, 0.12);
+  color: #1d4ed8;
+  font-weight: 600;
+}
+
 /* 聊天消息框 */
 .chat-bubble {
   background: var(--color-canvas-lifted);

@@ -19,36 +19,170 @@ SYSTEM_PROMPT = """你是一个面向仲恺农业工程学院学生、教师和�
 可用信息来源包括：学校概况、机构学院、本科专业、培养方案、教务资料、研究生服务、招生就业、公共服务、新闻公告等。"""
 
 
-def build_qa_prompt(
-    question: str,
-    sources: list[dict[str, Any]] | None = None,
-    tool_result: dict[str, Any] | None = None,
-    history: list[dict[str, str]] | None = None,
-    user_sources: list[dict[str, Any]] | None = None,
-) -> str:
-    """构建问答 Prompt。
+def _format_tool_result(context_parts: list[str], tool_result: dict[str, Any]) -> None:
+    """将单个工具结果格式化追加到 context_parts。"""
+    tool_name = tool_result.get("tool", "")
+    tool_labels = {
+        "download_search": "【材料 Agent · 资料下载】",
+        "contact_search": "【联系 Agent · 联系方式】",
+        "service_link_search": "【入口 Agent · 服务入口】",
+        "weather_search": "【天气 Agent】",
+        "map_route": "【路线 Agent】",
+        "academic_search": "【学术 Agent】",
+        "major_search": "【专业 Agent】",
+    }
+    header = tool_labels.get(tool_name, f"【{tool_name}】")
+    context_parts.append(header)
+    if tool_result.get("error"):
+        context_parts.append(f"工具调用提示：{tool_result['error']}")
+    for item in tool_result.get("items", []) or []:
+        if tool_name == "weather_search":
+            context_parts.append(f"- 城市：{item.get('city', '')}")
+            context_parts.append(
+                f"  当前天气：{item.get('text', '')}，气温 {item.get('temp', '')}°C"
+                f"（体感 {item.get('feels_like', '')}°C）"
+            )
+            context_parts.append(
+                f"  风：{item.get('wind_dir', '')} {item.get('wind_scale', '')}级，"
+                f"湿度：{item.get('humidity', '')}%，能见度：{item.get('visibility', '')}km"
+            )
+            if item.get("precip"):
+                context_parts.append(f"  降水量：{item.get('precip')}mm")
+            context_parts.append(f"  数据更新时间：{item.get('update_time', '')}")
+            for fc in item.get("forecast", []) or []:
+                context_parts.append(
+                    f"  {fc.get('date', '')}：{fc.get('text_day', '')}→{fc.get('text_night', '')}，"
+                    f"{fc.get('temp_min', '')}~{fc.get('temp_max', '')}°C，"
+                    f"{fc.get('wind_dir_day', '')} {fc.get('wind_scale_day', '')}级"
+                )
+        elif tool_name == "academic_search":
+            context_parts.append("  【说明：以下论文由 LLM 优化搜索关键词后，通过 Crossref/arXiv 检索获得】")
+            context_parts.append(f"- [{item.get('year', '')}] {item.get('title', '')}")
+            if item.get("authors"):
+                context_parts.append(f"  作者：{item.get('authors', '')}")
+            if item.get("cited"):
+                context_parts.append(f"  被引用次数：{item.get('cited', 0)}")
+            if item.get("doi"):
+                context_parts.append(f"  DOI：{item.get('doi', '')}")
+            if item.get("url"):
+                context_parts.append(f"  链接：{item.get('url', '')}")
+            if item.get("snippet"):
+                context_parts.append(f"  摘要：{item.get('snippet', '')}")
+            context_parts.append(f"  来源：{item.get('source', '')}")
+        elif tool_name == "map_route":
+            mode_labels = {"driving": "驾车", "transit": "公交/地铁", "walking": "步行", "cycling": "骑行"}
+            mode_label = mode_labels.get(item.get("travel_mode", ""), "公交/地铁")
+            context_parts.append(f"- 路线：{item.get('origin', '')} → {item.get('destination', '')}")
+            context_parts.append(f"  出行方式：{mode_label}")
+            context_parts.append(f"  总距离：{item.get('distance', '')}，预计用时：{item.get('duration', '')}")
+            if item.get("routes"):
+                for route in item["routes"]:
+                    context_parts.append(
+                        f"  【{route.get('plan', '')}】{route.get('duration', '')}，{route.get('distance', '')}"
+                    )
+                    for seg in route.get("segments", []):
+                        context_parts.append(f"    {seg}")
+            if item.get("steps"):
+                for i, step in enumerate(item["steps"], 1):
+                    instr = step.get("instruction", "")
+                    dist = step.get("distance", "")
+                    context_parts.append(f"  {i}. {instr}（{dist}）")
+        elif tool_name == "contact_search":
+            context_parts.append(
+                f"- {item.get('title', '')}：电话 {item.get('phone', '')}，"
+                f"地址 {item.get('address') or item.get('location', '')}"
+            )
+        elif tool_name == "service_link_search":
+            context_parts.append(
+                f"- {item.get('title') or item.get('name', '')}："
+                f"{item.get('url', '')}（{item.get('service_scope') or item.get('description', '')}）"
+            )
+        else:
+            context_parts.append(f"- {item}")
+    context_parts.append("")
 
-    Args:
-        question: 当前用户问题
-        sources: RAG 检索到的官网来源列表
-        tool_result: 结构化工具返回结果
-        history: 历史对话，格式 [{"role": "user"/"assistant", "content": "..."}]
-        user_sources: 用户上传文档的检索来源列表（优先级高于官网资料）
-    """
+
+# 按 Supervisor 裁决的优先级，使用不同系统角色（结构性分流，非 Prompt 补丁）
+_PRIORITY_SYSTEM: dict[str, str] = {
+    "api": """你是一个校园出行与天气信息 Agent，专门基于第三方实时 API 数据回答。
+
+你的职责：
+1. 仅基于【实时 API 取证】中的高德地图路线或和风天气数据回答；
+2. 路线问题：列出方案、距离、用时、换乘/路段；来源标注「高德地图API」；
+3. 天气问题：报气温、降水、穿衣建议；来源标注「和风天气API」；
+4. 若 API 返回错误信息，如实转告用户并给出可操作建议；
+5. 不要引用官网 RAG 资料，不要建议用户自行打开地图 App。""",
+
+    "tool": """你是一个校园结构化信息查询 Agent，基于数据库/元数据查询结果回答。
+
+你的职责：
+1. 优先基于【结构化 Agent 取证】中的电话、专业、下载、入口等查询结果回答；
+2. 必须引用对应来源（部门、链接）；
+3. 若同时有实时 API 数据（路线/天气），一并整合回答；
+4. 若无有效查询结果，明确说明未找到。""",
+
+    "rag": """你是一个面向仲恺农业工程学院学生、教师和访客的校园信息服务智能体。
+
+你的核心职责：
+1. 基于官网公开资料回答问题；
+2. 必须引用来源（标题、部门、URL、发布时间）；
+3. 如果资料中没有可靠依据，明确说明"未找到可靠依据"，不要编造；
+4. 涉及电话、地址、时间、流程、招生计划、专业设置等具体信息，必须以官网最新文件为准；
+5. 不回答与仲恺校园信息无关的问题。""",
+
+    "document": """你是一个智能文档问答 Agent，专门基于用户上传的永久文档和知识库回答。
+
+你的职责：
+1. 优先基于【知识库文档】内容回答；
+2. 官网资料仅作补充；
+3. 必须引用文档来源；
+4. 若文档已能回答问题，不要再说「未找到」。""",
+
+    "affairs": """你是一个校园办事指引 Agent，负责整合多 Agent 协作取证结果。
+
+你的职责：
+1. 整合材料 Agent、联系 Agent、入口 Agent、政策 Agent 的取证结果；
+2. 按以下结构组织回答：
+   - 办理概述
+   - 所需材料/表格
+   - 办理流程/步骤
+   - 联系方式
+   - 系统入口/链接
+3. 各部分必须引用对应来源；某 Agent 无结果时说明该部分未找到依据，不要编造。""",
+
+    "composite": """你是一个综合校园助手 Agent，用户一次提了多个不同领域的问题。
+
+你的职责：按用户问题的顺序，分区逐一回答，每部分使用对应 Agent 的取证结果：
+1. 学业/专业建议 → 优先【知识库文档】中的培养方案，其次【官网资料】和【专业 Agent】
+2. 天气/出行建议 → 基于【天气 Agent】实时数据
+3. 校园网/办事 → 基于【入口 Agent】【联系 Agent】和【官网资料】
+4. 路线交通 → 基于【路线 Agent】高德地图数据；有 API 数据时直接给方案，不要让用户自己查地图
+
+每部分用清晰小标题分隔，分别列出引用来源。""",
+}
+
+
+def _build_context(
+    *,
+    sources: list[dict[str, Any]] | None,
+    user_sources: list[dict[str, Any]] | None,
+    tool_results: list[dict[str, Any]] | None,
+    evidence_priority: str,
+) -> str:
+    """按优先级构建可用资料块（Supervisor 已过滤，此处只做格式化）。"""
     context_parts: list[str] = []
 
-    # 文档库（上传的永久文档）优先展示
-    if user_sources:
-        context_parts.append("【知识库文档（上传的永久文档，优先使用）】")
+    if evidence_priority in ("document", "affairs", "composite") and user_sources:
+        context_parts.append("【知识库文档 · 文档 Agent】")
         for i, src in enumerate(user_sources, 1):
             context_parts.append(
-                f"U{i}. {src.get('title', '')}\n"
-                f"   片段：{src.get('snippet', '')}"
+                f"U{i}. {src.get('title', '')}\n   片段：{src.get('snippet', '')}"
             )
         context_parts.append("")
 
-    if sources:
-        context_parts.append("【检索到的官网资料】")
+    if evidence_priority in ("rag", "document", "affairs", "composite") and sources:
+        label = "【官网资料 · 政策 Agent】" if evidence_priority in ("affairs", "composite") else "【检索到的官网资料】"
+        context_parts.append(label)
         for i, src in enumerate(sources, 1):
             context_parts.append(
                 f"{i}. {src.get('title', '')}\n"
@@ -57,66 +191,44 @@ def build_qa_prompt(
                 f"   片段：{src.get('snippet', '')}"
             )
 
-    if tool_result:
-        context_parts.append("\n【结构化工具返回】")
-        tool_name = tool_result.get("tool", "")
-        for item in tool_result.get("items", []) or []:
-            if tool_name == "weather_search":
-                # 天气工具：格式化展示
-                context_parts.append(f"- 城市：{item.get('city', '')}")
-                context_parts.append(f"  当前天气：{item.get('text', '')}，气温 {item.get('temp', '')}°C（体感 {item.get('feels_like', '')}°C）")
-                context_parts.append(f"  风：{item.get('wind_dir', '')} {item.get('wind_scale', '')}级，湿度：{item.get('humidity', '')}%，能见度：{item.get('visibility', '')}km")
-                if item.get("precip"):
-                    context_parts.append(f"  降水量：{item.get('precip')}mm")
-                context_parts.append(f"  数据更新时间：{item.get('update_time', '')}")
-                for fc in item.get("forecast", []) or []:
-                    context_parts.append(
-                        f"  {fc.get('date', '')}：{fc.get('text_day', '')}→{fc.get('text_night', '')}，"
-                        f"{fc.get('temp_min', '')}~{fc.get('temp_max', '')}°C，"
-                        f"{fc.get('wind_dir_day', '')} {fc.get('wind_scale_day', '')}级"
-                    )
-            elif tool_name == "academic_search":
-                # 学术搜索工具：格式化展示（LLM + 第三方 API 协作）
-                context_parts.append("  【说明：以下论文由 LLM 优化搜索关键词后，通过 Crossref/arXiv 第三方 API 检索获得】")
-                context_parts.append(
-                    f"- [{item.get('year', '')}] {item.get('title', '')}"
-                )
-                if item.get("authors"):
-                    context_parts.append(f"  作者：{item.get('authors', '')}")
-                if item.get("cited"):
-                    context_parts.append(f"  被引用次数：{item.get('cited', 0)}")
-                if item.get("doi"):
-                    context_parts.append(f"  DOI：{item.get('doi', '')}")
-                if item.get("url"):
-                    context_parts.append(f"  链接：{item.get('url', '')}")
-                if item.get("snippet"):
-                    context_parts.append(f"  摘要：{item.get('snippet', '')}")
-                context_parts.append(f"  来源：{item.get('source', '')}")
-            elif tool_name == "map_route":
-                # 地图路线规划工具：格式化展示
-                mode_labels = {"driving": "驾车", "transit": "公交/地铁", "walking": "步行", "cycling": "骑行"}
-                mode_label = mode_labels.get(item.get("travel_mode", ""), "公交/地铁")
-                context_parts.append(f"- 路线：{item.get('origin', '')} → {item.get('destination', '')}")
-                context_parts.append(f"  出行方式：{mode_label}")
-                context_parts.append(f"  总距离：{item.get('distance', '')}，预计用时：{item.get('duration', '')}")
-                # 公交方案
-                if item.get("routes"):
-                    for route in item["routes"]:
-                        context_parts.append(f"  【{route.get('plan', '')}】{route.get('duration', '')}，{route.get('distance', '')}")
-                        for seg in route.get("segments", []):
-                            context_parts.append(f"    {seg}")
-                # 驾车/步行/骑行步骤
-                if item.get("steps"):
-                    for i, step in enumerate(item["steps"], 1):
-                        instr = step.get("instruction", "")
-                        dist = step.get("distance", "")
-                        context_parts.append(f"  {i}. {instr}（{dist}）")
-            else:
-                context_parts.append(f"- {item}")
+    if tool_results and evidence_priority in ("api", "tool", "affairs", "composite"):
+        if evidence_priority == "composite":
+            label = "\n【多 Agent 协作取证 · 按领域分区使用】"
+        elif evidence_priority == "api":
+            label = "\n【实时 API 取证】"
+        elif evidence_priority == "affairs":
+            label = "\n【多 Agent 协作取证】"
+        else:
+            label = "\n【结构化 Agent 取证】"
+        context_parts.append(label)
+        for tr in tool_results:
+            _format_tool_result(context_parts, tr)
 
-    context = "\n".join(context_parts) if context_parts else "(无可用资料)"
+    return "\n".join(context_parts) if context_parts else "(无可用资料)"
 
-    # 构建历史对话（最多取最近 6 条 = 3 轮）
+
+def build_qa_prompt(
+    question: str,
+    sources: list[dict[str, Any]] | None = None,
+    tool_result: dict[str, Any] | None = None,
+    tool_results: list[dict[str, Any]] | None = None,
+    history: list[dict[str, str]] | None = None,
+    user_sources: list[dict[str, Any]] | None = None,
+    evidence_priority: str = "rag",
+) -> str:
+    """构建问答 Prompt。按 Supervisor 裁决的 evidence_priority 选择系统角色与资料结构。"""
+    all_tool_results = tool_results or []
+    if not all_tool_results and tool_result:
+        all_tool_results = [tool_result]
+
+    system = _PRIORITY_SYSTEM.get(evidence_priority, _PRIORITY_SYSTEM["rag"])
+    context = _build_context(
+        sources=sources,
+        user_sources=user_sources,
+        tool_results=all_tool_results,
+        evidence_priority=evidence_priority,
+    )
+
     history_block = ""
     if history:
         recent = history[-6:]
@@ -126,29 +238,9 @@ def build_qa_prompt(
             lines.append(f"{role}: {msg.get('content', '')}")
         history_block = "【历史对话】\n" + "\n".join(lines) + "\n\n"
 
-    user_hint = ""
-    if user_sources:
-        user_hint = (
-            "\n重要提示（知识库文档）：\n"
-            "- 知识库文档（标记为 U1, U2...）是用户上传的永久资料，"
-            "如果其中包含与问题相关的内容，请优先基于这些内容回答。\n"
-            "- 官网资料仅作为补充参考；若知识库文档已能回答问题，不要再说「未找到」或让用户去下载。\n"
-        )
+    return f"""{system}
 
-    return f"""{SYSTEM_PROMPT}
-
-请根据以下信息回答用户问题。回答必须：
-1. 优先基于资料内容；
-2. 在回答末尾列出引用来源；
-3. 如果资料不足以回答，明确说明"未在已采集的仲恺官网资料中找到可靠依据"。
-
-重要提示：
-- 请逐一检查每条来源的【标题】字段，确认是否有与用户问题关键词直接匹配的文档。
-- 注意区分"本科"与"研究生"、"硕士"等不同类别，不要混淆。
-- 如果来源中已包含与问题匹配的文档（标题包含用户询问的关键词），请基于该文档内容回答，不要遗漏。
-- 不要仅依据片段内容或来源排序判断，必须检查所有来源的标题。
-- 如果有历史对话，请结合上下文理解当前问题（如"它""这个"等指代词）。
-{user_hint}
+请根据以下信息回答用户问题，并在回答末尾列出引用来源。
 {history_block}【当前问题】
 {question}
 

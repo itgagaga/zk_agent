@@ -18,6 +18,9 @@ const TOOL_LABELS = {
   download_search: '资料下载',
   contact_search: '联系方式',
   service_link_search: '服务入口',
+  weather_search: '天气查询',
+  map_route: '路线规划',
+  academic_search: '学术搜索',
 }
 
 const CONFIDENCE_LABELS = {
@@ -244,10 +247,15 @@ function EmbMessageBubble({ message }) {
               {streaming && <span className="emb-typing-cursor" />}
             </div>
 
-            {data && !streaming && data.tools_used?.length > 0 && (
+            {data && !streaming && (data.tools_used?.length > 0 || data.agents_used?.length > 0) && (
               <div className="emb-tools">
-                {data.tools_used.map(t => (
-                  <span key={t} className="emb-tool-chip">{TOOL_LABELS[t] || t}</span>
+                {data.route_mode === 'collab' && (
+                  <span className="emb-tool-chip emb-tool-chip-collab">多 Agent 协作</span>
+                )}
+                {(data.agents_used || data.tools_used || []).map(t => (
+                  <span key={t} className="emb-tool-chip">
+                    {typeof t === 'string' && !t.includes('_') ? t : (TOOL_LABELS[t] || t)}
+                  </span>
                 ))}
               </div>
             )}
