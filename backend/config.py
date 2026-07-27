@@ -54,11 +54,36 @@ class Settings(BaseSettings):
         default="zhku_documents", alias="CHROMA_COLLECTION_DOCUMENT"
     )
 
-    # SQLite
+    # MySQL
+    mysql_host: str = Field(default="127.0.0.1", alias="MYSQL_HOST")
+    mysql_port: int = Field(default=3306, alias="MYSQL_PORT")
+    mysql_user: str = Field(default="root", alias="MYSQL_USER")
+    mysql_password: str = Field(default="", alias="MYSQL_PASSWORD")
+    mysql_database: str = Field(default="zhku", alias="MYSQL_DATABASE")
+    mysql_charset: str = Field(default="utf8mb4", alias="MYSQL_CHARSET")
+
+    # 旧 SQLite 路径（仅用于一次性迁移，业务读写已切到 MySQL）
     sqlite_path: Path = Field(default=DATA_DIR / "sqlite" / "zhku.db", alias="SQLITE_PATH")
+
+    @property
+    def database_url(self) -> str:
+        """SQLAlchemy MySQL 连接串。"""
+        return (
+            f"mysql+pymysql://{self.mysql_user}:{self.mysql_password}"
+            f"@{self.mysql_host}:{self.mysql_port}/{self.mysql_database}"
+            f"?charset={self.mysql_charset}"
+        )
 
     # 第三方 API
     qweather_api_key: str = Field(default="", alias="QWEATHER_API_KEY")
+    qweather_api_host: str = Field(
+        default="",
+        alias="QWEATHER_API_HOST",
+        description="和风天气独立 API Host，如 xxx.qweatherapi.com（控制台-设置中查看）",
+    )
+    qweather_credential_id: str = Field(
+        default="", alias="QWEATHER_CREDENTIAL_ID"
+    )
     amap_api_key: str = Field(default="", alias="AMAP_API_KEY")
 
     # 采集源
@@ -112,6 +137,7 @@ class Settings(BaseSettings):
         for sub in ["raw", "cleaned", "metadata", "sqlite", "vector_store"]:
             (DATA_DIR / sub).mkdir(parents=True, exist_ok=True)
         self.vector_store_path.mkdir(parents=True, exist_ok=True)
+        # 保留 sqlite 目录，便于从旧库迁移，不删除原文件
         self.sqlite_path.parent.mkdir(parents=True, exist_ok=True)
 
 

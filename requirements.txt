@@ -21,9 +21,10 @@ sentence-transformers>=3.2.1
 # 向量库
 chromadb>=0.5.15
 
-# 结构化数据库
+# 结构化数据库（MySQL）
 sqlalchemy>=2.0.35
-aiosqlite>=0.20.0
+pymysql>=1.1.0
+cryptography>=42.0.0
 
 # 文档解析
 pymupdf>=1.24.10

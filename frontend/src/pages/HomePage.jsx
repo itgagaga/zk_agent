@@ -4,7 +4,6 @@ import {
   ArrowUpRight,
   BookOpenText,
   BriefcaseBusiness,
-  Compass,
   Download,
   FileSearch,
   GraduationCap,
@@ -39,16 +38,9 @@ const FEATURES = [
   {
     Icon: Download,
     title: '资料智库',
-    desc: '智能定位资料、核对官网来源，并辅助整理材料清单与办理步骤',
+    desc: '定位资料与服务入口，核对官网来源，并辅助整理材料、步骤与联系方式',
     link: '/downloads',
     linkText: '进入智库',
-  },
-  {
-    Icon: Compass,
-    title: '办事助手',
-    desc: '理解办事需求，按角色推荐服务入口、流程与公开联系方式',
-    link: '/services',
-    linkText: '开始办理',
   },
 ]
 

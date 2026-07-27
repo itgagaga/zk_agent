@@ -1,6 +1,11 @@
-# SQLite 数据库目录
+# 结构化数据库目录
 
-存放 zhku.db 文件，由 backend.database.seed 初始化，
-由 crawler 模块填充真实数据。
+业务数据已切换到 **MySQL**（库名默认 `zhku`，见 `.env` 中 `MYSQL_*`）。
 
-表结构见 backend/database/schema.sql。
+本目录仅用于保留旧版 `zhku.db`，供一次性迁移：
+
+```bash
+python -m backend.database.migrate_sqlite_to_mysql
+```
+
+迁移不会删除或覆盖本目录中的 SQLite 文件。表结构见 `backend/database/schema.sql`。

@@ -18,7 +18,7 @@ ZHKU Campus Agent 是一个以 Agent 为核心调度器、以 RAG 和智能文�
 | 大模型 | DeepSeek API |
 | Embedding | bge-small-zh / bge-m3 |
 | 向量数据库 | Chroma |
-| 结构化数据库 | SQLite |
+| 结构化数据库 | MySQL |
 | 前端 | React + Vite |
 | 数据采集 | requests + BeautifulSoup / Playwright |
 | 文档解析 | pymupdf / pdfplumber / python-docx |
@@ -39,7 +39,7 @@ zhku-campus-agent/
 │   ├── raw/                # 原始采集数据
 │   ├── cleaned/            # 清洗后文本
 │   ├── metadata/           # 元数据
-│   ├── sqlite/             # SQLite 数据库
+│   ├── sqlite/             # 旧 SQLite（迁移源，可保留）
 │   └── vector_store/       # 向量库
 ├── docs/                   # 项目文档
 ├── README.md
@@ -71,10 +71,14 @@ cp .env.example .env
 # 编辑 .env 文件，填入 DeepSeek API Key 等配置
 ```
 
-### 3. 初始化数据库
+### 3. 初始化数据库（MySQL）
+
+确保本机 MySQL 已启动，并在 `.env` 中配置 `MYSQL_*`。若仍有旧的 `data/sqlite/zhku.db`，seed 会自动迁入且不删除原文件。
 
 ```bash
 python -m backend.database.seed
+# 也可单独执行迁移：
+# python -m backend.database.migrate_sqlite_to_mysql
 ```
 
 ### 4. 启动后端服务

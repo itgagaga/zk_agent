@@ -1,8 +1,7 @@
-import { Routes, Route, Link } from 'react-router-dom'
+import { Routes, Route, Navigate } from 'react-router-dom'
 import HomePage from './pages/HomePage.jsx'
 import ChatPage from './pages/ChatPage.jsx'
 import DownloadsPage from './pages/DownloadsPage.jsx'
-import ServicesPage from './pages/ServicesPage.jsx'
 import DocumentsPage from './pages/DocumentsPage.jsx'
 import ResumePage from './pages/ResumePage.jsx'
 import Footer from './components/Footer.jsx'
@@ -17,7 +16,7 @@ export default function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/chat" element={<ChatPage />} />
           <Route path="/downloads" element={<DownloadsPage />} />
-          <Route path="/services" element={<ServicesPage />} />
+          <Route path="/services" element={<Navigate to="/downloads" replace />} />
           <Route path="/documents" element={<DocumentsPage />} />
           <Route path="/resume" element={<ResumePage />} />
         </Routes>

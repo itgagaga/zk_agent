@@ -31,6 +31,15 @@ CAMPUS_LOCATIONS: list[tuple[str, str]] = [
     ("海珠校区", "仲恺农业工程学院海珠校区"),
 ]
 
+# 模糊终点 → 默认海珠校区（本部）；用户可明确说白云/海珠校区
+DEST_ALIASES: dict[str, str] = {
+    "学校": "仲恺农业工程学院海珠校区",
+    "本校": "仲恺农业工程学院海珠校区",
+    "仲恺": "仲恺农业工程学院海珠校区",
+    "仲恺农业工程学院": "仲恺农业工程学院海珠校区",
+    "仲恺农学院": "仲恺农业工程学院海珠校区",
+}
+
 
 class MapTool:
     """地图路线规划工具。
@@ -118,6 +127,7 @@ class MapTool:
             "distance": route_data.get("distance", ""),
             "duration": route_data.get("duration", ""),
             "summary": route_data.get("summary", ""),
+            "routes": route_data.get("routes", []),
             "steps": route_data.get("steps", []),
         }
 
@@ -179,13 +189,20 @@ class MapTool:
         q = re.sub(r"(坐|乘|搭)(公交|地铁|大巴|车)", "", q)
         q = re.sub(r"(驾车|开车|自驾|步行|走路|骑行|骑车)", "", q)
 
-        # 去掉尾部问句词
-        q = re.sub(r"(怎么走|怎么去|怎么坐|路线|坐什么|搭什么|要多久|多远)[？?]?$", "", q)
+        # 去掉尾部问句/说明词（含「学校的交通指引」这类后缀）
+        q = re.sub(r"的?(?:交通指引|交通方式|路线规划|出行方案)[？?]?$", "", q)
+        q = re.sub(
+            r"(怎么走|怎么去|怎么坐|路线|坐什么|搭什么|要多久|多远|怎么去学校)[？?]?$",
+            "",
+            q,
+        )
 
         # 多种分隔模式，按优先级尝试
         patterns = [
             # 从A到/去/往B
             r"从(.+?)(?:到|去|往)(.+)",
+            # 从A前往B
+            r"从(.+?)前往(.+)",
             # A怎么去/走到B
             r"(.+?)(?:怎么去|怎么走到)(.+)",
             # A到B（至少含2个字避免误匹配单字）
@@ -204,10 +221,12 @@ class MapTool:
         if not origin or not dest:
             return None
 
-        # 清除残留助词
+        # 清除残留助词与尾部修饰
         for w in ["从", "坐", "乘", "搭"]:
             origin = origin.replace(w, "").strip()
             dest = dest.replace(w, "").strip()
+        dest = re.sub(r"的(?:交通指引|交通方式|路线|路径)$", "", dest).strip()
+        dest = dest.rstrip("的").strip()
 
         if not origin or not dest:
             return None
@@ -216,6 +235,9 @@ class MapTool:
         for ph, full in placeholders.items():
             origin = origin.replace(ph, full)
             dest = dest.replace(ph, full)
+
+        # 模糊终点解析
+        dest = DEST_ALIASES.get(dest, dest)
 
         return {"origin": origin, "destination": dest, "travel_mode": travel_mode}
 
@@ -395,9 +417,9 @@ class MapTool:
         # 取前 3 条推荐方案
         routes = []
         for idx, transit in enumerate(transits[:3], 1):
-            cost = transit.get("cost", {})
-            duration_s = int(cost.get("duration", 0))
-            distance_m = int(cost.get("distance", 0))
+            duration_s = int(transit.get("duration", 0))
+            distance_m = int(transit.get("distance", 0))
+            fare = transit.get("cost", "")
 
             # 解析换乘段
             segments_text = []
@@ -423,11 +445,13 @@ class MapTool:
                 "plan": f"方案{idx}",
                 "duration": f"{duration_s // 60}分钟" if duration_s < 3600 else f"{duration_s // 3600}小时{(duration_s % 3600) // 60}分钟",
                 "distance": f"{distance_m}米" if distance_m < 1000 else f"{distance_m / 1000:.1f}公里",
+                "fare": f"{fare}元" if fare else "",
                 "segments": segments_text,
             })
 
-        first_duration = int(transits[0]["cost"].get("duration", 0)) // 60
-        first_distance = int(transits[0]["cost"].get("distance", 0)) / 1000
+        first = transits[0]
+        first_duration = int(first.get("duration", 0)) // 60
+        first_distance = int(first.get("distance", 0)) / 1000
 
         return {
             "distance": f"{first_distance:.1f}公里",

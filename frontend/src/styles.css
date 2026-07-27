@@ -4606,7 +4606,7 @@ a.as-paper-title:hover {
 }
 
 /* ========================================
- * 智能体能力页：资料智库 / 校园办事助手
+ * 智能体能力页：资料智库（含服务入口）
  * ======================================== */
 .agent-page {
   padding-top: 40px;
@@ -4653,13 +4653,49 @@ a.as-paper-title:hover {
   line-height: 1.7;
 }
 
+.agent-hero-cta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 30px;
+}
+
 .agent-hero-cta {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  margin-top: 30px;
+  margin-top: 0;
   padding-top: 10px;
   padding-bottom: 10px;
+}
+
+.agent-browse-tabs {
+  display: inline-flex;
+  gap: 6px;
+  margin-bottom: 20px;
+  padding: 6px;
+  background: var(--color-white);
+  border: 1px solid rgba(20, 20, 19, 0.1);
+  border-radius: var(--radius-pill);
+}
+
+.agent-browse-tabs button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  color: var(--color-granite);
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-pill);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.agent-browse-tabs button.active {
+  color: var(--color-canvas);
+  background: var(--color-ink);
 }
 
 .agent-hero-cta:hover {

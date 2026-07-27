@@ -21,8 +21,8 @@ CAMPUS_CITY_MAP: dict[str, str] = {
     "默认": "101280101",
 }
 
-# 和风天气 API 基地址（免费订阅用 devapi）
-API_BASE = "https://devapi.qweather.com/v7"
+# 旧版公共 API Host（2026 年起逐步停用，仅作未配置独立 Host 时的兜底）
+LEGACY_API_BASE = "https://devapi.qweather.com/v7"
 
 
 class WeatherTool:
@@ -51,31 +51,41 @@ class WeatherTool:
                 "error": "未配置和风天气 API Key，请在 .env 中设置 QWEATHER_API_KEY",
             }
 
+        if not settings.qweather_api_host.strip():
+            return {
+                "tool": self.name,
+                "items": [],
+                "total": 0,
+                "error": (
+                    "未配置和风天气 API Host，请在 .env 中设置 QWEATHER_API_HOST。"
+                    "登录 https://dev.qweather.com/ 控制台 → 设置，复制形如 xxx.qweatherapi.com 的地址"
+                ),
+            }
+
         try:
             async with httpx.AsyncClient(timeout=10) as client:
                 # 实时天气
-                weather_resp = await client.get(
-                    f"{API_BASE}/weather/now",
-                    params={"location": location_id, "key": api_key},
+                weather_data = await self._fetch_weather_api(
+                    client, "weather/now", location_id, api_key
                 )
-                weather_data = weather_resp.json()
-
-                if weather_data.get("code") != "200":
+                if weather_data.get("error"):
                     return {
                         "tool": self.name,
                         "items": [],
                         "total": 0,
-                        "error": f"天气 API 返回错误: code={weather_data.get('code')}",
+                        "error": weather_data["error"],
                     }
 
                 now = weather_data.get("now", {})
                 # 3天预报
-                forecast_resp = await client.get(
-                    f"{API_BASE}/weather/3d",
-                    params={"location": location_id, "key": api_key},
+                forecast_data = await self._fetch_weather_api(
+                    client, "weather/3d", location_id, api_key
                 )
-                forecast_data = forecast_resp.json()
-                daily = forecast_data.get("daily", [])
+                daily = (
+                    forecast_data.get("daily", [])
+                    if "error" not in forecast_data
+                    else []
+                )
 
                 item = {
                     "title": f"广州实时天气：{now.get('text', '')} {now.get('temp', '')}°C",
@@ -131,6 +141,47 @@ class WeatherTool:
                 "total": 0,
                 "error": f"天气 API 请求失败: {e}",
             }
+
+    @staticmethod
+    def _api_base() -> str:
+        """构建和风天气 API 基地址（优先使用账号独立 Host）。"""
+        host = settings.qweather_api_host.strip()
+        if host:
+            host = host.replace("https://", "").replace("http://", "").rstrip("/")
+            return f"https://{host}/v7"
+        return LEGACY_API_BASE
+
+    async def _fetch_weather_api(
+        self,
+        client: httpx.AsyncClient,
+        path: str,
+        location_id: str,
+        api_key: str,
+    ) -> dict[str, Any]:
+        """请求和风天气 API（Header 认证，兼容新版控制台凭据）。"""
+        url = f"{self._api_base()}/{path}"
+        headers = {"X-QW-Api-Key": api_key}
+        resp = await client.get(
+            url,
+            params={"location": location_id},
+            headers=headers,
+        )
+        data = resp.json()
+
+        if resp.status_code == 403 and isinstance(data.get("error"), dict):
+            detail = data["error"].get("detail", "")
+            if "Host" in detail or "host" in detail.lower():
+                return {
+                    "error": (
+                        "和风天气 API Host 无效或未授权，请检查 .env 中 QWEATHER_API_HOST "
+                        "是否为控制台-设置里的独立 API Host"
+                    )
+                }
+
+        if data.get("code") != "200":
+            code = data.get("code") or resp.status_code
+            return {"error": f"天气 API 返回错误: code={code}"}
+        return data
 
     @staticmethod
     def _resolve_location(question: str) -> str:

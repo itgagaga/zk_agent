@@ -17,7 +17,6 @@ export default function Footer() {
           <div className="footer-col-title">服务</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             <a href="/downloads">办事资料智库</a>
-            <a href="/services">校园办事助手</a>
           </div>
         </div>
         <div>

@@ -4,7 +4,6 @@ const links = [
   { to: '/', label: '首页' },
   { to: '/chat', label: '智能问答' },
   { to: '/downloads', label: '资料智库' },
-  { to: '/services', label: '办事助手' },
   { to: '/documents', label: '智能文档' },
   { to: '/resume', label: '毕业季' },
 ]

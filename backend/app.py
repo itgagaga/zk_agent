@@ -19,7 +19,7 @@ from backend.config import settings
 async def lifespan(app: FastAPI):
     """应用生命周期：启动时初始化资源，关闭时清理。"""
     settings.ensure_dirs()
-    # TODO: 初始化 SQLite、向量库、LLM 客户端
+    # TODO: 初始化向量库、LLM 客户端
     yield
     # TODO: 关闭资源
 

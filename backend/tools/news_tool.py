@@ -9,7 +9,7 @@ from backend.tools.base import BaseTool
 class NewsTool(BaseTool):
     """新闻公告检索工具。
 
-    数据源：SQLite news_article 表 + FTS5 全文索引。
+    数据源：MySQL news_article 表（可用 FULLTEXT 检索）。
     """
 
     name = "news_search"
@@ -23,5 +23,5 @@ class NewsTool(BaseTool):
             category: 栏目（学校要闻/通知公告/校园快讯/媒体仲恺/学术科研）
             top_k: 返回条数上限
         """
-        # TODO: 接入 SQLite FTS5 查询
+        # TODO: 接入 MySQL FULLTEXT / LIKE 查询
         return {"tool": self.name, "items": [], "total": 0}
