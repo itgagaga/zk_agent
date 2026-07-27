@@ -91,6 +91,25 @@ def build_qa_prompt(
                 if item.get("snippet"):
                     context_parts.append(f"  摘要：{item.get('snippet', '')}")
                 context_parts.append(f"  来源：{item.get('source', '')}")
+            elif tool_name == "map_route":
+                # 地图路线规划工具：格式化展示
+                mode_labels = {"driving": "驾车", "transit": "公交/地铁", "walking": "步行", "cycling": "骑行"}
+                mode_label = mode_labels.get(item.get("travel_mode", ""), "公交/地铁")
+                context_parts.append(f"- 路线：{item.get('origin', '')} → {item.get('destination', '')}")
+                context_parts.append(f"  出行方式：{mode_label}")
+                context_parts.append(f"  总距离：{item.get('distance', '')}，预计用时：{item.get('duration', '')}")
+                # 公交方案
+                if item.get("routes"):
+                    for route in item["routes"]:
+                        context_parts.append(f"  【{route.get('plan', '')}】{route.get('duration', '')}，{route.get('distance', '')}")
+                        for seg in route.get("segments", []):
+                            context_parts.append(f"    {seg}")
+                # 驾车/步行/骑行步骤
+                if item.get("steps"):
+                    for i, step in enumerate(item["steps"], 1):
+                        instr = step.get("instruction", "")
+                        dist = step.get("distance", "")
+                        context_parts.append(f"  {i}. {instr}（{dist}）")
             else:
                 context_parts.append(f"- {item}")
 

@@ -43,7 +43,7 @@ _RULES: list[tuple[list[str], IntentResult]] = [
         ),
     ),
     (
-        ["专业", "学院", "机构", "教学机构", "党政", "本科专业", "专业代码"],
+        ["专业", "学院有", "教学机构", "党政", "本科专业", "专业代码", "有哪些专业", "专业有哪些"],
         IntentResult(
             path="tool", tool="major_search", intent_label="专业学院查询"
         ),
@@ -64,6 +64,16 @@ _RULES: list[tuple[list[str], IntentResult]] = [
         ["论文", "文献", "学术搜索", "研究方向", "参考文献", "论文搜索", "前沿论文"],
         IntentResult(
             path="tool", tool="academic_search", intent_label="学术搜索"
+        ),
+    ),
+    (
+        ["怎么去", "怎么走", "路线", "导航", "坐公交", "坐地铁", "乘公交", "乘地铁",
+         "驾车去", "开车去", "坐车去", "步行去", "骑行去",
+         "多远", "多长时间", "多久到", "校区之间",
+         "从广州", "从仲恺", "到白云校区", "到海珠校区",
+         "白云校区怎么", "海珠校区怎么", "到仲恺"],
+        IntentResult(
+            path="tool", tool="map_route", intent_label="路线规划"
         ),
     ),
 ]

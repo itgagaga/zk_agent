@@ -19,6 +19,7 @@ from backend.tools.major_tool import MajorTool
 from backend.tools.service_link_tool import ServiceLinkTool
 from backend.tools.weather_tool import WeatherTool
 from backend.tools.academic_search_tool import AcademicSearchTool
+from backend.tools.map_tool import MapTool
 
 
 class AgentController:
@@ -41,6 +42,7 @@ class AgentController:
             "service_link_search": ServiceLinkTool(),
             "weather_search": WeatherTool(),
             "academic_search": AcademicSearchTool(),
+            "map_route": MapTool(),
         }
 
     @staticmethod

@@ -59,6 +59,7 @@ class Settings(BaseSettings):
 
     # 第三方 API
     qweather_api_key: str = Field(default="", alias="QWEATHER_API_KEY")
+    amap_api_key: str = Field(default="", alias="AMAP_API_KEY")
 
     # 采集源
     zhku_base_url: str = Field(default="https://www.zhku.edu.cn/", alias="ZHKU_BASE_URL")
