@@ -115,7 +115,7 @@ class AnswerGenerator:
         answer_text = await self._call_llm(prompt)
         confidence = self._confidence(sources + user_sources)
 
-        return {
+        result = {
             "answer": answer_text,
             "confidence": confidence,
             "sources": sources + user_sources,
@@ -124,6 +124,11 @@ class AnswerGenerator:
             "fallback": False,
             "session_id": None,
         }
+        # 学术搜索：附加 LLM 关键词优化信息
+        llm_query_opt = evidence.get("llm_query_optimization")
+        if llm_query_opt:
+            result["llm_query_optimization"] = llm_query_opt
+        return result
 
     async def generate_stream(self, question: str, evidence: dict[str, Any], history: list[dict[str, str]] | None = None) -> AsyncGenerator[str, None]:
         """流式生成回答，逐条 yield SSE 格式字符串。
@@ -145,6 +150,10 @@ class AnswerGenerator:
             "tools_used": tools_used,
             "fallback": False,
         }
+        # 学术搜索：附加 LLM 关键词优化信息
+        llm_query_opt = evidence.get("llm_query_optimization")
+        if llm_query_opt:
+            meta["llm_query_optimization"] = llm_query_opt
         yield f"data: {json.dumps(meta, ensure_ascii=False)}\n\n"
 
         # 2. 流式输出 LLM token

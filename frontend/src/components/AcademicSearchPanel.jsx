@@ -25,6 +25,8 @@ export default function AcademicSearchPanel() {
   const [analysis, setAnalysis] = useState('')
   const [analyzing, setAnalyzing] = useState(false)
   const [showAnalysis, setShowAnalysis] = useState(false)
+  const [queryOptimization, setQueryOptimization] = useState(null)
+  const [optimizing, setOptimizing] = useState(false)
   const inputRef = useRef(null)
   const resultsRef = useRef(null)
   const analysisRef = useRef(null)
@@ -38,18 +40,38 @@ export default function AcademicSearchPanel() {
     setSearched(true)
     setAnalysis('')
     setShowAnalysis(false)
+    setQueryOptimization(null)
+    setOptimizing(true)
     try {
+      // 先调用 LLM 优化关键词
+      let optResp
+      try {
+        optResp = await axios.get('/api/resources/academic/optimize', {
+          params: { keyword: q },
+        })
+        setQueryOptimization(optResp.data)
+      } catch {
+        // 关键词优化失败不影响主搜索
+      }
+      setOptimizing(false)
+
+      // 再调用搜索 API（后端内部也会走 LLM 优化）
       const resp = await axios.get('/api/resources/academic', {
         params: { keyword: q, top_k: 8 },
       })
       setResults(resp.data.items || [])
       setTotal(resp.data.total || 0)
+      // 如果搜索结果中有 LLM 优化信息，也更新
+      if (resp.data.llm_query_optimization && !queryOptimization) {
+        setQueryOptimization(resp.data.llm_query_optimization)
+      }
     } catch (err) {
       console.error('学术搜索失败:', err)
       setResults([])
       setTotal(0)
     } finally {
       setLoading(false)
+      setOptimizing(false)
     }
   }
 
@@ -179,6 +201,40 @@ export default function AcademicSearchPanel() {
       {/* 搜索结果 */}
       {searched && (
         <div className="as-results" ref={resultsRef}>
+          {/* LLM 关键词优化展示 */}
+          {queryOptimization && (
+            <div className="as-query-optimization">
+              <div className="as-query-opt-header">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 2a7 7 0 017 7c0 2.38-1.19 4.47-3 5.74V17a1 1 0 01-1 1H9a1 1 0 01-1-1v-2.26C6.19 13.47 5 11.38 5 9a7 7 0 017-7z" />
+                  <line x1="9" y1="21" x2="15" y2="21" />
+                </svg>
+                <span>LLM 关键词优化</span>
+              </div>
+              <div className="as-query-opt-body">
+                <span className="as-query-opt-original">
+                  原始查询：{queryOptimization.original || query}
+                </span>
+                {queryOptimization.zh_keywords && (
+                  <span className="as-query-opt-kw">
+                    Crossref → {queryOptimization.zh_keywords}
+                  </span>
+                )}
+                {queryOptimization.en_keywords && (
+                  <span className="as-query-opt-kw">
+                    arXiv → {queryOptimization.en_keywords}
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
+          {/* 关键词优化中 */}
+          {optimizing && !queryOptimization && (
+            <div className="as-query-optimizing">
+              <span className="rf-spinner" />
+              <span>LLM 正在优化搜索关键词...</span>
+            </div>
+          )}
           <div className="as-results-header">
             <div className="as-results-header-row">
               {loading ? (

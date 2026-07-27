@@ -56,6 +56,9 @@ class ChatResponse(BaseModel):
     tools_used: list[str] = Field(default_factory=list)
     fallback: bool = False
     session_id: str | None = None
+    llm_query_optimization: dict | None = Field(
+        default=None, description="LLM 关键词优化结果（学术搜索专用）"
+    )
 
 
 @router.post("", response_model=ChatResponse)

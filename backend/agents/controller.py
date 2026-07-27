@@ -3,6 +3,9 @@
 负责统一接收用户问题，调用 router 判断意图，
 分发到 RAG / 智能文档 / 结构化工具，
 最终由 answer_generator 生成带来源的回答。
+
+学术搜索流程（LLM + 第三方 API 协作）：
+  用户问题 → LLM 优化关键词 → Crossref/arXiv API 搜索 → LLM 整合分析回答
 """
 from __future__ import annotations
 
@@ -118,7 +121,17 @@ class AgentController:
             print(f"[Agent] RAG 命中: {len(evidence.get('rag_hits', []))} 条")
             tool = self.tools.get(intent.tool)
             if tool is not None:
-                evidence["tool_result"] = await tool.run(question, **intent.tool_args)
+                # 学术搜索：记录 LLM 优化关键词过程
+                if intent.tool == "academic_search":
+                    # LLM 优化关键词已在 AcademicSearchTool.run() 内部完成
+                    evidence["tool_result"] = await tool.run(question, **intent.tool_args)
+                    # 提取 LLM 优化后的关键词信息，供前端展示
+                    query_used = evidence["tool_result"].get("query_used", {})
+                    if query_used:
+                        evidence["llm_query_optimization"] = query_used
+                        print(f"[Agent] LLM 关键词优化: zh='{query_used.get('zh')}', en='{query_used.get('en')}'")
+                else:
+                    evidence["tool_result"] = await tool.run(question, **intent.tool_args)
                 item_count = len(evidence.get("tool_result", {}).get("items", []))
                 print(f"[Agent] 工具 {intent.tool} 返回: {item_count} 条")
             else:
@@ -176,7 +189,15 @@ class AgentController:
             evidence["rag_hits"] = await self.retriever.search(rag_query)
             tool = self.tools.get(intent.tool)
             if tool is not None:
-                evidence["tool_result"] = await tool.run(question, **intent.tool_args)
+                # 学术搜索：记录 LLM 优化关键词过程
+                if intent.tool == "academic_search":
+                    evidence["tool_result"] = await tool.run(question, **intent.tool_args)
+                    query_used = evidence["tool_result"].get("query_used", {})
+                    if query_used:
+                        evidence["llm_query_optimization"] = query_used
+                        print(f"[Agent-Stream] LLM 关键词优化: zh='{query_used.get('zh')}', en='{query_used.get('en')}'")
+                else:
+                    evidence["tool_result"] = await tool.run(question, **intent.tool_args)
             else:
                 evidence["rag_hits"] = await self.retriever.search(rag_query)
         elif intent.path == "hybrid":

@@ -76,7 +76,8 @@ def build_qa_prompt(
                         f"{fc.get('wind_dir_day', '')} {fc.get('wind_scale_day', '')}级"
                     )
             elif tool_name == "academic_search":
-                # 学术搜索工具：格式化展示
+                # 学术搜索工具：格式化展示（LLM + 第三方 API 协作）
+                context_parts.append("  【说明：以下论文由 LLM 优化搜索关键词后，通过 Crossref/arXiv 第三方 API 检索获得】")
                 context_parts.append(
                     f"- [{item.get('year', '')}] {item.get('title', '')}"
                 )

@@ -80,6 +80,9 @@ class DownloadResourceItem(BaseModel):
 class ListResponse(BaseModel):
     total: int
     items: list
+    llm_query_optimization: dict | None = Field(
+        default=None, description="LLM 关键词优化结果（学术搜索专用）"
+    )
 
 
 def _detect_file_type(url: str) -> str | None:
@@ -252,7 +255,10 @@ async def search_academic(
     keyword: str = Query(default=..., description="搜索关键词"),
     top_k: int = Query(default=5, ge=1, le=20),
 ) -> ListResponse:
-    """学术论文搜索（Crossref + arXiv，无需 API Key）。"""
+    """学术论文搜索（LLM 优化关键词 + Crossref/arXiv API）。
+
+    流程：用户输入 → LLM 优化为学术搜索关键词 → Crossref + arXiv 搜索 → 返回结果
+    """
     result = await _academic_search_tool.run(keyword, top_k=top_k)
     items: list[dict[str, Any]] = []
     for item in result.get("items", []):
@@ -268,13 +274,34 @@ async def search_academic(
                 "snippet": item.get("snippet", ""),
             }
         )
-    return ListResponse(total=len(items), items=items)
+    # 附加 LLM 优化关键词信息
+    extra = {}
+    query_used = result.get("query_used")
+    if query_used:
+        extra["llm_query_optimization"] = query_used
+    return ListResponse(total=len(items), items=items, **extra)
 
 
 class AcademicAnalyzeRequest(BaseModel):
     """学术搜索 AI 解读请求。"""
     keyword: str = Field(..., description="搜索关键词")
     papers: list[dict[str, Any]] = Field(..., description="搜索结果论文列表")
+
+
+@router.get("/academic/optimize")
+async def optimize_academic_query(
+    keyword: str = Query(default=..., description="用户输入的自然语言查询"),
+) -> dict[str, Any]:
+    """LLM 优化学术搜索关键词。
+
+    将用户自然语言问题转化为 Crossref/arXiv 友好的搜索关键词。
+    """
+    zh_kw, en_kw = await _academic_search_tool.optimize_query(keyword)
+    return {
+        "original": keyword,
+        "zh_keywords": zh_kw,
+        "en_keywords": en_kw,
+    }
 
 
 @router.post("/academic/analyze")
