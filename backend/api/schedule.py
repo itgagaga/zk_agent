@@ -43,6 +43,12 @@ from backend.services.schedule_store import (
     save_schedule_data,
 )
 from backend.storage.user_files import delete_path, to_data_relative, user_schedule_dir
+from backend.services.travel_navigate import (
+    TRAVEL_MODES,
+    generate_travel_analysis,
+    list_navigation_locations,
+    plan_navigation,
+)
 from backend.tools.weather_tool import WeatherTool
 
 router = APIRouter()
@@ -68,6 +74,49 @@ class TodayCampusResponse(BaseModel):
     advice: str = ""
     advice_cached: bool = False
     schedule_meta: dict[str, Any] | None = None
+
+
+class NavigateLocationItem(BaseModel):
+    key: str
+    label: str
+    category: str
+
+
+class NavigateLocationsResponse(BaseModel):
+    ok: bool = True
+    locations: list[NavigateLocationItem] = Field(default_factory=list)
+    travel_modes: dict[str, str] = Field(default_factory=dict)
+
+
+class NavigateRequest(BaseModel):
+    origin: str = Field(..., description="起点 key，如 海珠校区")
+    destination: str = Field(..., description="终点 key，如 广州南站")
+    travel_mode: str = Field(default="transit", description="driving|transit|walking|cycling")
+
+
+class TravelAnalysis(BaseModel):
+    recommended_plan: str = ""
+    summary: str = ""
+    route_reason: str = ""
+    weather_tips: str = ""
+    extra_tips: str = ""
+
+
+class NavigateResponse(BaseModel):
+    ok: bool = True
+    origin: str = ""
+    destination: str = ""
+    origin_key: str = ""
+    destination_key: str = ""
+    travel_mode: str = "transit"
+    distance: str = ""
+    duration: str = ""
+    summary: str = ""
+    routes: list[dict[str, Any]] = Field(default_factory=list)
+    steps: list[dict[str, Any]] = Field(default_factory=list)
+    weather: dict[str, Any] | None = None
+    analysis: TravelAnalysis | None = None
+    error: str = ""
 
 
 def _init_llm() -> Any:
@@ -366,6 +415,60 @@ async def get_today_campus(
         advice=advice,
         advice_cached=advice_cached and not refresh_advice,
         schedule_meta=meta,
+    )
+
+
+@router.get("/navigate/locations", response_model=NavigateLocationsResponse)
+async def get_navigate_locations() -> NavigateLocationsResponse:
+    """返回「去哪儿」可选地点与出行方式。"""
+    return NavigateLocationsResponse(
+        ok=True,
+        locations=[NavigateLocationItem(**item) for item in list_navigation_locations()],
+        travel_modes=dict(TRAVEL_MODES),
+    )
+
+
+@router.post("/navigate", response_model=NavigateResponse)
+async def navigate_campus(
+    body: NavigateRequest,
+    db: Session = Depends(get_db),
+) -> NavigateResponse:
+    """结构化路线查询 + 结合当前天气的 LLM 出行分析。"""
+    route_result = await plan_navigation(
+        body.origin.strip(),
+        body.destination.strip(),
+        body.travel_mode.strip() or None,
+    )
+    if not route_result.get("ok"):
+        return NavigateResponse(ok=False, error=route_result.get("error", "路线规划失败"))
+
+    today = date.today()
+    weather, _ = await _get_weather(db, today)
+    weather_payload = weather if weather and not weather.get("error") else None
+
+    route_item = route_result["route_item"]
+    analysis_data = await generate_travel_analysis(
+        origin_key=route_result["origin_key"],
+        destination_key=route_result["destination_key"],
+        travel_mode=route_result["travel_mode"],
+        route_item=route_item,
+        weather=weather_payload,
+    )
+
+    return NavigateResponse(
+        ok=True,
+        origin=route_result["origin"],
+        destination=route_result["destination"],
+        origin_key=route_result["origin_key"],
+        destination_key=route_result["destination_key"],
+        travel_mode=route_result["travel_mode"],
+        distance=route_result["distance"],
+        duration=route_result["duration"],
+        summary=route_result["summary"],
+        routes=route_result["routes"],
+        steps=route_result["steps"],
+        weather=weather_payload,
+        analysis=TravelAnalysis(**analysis_data),
     )
 
 

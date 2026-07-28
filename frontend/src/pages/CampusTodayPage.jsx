@@ -19,6 +19,7 @@ import campusGarden from '../assets/campus/garden.webp'
 import campusLibrary from '../assets/campus/library.webp'
 import campusNight from '../assets/campus/night.webp'
 import WeekScheduleGrid from '../components/WeekScheduleGrid.jsx'
+import CampusNavigate from '../components/CampusNavigate.jsx'
 import { getColorIndex, getCourseStyle } from '../utils/scheduleColors.js'
 import { getAuthHeader, getAuthSnapshot, subscribeAuth } from '../authStore.js'
 
@@ -228,6 +229,9 @@ export default function CampusTodayPage() {
             )}
           </section>
         </div>
+
+        {/* 去哪儿 */}
+        <CampusNavigate weather={weather} />
 
         {/* 今日课程时间线 */}
         <section className="ct-section">

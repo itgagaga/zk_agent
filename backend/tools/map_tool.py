@@ -60,6 +60,81 @@ class MapTool:
     name = "map_route"
     description = "路线规划与地点查询，支持驾车/公交/步行/骑行多种出行方式"
 
+    async def run_structured(
+        self,
+        origin_addr: str,
+        dest_addr: str,
+        travel_mode: str = "transit",
+    ) -> dict[str, Any]:
+        """结构化路线规划：已知起终点完整地址，跳过 LLM 参数提取。"""
+        api_key = settings.amap_api_key
+        if not api_key:
+            return {
+                "tool": self.name,
+                "items": [],
+                "total": 0,
+                "error": "未配置高德地图 API Key，请在 .env 中设置 AMAP_API_KEY",
+            }
+
+        if travel_mode not in ("driving", "transit", "walking", "cycling"):
+            travel_mode = "transit"
+
+        async with httpx.AsyncClient(timeout=10) as client:
+            origin_loc = await self._geocode(client, api_key, origin_addr)
+            dest_loc = await self._geocode(client, api_key, dest_addr)
+
+        if not origin_loc:
+            return {
+                "tool": self.name,
+                "items": [],
+                "total": 0,
+                "error": f"无法解析起点地址「{origin_addr}」，请稍后重试",
+            }
+        if not dest_loc:
+            return {
+                "tool": self.name,
+                "items": [],
+                "total": 0,
+                "error": f"无法解析终点地址「{dest_addr}」，请稍后重试",
+            }
+
+        async with httpx.AsyncClient(timeout=15) as client:
+            route_data = await self._plan_route(
+                client, api_key, origin_loc, dest_loc, travel_mode
+            )
+
+        if not route_data:
+            return {
+                "tool": self.name,
+                "items": [],
+                "total": 0,
+                "error": "路线规划失败，请稍后重试",
+            }
+
+        item = {
+            "title": f"{origin_addr} → {dest_addr}",
+            "department": "高德地图API",
+            "url": "",
+            "publish_date": "",
+            "snippet": route_data.get("summary", ""),
+            "origin": origin_addr,
+            "origin_location": origin_loc,
+            "destination": dest_addr,
+            "destination_location": dest_loc,
+            "travel_mode": travel_mode,
+            "distance": route_data.get("distance", ""),
+            "duration": route_data.get("duration", ""),
+            "summary": route_data.get("summary", ""),
+            "routes": route_data.get("routes", []),
+            "steps": route_data.get("steps", []),
+        }
+
+        return {
+            "tool": self.name,
+            "items": [item],
+            "total": 1,
+        }
+
     async def run(self, question: str, **kwargs: Any) -> dict[str, Any]:
         """执行路线规划。
 
