@@ -22,6 +22,8 @@ async def lifespan(app: FastAPI):
     # 确保用户相关表存在（兼容已有库未跑全量 schema 的情况）
     try:
         from backend.database.models import (
+            CampusAdviceCache,
+            CampusWeatherCache,
             ChatMessage,
             ChatSession,
             ResumeProfile,
@@ -37,6 +39,8 @@ async def lifespan(app: FastAPI):
             ChatMessage.__table__,
             ResumeProfile.__table__,
             UserSchedule.__table__,
+            CampusWeatherCache.__table__,
+            CampusAdviceCache.__table__,
             UserDocument.__table__,
         ):
             table.create(bind=engine, checkfirst=True)

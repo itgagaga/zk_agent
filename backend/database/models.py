@@ -244,6 +244,29 @@ class ResumeProfile(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 
+class CampusWeatherCache(Base):
+    """今日校园天气缓存（按自然日，全站共享广州天气）。"""
+
+    __tablename__ = "campus_weather_cache"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    cache_date = Column(String(10), nullable=False, unique=True, index=True)
+    data = Column(Text, nullable=False, default="{}")
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class CampusAdviceCache(Base):
+    """今日校园 AI 建议缓存（按用户 + 自然日）。"""
+
+    __tablename__ = "campus_advice_cache"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, nullable=False, index=True)
+    cache_date = Column(String(10), nullable=False, index=True)
+    advice = Column(Text, nullable=False, default="")
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
 class UserSchedule(Base):
     """用户课表（每人一份，Excel 解析后的 JSON）。"""
 

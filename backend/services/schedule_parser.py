@@ -189,14 +189,17 @@ def parse_schedule_excel(content: bytes, filename: str = "") -> dict[str, Any]:
 def get_today_courses(
     schedule: dict[str, Any],
     today: date | None = None,
+    *,
+    week: int | None = None,
 ) -> list[dict[str, Any]]:
-    """筛选今日、当前教学周应上的课程。"""
+    """筛选指定日、指定教学周应上的课程。"""
     today = today or date.today()
     weekday = today.weekday()  # 0=Mon
     day_name = WEEKDAY_HEADERS[weekday]
-    week = schedule.get("current_week") or estimate_current_week(
-        schedule.get("meta", {}).get("semester", ""), today
-    )
+    if week is None:
+        week = schedule.get("current_week") or estimate_current_week(
+            schedule.get("meta", {}).get("semester", ""), today
+        )
 
     result: list[dict[str, Any]] = []
     for course in schedule.get("courses", []):
@@ -209,3 +212,73 @@ def get_today_courses(
 
     result.sort(key=lambda c: c.get("start", ""))
     return result
+
+
+def get_semester_week_bounds(courses: list[dict[str, Any]]) -> tuple[int, int]:
+    """从课程周次推断学期教学周范围。"""
+    max_week = 18
+    for course in courses:
+        for lo, hi in course.get("week_ranges") or []:
+            max_week = max(max_week, hi)
+    return 1, max(max_week, 20)
+
+
+def semester_week_start(semester: str) -> date | None:
+    m = re.match(r"(\d{4})-(\d{4})-(\d)", (semester or "").strip())
+    if not m:
+        return None
+    y1, y2, term = int(m.group(1)), int(m.group(2)), int(m.group(3))
+    return date(y1, 9, 1) if term == 1 else date(y2, 2, 24)
+
+
+def week_calendar_range(semester: str, week: int) -> dict[str, str]:
+    """返回某教学周周一至周日的日期字符串。"""
+    start = semester_week_start(semester)
+    if not start or week < 1:
+        return {}
+    monday = start.fromordinal(start.toordinal() + (week - 1) * 7)
+    # 对齐到周一
+    monday = monday.fromordinal(monday.toordinal() - monday.weekday())
+    days = {}
+    for i, name in enumerate(WEEKDAY_HEADERS):
+        d = monday.fromordinal(monday.toordinal() + i)
+        days[name] = d.strftime("%m/%d")
+    return days
+
+
+def filter_courses_by_week(
+    courses: list[dict[str, Any]], week: int
+) -> list[dict[str, Any]]:
+    result: list[dict[str, Any]] = []
+    for course in courses:
+        ranges = course.get("week_ranges") or []
+        if ranges and not week_in_ranges(week, ranges):
+            continue
+        result.append({**course, "active_week": week})
+    return result
+
+
+def filter_grid_by_week(
+    grid: list[dict[str, Any]], week: int
+) -> list[dict[str, Any]]:
+    """按教学周过滤课表网格，仅保留当周有课的课程块。"""
+    filtered: list[dict[str, Any]] = []
+    for row in grid:
+        days: dict[str, list[dict[str, Any]]] = {}
+        for day_name, day_courses in (row.get("days") or {}).items():
+            active = [
+                {**c, "active_week": week}
+                for c in day_courses
+                if not c.get("week_ranges")
+                or week_in_ranges(week, c.get("week_ranges") or [])
+            ]
+            if active:
+                days[day_name] = active
+        filtered.append({**row, "days": days})
+    return filtered
+
+
+def build_course_legend(courses: list[dict[str, Any]]) -> list[dict[str, str]]:
+    """为当周课程生成稳定配色图例（按课程名去重排序）。"""
+    names = sorted({c.get("name", "") for c in courses if c.get("name")})
+    return [{"name": name, "color_index": i % 8} for i, name in enumerate(names)]

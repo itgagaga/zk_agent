@@ -7533,11 +7533,262 @@ a.as-paper-title:hover {
   font-weight: 600;
   text-align: center;
   position: relative;
+  vertical-align: middle;
+  min-width: 96px;
+}
+
+.ct-grid-day-name {
+  display: block;
+  font-size: 13px;
+}
+
+.ct-grid-day-date {
+  display: block;
+  font-size: 11px;
+  color: var(--color-slate);
+  font-weight: 450;
+  margin-top: 2px;
 }
 
 .ct-grid th.is-today,
 .ct-grid td.is-today {
-  background: rgba(243, 115, 56, 0.06);
+  background: rgba(243, 115, 56, 0.08);
+  box-shadow: inset 0 3px 0 var(--color-signal-orange);
+}
+
+.ct-grid td {
+  min-height: 72px;
+  height: 1px;
+}
+
+.ct-grid-empty {
+  display: block;
+  min-height: 48px;
+  border-radius: 8px;
+  background: repeating-linear-gradient(
+    -45deg,
+    transparent,
+    transparent 4px,
+    rgba(0, 0, 0, 0.02) 4px,
+    rgba(0, 0, 0, 0.02) 8px
+  );
+  opacity: 0.5;
+}
+
+.ct-grid-wrap.is-loading {
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+/* 周次导航 */
+.ct-week-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 16px;
+  margin-bottom: var(--space-3);
+  padding: 14px 18px;
+  background: var(--color-white);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-nav);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.ct-week-nav-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 14px;
+  border-radius: var(--radius-pill);
+  background: var(--color-canvas);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-charcoal);
+  transition: background 0.15s, color 0.15s;
+}
+
+.ct-week-nav-btn:hover:not(:disabled) {
+  background: #fff0e8;
+  color: var(--color-signal-orange);
+}
+
+.ct-week-nav-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.ct-week-nav-center {
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 10px 16px;
+  min-width: 200px;
+}
+
+.ct-week-select-label {
+  font-size: 13px;
+  color: var(--color-slate);
+}
+
+.ct-week-select {
+  padding: 8px 32px 8px 14px;
+  border-radius: var(--radius-pill);
+  border: 1.5px solid var(--color-dust-taupe);
+  background: var(--color-canvas-lifted);
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-ink);
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23696969' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+}
+
+.ct-week-select:focus {
+  outline: none;
+  border-color: var(--color-signal-orange);
+}
+
+.ct-week-summary {
+  font-size: 13px;
+  color: var(--color-slate);
+}
+
+.ct-week-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: var(--radius-pill);
+  background: var(--color-ink);
+  color: var(--color-canvas);
+  font-size: 13px;
+  font-weight: 500;
+  margin-left: auto;
+}
+
+.ct-week-back-btn:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.ct-week-empty-hint {
+  text-align: center;
+  font-size: 14px;
+  color: var(--color-slate);
+  margin-top: var(--space-2);
+}
+
+.ct-schedule-loading {
+  text-align: center;
+  padding: var(--space-4);
+  color: var(--color-slate);
+}
+
+/* 课程色块 — 参考 shadcn Class Timetable / CourseKit EventCard */
+.ct-course-block {
+  --course-bg: #fff0e8;
+  --course-border: #cf4500;
+  --course-text: #9a3a0a;
+  padding: 8px 10px;
+  margin-bottom: 6px;
+  border-radius: 10px;
+  background: var(--course-bg);
+  border-left: 4px solid var(--course-border);
+  font-size: 12px;
+  line-height: 1.4;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.ct-course-block:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.ct-course-block:last-child {
+  margin-bottom: 0;
+}
+
+.ct-course-block-name {
+  display: block;
+  font-weight: 600;
+  color: var(--course-text);
+  font-size: 13px;
+  line-height: 1.3;
+}
+
+.ct-course-block-loc {
+  display: block;
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--color-granite);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.ct-course-block-teacher {
+  display: block;
+  margin-top: 2px;
+  font-size: 11px;
+  color: var(--color-slate);
+}
+
+.ct-course-block-tag {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 1px 6px;
+  border-radius: var(--radius-pill);
+  background: rgba(56, 96, 190, 0.12);
+  color: var(--color-link-blue);
+  font-size: 10px;
+}
+
+/* 图例 */
+.ct-legend {
+  margin-top: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-canvas-lifted);
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.ct-legend-title {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-slate);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 10px;
+}
+
+.ct-legend-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ct-legend-chip {
+  padding: 4px 12px;
+  border-radius: var(--radius-pill);
+  font-size: 12px;
+  font-weight: 600;
+  border-left-width: 3px;
+  border-left-style: solid;
+}
+
+.ct-schedule-section {
+  margin-top: var(--space-2);
+}
+
+.ct-schedule-head {
+  margin-bottom: var(--space-2);
 }
 
 .ct-today-dot {
@@ -7570,39 +7821,6 @@ a.as-paper-title:hover {
   color: var(--color-slate);
 }
 
-.ct-course-pill {
-  --course-accent: var(--color-signal-orange);
-  padding: 6px 8px;
-  margin-bottom: 6px;
-  border-radius: 10px;
-  background: color-mix(in srgb, var(--course-accent) 10%, white);
-  border-left: 3px solid var(--course-accent);
-  font-size: 12px;
-  line-height: 1.35;
-}
-
-.ct-course-pill:last-child {
-  margin-bottom: 0;
-}
-
-.ct-course-pill-name {
-  display: block;
-  font-weight: 600;
-  color: var(--color-ink);
-}
-
-.ct-course-pill-meta,
-.ct-course-pill-teacher {
-  display: block;
-  font-size: 11px;
-  color: var(--color-slate);
-  margin-top: 2px;
-}
-
-.ct-course-pill.is-compact {
-  padding: 4px 6px;
-}
-
 @media (max-width: 960px) {
   .campus-today-hero-grid {
     grid-template-columns: 1fr;
@@ -7623,6 +7841,20 @@ a.as-paper-title:hover {
   .ct-upload-cta {
     margin-left: 0;
     width: 100%;
+    justify-content: center;
+  }
+
+  .ct-week-nav {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .ct-week-nav-center {
+    order: -1;
+  }
+
+  .ct-week-back-btn {
+    margin-left: 0;
     justify-content: center;
   }
 }

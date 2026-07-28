@@ -21,9 +21,21 @@ from backend.database.models import User
 from backend.database.session import get_db
 from backend.services.schedule_parser import (
     WEEKDAY_HEADERS,
+    build_course_legend,
     estimate_current_week,
+    filter_courses_by_week,
+    filter_grid_by_week,
+    get_semester_week_bounds,
     get_today_courses,
     parse_schedule_excel,
+    week_calendar_range,
+)
+from backend.services.campus_cache import (
+    clear_advice_cache,
+    load_advice_cache,
+    load_weather_cache,
+    save_advice_cache,
+    save_weather_cache,
 )
 from backend.services.schedule_store import (
     delete_schedule_data,
@@ -52,6 +64,7 @@ class TodayCampusResponse(BaseModel):
     current_week: int = 1
     today_courses: list[dict[str, Any]] = Field(default_factory=list)
     weather: dict[str, Any] | None = None
+    weather_cached: bool = False
     advice: str = ""
     advice_cached: bool = False
     schedule_meta: dict[str, Any] | None = None
@@ -161,6 +174,52 @@ async def _fetch_weather() -> dict[str, Any] | None:
     }
 
 
+async def _get_weather(db: Session, today: date) -> tuple[dict[str, Any] | None, bool]:
+    """优先读库；当日无缓存时才请求和风天气并写入库。"""
+    cached = load_weather_cache(db, today)
+    if cached is not None:
+        payload = {k: v for k, v in cached.items() if not str(k).startswith("_")}
+        if cached.get("_cached_at"):
+            payload["cached_at"] = cached["_cached_at"]
+        return payload, True
+
+    weather = await _fetch_weather()
+    if weather and not weather.get("error"):
+        save_weather_cache(db, weather, today)
+    return weather, False
+
+
+async def _get_advice(
+    db: Session,
+    *,
+    user_id: int | None,
+    today: date,
+    refresh: bool,
+    weekday: str,
+    week: int,
+    courses: list[dict[str, Any]],
+    weather: dict[str, Any] | None,
+    meta: dict[str, Any],
+) -> tuple[str, bool]:
+    """优先读库；仅 refresh=True 或无缓存时调用 LLM 并写入库。"""
+    if not refresh:
+        cached = load_advice_cache(db, user_id, today)
+        if cached:
+            return cached, True
+
+    advice = await _generate_advice(
+        _build_advice_prompt(
+            weekday=weekday,
+            week=week,
+            courses=courses,
+            weather=weather if weather and not weather.get("error") else None,
+            meta=meta,
+        )
+    )
+    save_advice_cache(db, user_id, advice, today)
+    return advice, False
+
+
 @router.get("/profile", response_model=ScheduleProfileResponse)
 async def get_schedule_profile(
     current_user: User = Depends(get_current_user),
@@ -212,6 +271,7 @@ async def upload_schedule(
     rel = to_data_relative(raw_path)
     parsed["filename"] = filename
     save_schedule_data(db, current_user.id, parsed, file_path=rel, filename=filename)
+    clear_advice_cache(db, current_user.id)
 
     return JSONResponse(
         status_code=200,
@@ -247,55 +307,53 @@ async def get_today_campus(
 ) -> TodayCampusResponse:
     today = date.today()
     weekday = WEEKDAY_HEADERS[today.weekday()]
+    user_id = current_user.id if current_user else None
+
+    weather, weather_cached = await _get_weather(db, today)
 
     schedule: dict[str, Any] | None = None
     if current_user:
         schedule = load_schedule_data(db, current_user.id)
 
-    weather = await _fetch_weather()
-
     if not schedule:
-        advice = await _generate_advice(
-            _build_advice_prompt(
-                weekday=weekday,
-                week=1,
-                courses=[],
-                weather=weather if not weather.get("error") else None,
-                meta={},
-            )
+        advice, advice_cached = await _get_advice(
+            db,
+            user_id=user_id,
+            today=today,
+            refresh=refresh_advice,
+            weekday=weekday,
+            week=1,
+            courses=[],
+            weather=weather,
+            meta={},
         )
         return TodayCampusResponse(
             ok=True,
             has_schedule=False,
             weekday=weekday,
             weather=weather,
+            weather_cached=weather_cached,
             advice=advice,
+            advice_cached=advice_cached and not refresh_advice,
         )
 
     week = schedule.get("current_week") or estimate_current_week(
         schedule.get("meta", {}).get("semester", ""), today
     )
-    schedule["current_week"] = week
     today_courses = get_today_courses(schedule, today)
     meta = schedule.get("meta", {})
 
-    cache_key = f"_advice_{today.isoformat()}"
-    advice = schedule.get(cache_key, "") if not refresh_advice else ""
-    advice_cached = bool(advice)
-
-    if not advice or refresh_advice:
-        advice = await _generate_advice(
-            _build_advice_prompt(
-                weekday=weekday,
-                week=week,
-                courses=today_courses,
-                weather=weather if not weather.get("error") else None,
-                meta=meta,
-            )
-        )
-        if current_user:
-            schedule[cache_key] = advice
-            save_schedule_data(db, current_user.id, schedule)
+    advice, advice_cached = await _get_advice(
+        db,
+        user_id=user_id,
+        today=today,
+        refresh=refresh_advice,
+        weekday=weekday,
+        week=week,
+        courses=today_courses,
+        weather=weather,
+        meta=meta,
+    )
 
     return TodayCampusResponse(
         ok=True,
@@ -304,6 +362,7 @@ async def get_today_campus(
         current_week=week,
         today_courses=today_courses,
         weather=weather,
+        weather_cached=weather_cached,
         advice=advice,
         advice_cached=advice_cached and not refresh_advice,
         schedule_meta=meta,
@@ -312,20 +371,45 @@ async def get_today_campus(
 
 @router.get("/week")
 async def get_week_grid(
+    week: int | None = None,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> JSONResponse:
     schedule = load_schedule_data(db, current_user.id)
     if not schedule:
         return JSONResponse(status_code=404, content={"ok": False, "detail": "尚未上传课表"})
-    week = schedule.get("current_week") or estimate_current_week(
+
+    current_week = schedule.get("current_week") or estimate_current_week(
         schedule.get("meta", {}).get("semester", "")
     )
+    min_week, max_week = get_semester_week_bounds(schedule.get("courses", []))
+    selected_week = week if week is not None else current_week
+    selected_week = max(min_week, min(max_week, selected_week))
+
+    raw_grid = schedule.get("grid", [])
+    all_courses = schedule.get("courses", [])
+    week_courses = filter_courses_by_week(all_courses, selected_week)
+    filtered_grid = filter_grid_by_week(raw_grid, selected_week)
+    legend = build_course_legend(week_courses)
+    legend_map = {item["name"]: item["color_index"] for item in legend}
+    semester = schedule.get("meta", {}).get("semester", "")
+    day_dates = week_calendar_range(semester, selected_week)
+
     return JSONResponse(
         content={
             "ok": True,
-            "current_week": week,
-            "grid": schedule.get("grid", []),
+            "current_week": current_week,
+            "selected_week": selected_week,
+            "min_week": min_week,
+            "max_week": max_week,
+            "grid": filtered_grid,
+            "week_courses": week_courses,
+            "course_count": len(week_courses),
+            "unique_course_count": len(legend),
+            "legend": legend,
+            "legend_map": legend_map,
+            "day_dates": day_dates,
             "meta": schedule.get("meta", {}),
+            "is_current_week": selected_week == current_week,
         }
     )

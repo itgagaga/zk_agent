@@ -18,32 +18,14 @@ import {
 import campusGarden from '../assets/campus/garden.webp'
 import campusLibrary from '../assets/campus/library.webp'
 import campusNight from '../assets/campus/night.webp'
+import WeekScheduleGrid from '../components/WeekScheduleGrid.jsx'
+import { getColorIndex, getCourseStyle } from '../utils/scheduleColors.js'
 import { getAuthHeader, getAuthSnapshot, subscribeAuth } from '../authStore.js'
 
 const WEEKDAYS = ['星期一', '星期二', '星期三', '星期四', '星期五', '星期六', '星期日']
 
-const TIME_ROWS = [
-  { key: '第一二节', label: '1–2 节', time: '08:00' },
-  { key: '第三四节', label: '3–4 节', time: '10:00' },
-  { key: '第五节', label: '5 节', time: '14:00' },
-  { key: '第六七节', label: '6–7 节', time: '15:00' },
-  { key: '第八九节', label: '8–9 节', time: '17:00' },
-  { key: '第十十一十二节', label: '10–12 节', time: '19:00' },
-]
-
-const COURSE_COLORS = [
-  '#CF4500',
-  '#3860BE',
-  '#2D6A4F',
-  '#9A3A0A',
-  '#6B4C9A',
-  '#C9184A',
-]
-
-function hashColor(name) {
-  let h = 0
-  for (let i = 0; i < (name || '').length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0
-  return COURSE_COLORS[h % COURSE_COLORS.length]
+function getCourseColorIndex(name, legendMap) {
+  return getColorIndex(name, legendMap)
 }
 
 function WeatherIcon({ text, size = 48 }) {
@@ -69,28 +51,9 @@ function formatDate() {
   })
 }
 
-function CoursePill({ course, compact }) {
-  const color = hashColor(course.name)
-  return (
-    <div
-      className={`ct-course-pill ${compact ? 'is-compact' : ''}`}
-      style={{ '--course-accent': color }}
-    >
-      <span className="ct-course-pill-name">{course.name}</span>
-      {!compact && (
-        <>
-          <span className="ct-course-pill-meta">{course.location || '地点待定'}</span>
-          <span className="ct-course-pill-teacher">{course.teacher}</span>
-        </>
-      )}
-    </div>
-  )
-}
-
 export default function CampusTodayPage() {
   const { user } = useSyncExternalStore(subscribeAuth, getAuthSnapshot)
   const [data, setData] = useState(null)
-  const [grid, setGrid] = useState(null)
   const [loading, setLoading] = useState(true)
   const [refreshingAdvice, setRefreshingAdvice] = useState(false)
 
@@ -104,17 +67,13 @@ export default function CampusTodayPage() {
     else setLoading(true)
     try {
       const params = refreshAdvice ? { refresh_advice: true } : {}
-      const [todayResp, gridResp] = await Promise.all([
+      const [todayResp] = await Promise.all([
         axios.get('/api/schedule/today', {
           params,
           headers: getAuthHeader(),
         }),
-        user
-          ? axios.get('/api/schedule/week', { headers: getAuthHeader() }).catch(() => null)
-          : Promise.resolve(null),
       ])
       setData(todayResp.data)
-      setGrid(gridResp?.data?.ok ? gridResp.data : null)
     } catch {
       setData(null)
     } finally {
@@ -130,19 +89,29 @@ export default function CampusTodayPage() {
   const weather = data?.weather
   const mood = weatherMood(weather?.text)
   const courses = data?.today_courses || []
+  const legendMap = useMemo(() => {
+    const map = {}
+    for (const c of courses) {
+      if (!map[c.name]) map[c.name] = getCourseColorIndex(c.name, {})
+    }
+    return map
+  }, [courses])
+
   const adviceLines = (data?.advice || '')
     .split(/\n+/)
     .map((s) => s.replace(/^[\d\-•·\.]+\s*/, '').trim())
     .filter(Boolean)
 
-  const gridMap = useMemo(() => {
-    const map = {}
-    if (!grid?.grid) return map
-    for (const row of grid.grid) {
-      map[row.time_slot] = row.days || {}
-    }
-    return map
-  }, [grid])
+  function timelineDotStyle(name) {
+    const idx = getCourseColorIndex(name, legendMap)
+    const style = getCourseStyle(idx)
+    return { background: style['--course-border'] }
+  }
+
+  function timelineCardStyle(name) {
+    const idx = getCourseColorIndex(name, legendMap)
+    return getCourseStyle(idx)
+  }
 
   return (
     <div className="campus-today-page">
@@ -291,8 +260,14 @@ export default function CampusTodayPage() {
                     <span className="ct-timeline-sep">—</span>
                     <span>{c.end}</span>
                   </div>
-                  <div className="ct-timeline-dot" style={{ background: hashColor(c.name) }} />
-                  <div className="ct-timeline-card">
+                  <div className="ct-timeline-dot" style={timelineDotStyle(c.name)} />
+                  <div
+                    className="ct-timeline-card"
+                    style={{
+                      borderLeftColor: timelineCardStyle(c.name)['--course-border'],
+                      background: timelineCardStyle(c.name)['--course-bg'],
+                    }}
+                  >
                     <h4>{c.name}</h4>
                     <p className="ct-timeline-teacher">{c.teacher}</p>
                     <p className="ct-timeline-loc">
@@ -319,56 +294,9 @@ export default function CampusTodayPage() {
           )}
         </section>
 
-        {/* 周课表网格 */}
-        {grid?.grid && (
-          <section className="ct-section">
-            <div className="ct-section-head">
-              <h2>本周课表</h2>
-              {grid.meta?.semester && (
-                <p>
-                  {grid.meta.semester} · {grid.meta.class_name} · {grid.meta.major}
-                </p>
-              )}
-            </div>
-            <div className="ct-grid-wrap">
-              <table className="ct-grid">
-                <thead>
-                  <tr>
-                    <th className="ct-grid-corner">节次</th>
-                    {WEEKDAYS.map((d, i) => (
-                      <th key={d} className={i === todayIndex ? 'is-today' : ''}>
-                        {d}
-                        {i === todayIndex && <span className="ct-today-dot" />}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {TIME_ROWS.map((row) => {
-                    const dayCourses = gridMap[row.key] || {}
-                    return (
-                      <tr key={row.key}>
-                        <td className="ct-grid-time">
-                          <span>{row.label}</span>
-                          <small>{row.time}</small>
-                        </td>
-                        {WEEKDAYS.map((d, i) => {
-                          const list = dayCourses[d] || []
-                          return (
-                            <td key={d} className={i === todayIndex ? 'is-today' : ''}>
-                              {list.map((c, j) => (
-                                <CoursePill key={j} course={c} compact />
-                              ))}
-                            </td>
-                          )
-                        })}
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </section>
+        {/* 课表视图：默认本周，可切换教学周 */}
+        {data?.has_schedule && user && (
+          <WeekScheduleGrid user={user} todayIndex={todayIndex} />
         )}
       </div>
     </div>
