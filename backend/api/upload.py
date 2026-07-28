@@ -1,6 +1,7 @@
 """用户私有智能文档上传 API。
 
 上传的文档解析后写入 zhku_user_docs 向量集合，仅该用户可检索。
+每次上传为覆盖写：替换该用户原有全部私有文档（与简历上传逻辑一致）。
 原始文件落盘：data/users/{user_id}/uploads/
 
 接口：
@@ -43,6 +44,25 @@ def _guess_title(stem: str) -> str:
     return name.strip() or stem
 
 
+def _remove_user_document(row: UserDocument, db: Session) -> None:
+    """删除单条用户文档：向量 + 文件 + 元数据。"""
+    store = get_vector_store()
+    store.delete_documents(
+        where={"doc_id": row.doc_id},
+        collection="user_docs",
+    )
+    delete_path(resolve_user_file(row.file_path))
+    db.delete(row)
+
+
+def _clear_user_documents(user_id: int, db: Session) -> int:
+    """清空用户全部私有文档，返回删除数量（不 commit，由调用方统一提交）。"""
+    rows = db.query(UserDocument).filter(UserDocument.user_id == user_id).all()
+    for row in rows:
+        _remove_user_document(row, db)
+    return len(rows)
+
+
 @router.post("")
 async def upload_file(
     file: UploadFile = File(...),
@@ -50,7 +70,7 @@ async def upload_file(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> JSONResponse:
-    """上传文件到当前用户的私有知识库。"""
+    """上传文件到当前用户的私有知识库（覆盖写：替换原有全部文档）。"""
     filename = file.filename or "unknown"
     suffix = Path(filename).suffix.lower()
     if suffix not in ALLOWED_EXTENSIONS:
@@ -92,6 +112,8 @@ async def upload_file(
     if not chunks:
         delete_path(raw_path)
         raise HTTPException(status_code=422, detail="文件切分后无有效内容")
+
+    replaced_count = _clear_user_documents(current_user.id, db)
 
     store = get_vector_store()
     ids = [f"{doc_id}_{i}" for i in range(len(chunks))]
@@ -135,7 +157,12 @@ async def upload_file(
             "department": department,
             "chunk_count": len(chunks),
             "page_count": parsed.get("page_count", 0),
-            "message": f"已将 {filename} 加入你的私有知识库",
+            "replaced_count": replaced_count,
+            "message": (
+                f"已用 {filename} 覆盖你的私有知识库"
+                if replaced_count
+                else f"已将 {filename} 写入你的私有知识库"
+            ),
         },
     )
 
@@ -183,13 +210,6 @@ async def delete_doc(
     if row is None:
         raise HTTPException(status_code=404, detail="文档不存在")
 
-    store = get_vector_store()
-    store.delete_documents(
-        where={"doc_id": doc_id},
-        collection="user_docs",
-    )
-
-    delete_path(resolve_user_file(row.file_path))
-    db.delete(row)
+    _remove_user_document(row, db)
     db.commit()
     return {"ok": True, "doc_id": doc_id, "message": "已删除"}

@@ -8,10 +8,9 @@ from __future__ import annotations
 import json
 import random
 import time
-from pathlib import Path
 from typing import Any
 
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, UploadFile
 from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
@@ -20,12 +19,8 @@ from backend.auth.deps import get_current_user
 from backend.config import settings
 from backend.database.models import User
 from backend.database.session import get_db
-from backend.services.resume_store import load_resume_data, save_resume_data
-from backend.storage.user_files import (
-    delete_path,
-    to_data_relative,
-    user_resume_dir,
-)
+from backend.services.resume_store import load_resume_data
+from backend.services.resume_upload import upload_resume_file as process_resume_upload
 
 router = APIRouter()
 
@@ -270,82 +265,7 @@ def _build_skip_prompt(req: SkipRequest) -> str:
 }}"""
 
 
-def _build_parse_resume_prompt(resume_text: str) -> str:
-    """构建从简历文本提取结构化信息的 Prompt。"""
-    # 截断过长的简历文本
-    text = resume_text[:6000] if len(resume_text) > 6000 else resume_text
-
-    return f"""请从以下简历文本中提取结构化信息。
-
-## 简历原文
-{text}
-
-## 提取要求
-1. 提取基本信息（姓名、手机、邮箱、地址等）
-2. 提取教育背景
-3. 提取专业技能，按分类整理
-4. 提取项目经历，包括项目名、角色、描述、技术栈
-5. 推断目标职位（如果简历中没有明确写出，请根据专业和技能推断）
-6. 生成简短的自我介绍关键词
-
-## 输出格式
-请严格按以下 JSON 格式返回，不要包含其他内容：
-{{
-  "basic": {{
-    "name": "姓名",
-    "phone": "手机号",
-    "email": "邮箱",
-    "address": "地址"
-  }},
-  "education": [
-    {{
-      "school": "学校名",
-      "major": "专业",
-      "degree": "学历",
-      "start": "开始时间",
-      "end": "结束时间"
-    }}
-  ],
-  "skills": [
-    {{
-      "category": "分类名",
-      "items": "技能1, 技能2, 技能3"
-    }}
-  ],
-  "projects": [
-    {{
-      "name": "项目名",
-      "role": "角色",
-      "start": "开始时间",
-      "end": "结束时间",
-      "description": "项目描述",
-      "tech_stack": "技术栈"
-    }}
-  ],
-  "target_position": "目标职位",
-  "intro_keywords": "关键词1；关键词2；关键词3"
-}}"""
-
-
-def _parse_json(text: str) -> dict | None:
-    """从 LLM 返回文本中提取 JSON。"""
-    if not text:
-        return None
-    json_str = text
-    if "```json" in text:
-        json_str = text.split("```json")[1].split("```")[0].strip()
-    elif "```" in text:
-        json_str = text.split("```")[1].split("```")[0].strip()
-    try:
-        return json.loads(json_str)
-    except (json.JSONDecodeError, TypeError):
-        return None
-
-
 # ---------- 简历上传 & 读取 API ----------
-
-ALLOWED_RESUME_EXT = {".pdf", ".docx", ".txt", ".md"}
-MAX_RESUME_SIZE = 10 * 1024 * 1024  # 10MB
 
 
 @router.post("/upload-resume")
@@ -354,82 +274,11 @@ async def upload_resume(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> JSONResponse:
-    """上传简历文件，解析文本后用 LLM 提取结构化信息并持久化到当前用户。
-
-    重新上传会覆盖该用户之前的简历。
-    """
+    """上传简历文件（覆盖写，与个人中心 / 毕业季共用同一份简历）。"""
     filename = file.filename or "resume"
-    suffix = Path(filename).suffix.lower()
-    if suffix not in ALLOWED_RESUME_EXT:
-        raise HTTPException(
-            status_code=400,
-            detail=f"不支持的文件类型: {suffix}，仅支持 {', '.join(sorted(ALLOWED_RESUME_EXT))}",
-        )
-
     content = await file.read()
-    if len(content) > MAX_RESUME_SIZE:
-        raise HTTPException(status_code=400, detail="文件超过 10MB 限制")
-    if not content:
-        raise HTTPException(status_code=400, detail="文件为空")
-
-    resume_dir = user_resume_dir(current_user.id)
-    # 清理旧原始文件
-    for old in resume_dir.glob("resume_file*"):
-        delete_path(old)
-    raw_path = resume_dir / f"resume_file{suffix}"
-    raw_path.write_bytes(content)
-
-    try:
-        from crawler.parse_documents import parse_file
-        parsed = parse_file(raw_path)
-    except Exception as e:
-        raise HTTPException(status_code=422, detail=f"文件解析失败: {e}") from e
-
-    resume_text = parsed.get("full_text", "").strip()
-    if not resume_text:
-        raise HTTPException(status_code=422, detail="文件解析后文本为空")
-
-    prompt = _build_parse_resume_prompt(resume_text)
-    llm_result = await _call_llm(prompt, temperature=0.3, max_tokens=2000)
-    data = _parse_json(llm_result)
-    rel = to_data_relative(raw_path)
-
-    if data:
-        data.setdefault("basic", {})
-        data.setdefault("education", [])
-        data.setdefault("skills", [])
-        data.setdefault("projects", [])
-        data.setdefault("target_position", "")
-        data.setdefault("intro_keywords", "")
-        data["raw_text"] = resume_text
-        data["filename"] = filename
-        data["upload_time"] = time.strftime("%Y-%m-%d %H:%M:%S")
-        save_resume_data(db, current_user.id, data, file_path=rel)
-        return JSONResponse(status_code=200, content={
-            "ok": True,
-            "filename": filename,
-            "resume": data,
-            "message": "简历上传并解析成功",
-        })
-
-    fallback = {
-        "basic": {},
-        "education": [],
-        "skills": [],
-        "projects": [],
-        "target_position": "",
-        "intro_keywords": "",
-        "raw_text": resume_text,
-        "filename": filename,
-        "upload_time": time.strftime("%Y-%m-%d %H:%M:%S"),
-    }
-    save_resume_data(db, current_user.id, fallback, file_path=rel)
-    return JSONResponse(status_code=200, content={
-        "ok": True,
-        "filename": filename,
-        "resume": fallback,
-        "message": "简历已上传，但 AI 结构化解析失败，已保存原始文本",
-    })
+    result = await process_resume_upload(db, current_user.id, filename, content)
+    return JSONResponse(status_code=200, content=result)
 
 
 @router.get("/resume")

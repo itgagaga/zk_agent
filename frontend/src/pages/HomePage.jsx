@@ -1,9 +1,10 @@
-import { useState, useEffect, useRef } from 'react'
-import { Link } from 'react-router-dom'
+import { useState, useEffect, useRef, useSyncExternalStore } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import {
   ArrowUpRight,
   BookOpenText,
   BriefcaseBusiness,
+  CalendarDays,
   Download,
   FileSearch,
   GraduationCap,
@@ -19,6 +20,7 @@ import campusPhoto from '../assets/campus-gate.webp'
 import campusLibrary from '../assets/campus/library.webp'
 import campusGarden from '../assets/campus/garden.webp'
 import campusNight from '../assets/campus/night.webp'
+import { getAuthSnapshot, subscribeAuth } from '../authStore.js'
 
 const FEATURES = [
   {
@@ -30,10 +32,17 @@ const FEATURES = [
   },
   {
     Icon: FileSearch,
-    title: '文档中心',
-    desc: '上传培养方案、章程等文档到永久知识库，RAG 自动检索回答',
-    link: '/documents',
-    linkText: '管理文档',
+    title: '个人知识库',
+    desc: '登录后上传文档到私有知识库，智能问答时自动检索你的资料',
+    action: 'knowledge',
+    linkText: '定制知识库',
+  },
+  {
+    Icon: CalendarDays,
+    title: '今日校园',
+    desc: '上传课表、查看天气，AI 根据今日安排给出穿搭与出行建议',
+    link: '/campus-today',
+    linkText: '进入今日校园',
   },
   {
     Icon: Download,
@@ -159,6 +168,8 @@ function StatItem({ value, label, suffix = '' }) {
 
 export default function HomePage() {
   const [stats, setStats] = useState(null)
+  const navigate = useNavigate()
+  const { user } = useSyncExternalStore(subscribeAuth, getAuthSnapshot)
 
   useEffect(() => {
     fetch('/api/stats')
@@ -166,6 +177,18 @@ export default function HomePage() {
       .then(setStats)
       .catch(() => {})
   }, [])
+
+  function handleFeatureClick(feature) {
+    if (feature.action === 'knowledge') {
+      if (user) {
+        navigate('/account/knowledge')
+      } else {
+        navigate('/login', { state: { from: '/account/knowledge' } })
+      }
+      return
+    }
+    if (feature.link) navigate(feature.link)
+  }
 
   return (
     <div className="container">
@@ -191,8 +214,8 @@ export default function HomePage() {
           <Link to="/chat" className="btn-primary">
             开始提问
           </Link>
-          <Link to="/documents" className="btn-secondary">
-            智能文档
+          <Link to="/downloads" className="btn-secondary">
+            资料智库
           </Link>
         </div>
         <div className="hero-photo-wrap">
@@ -260,16 +283,32 @@ export default function HomePage() {
         <div className="eyebrow">FEATURES</div>
         <h2 style={{ marginTop: 16, marginBottom: 32 }}>核心功能</h2>
         <div className="feature-grid">
-          {FEATURES.map((f) => (
-            <Link key={f.title} to={f.link} className="feature-card">
-              <div className="feature-icon">
-                <f.Icon size={28} strokeWidth={1.7} />
-              </div>
-              <div className="feature-title">{f.title}</div>
-              <div className="feature-desc">{f.desc}</div>
-              <div className="feature-link">{f.linkText} →</div>
-            </Link>
-          ))}
+          {FEATURES.map((f) =>
+            f.link ? (
+              <Link key={f.title} to={f.link} className="feature-card">
+                <div className="feature-icon">
+                  <f.Icon size={28} strokeWidth={1.7} />
+                </div>
+                <div className="feature-title">{f.title}</div>
+                <div className="feature-desc">{f.desc}</div>
+                <div className="feature-link">{f.linkText} →</div>
+              </Link>
+            ) : (
+              <button
+                key={f.title}
+                type="button"
+                className="feature-card feature-card-btn"
+                onClick={() => handleFeatureClick(f)}
+              >
+                <div className="feature-icon">
+                  <f.Icon size={28} strokeWidth={1.7} />
+                </div>
+                <div className="feature-title">{f.title}</div>
+                <div className="feature-desc">{f.desc}</div>
+                <div className="feature-link">{f.linkText} →</div>
+              </button>
+            )
+          )}
         </div>
       </section>
 

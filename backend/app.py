@@ -11,7 +11,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-from backend.api import admin, auth, chat, interview, resources, resume, search, upload
+from backend.api import admin, auth, chat, interview, resources, resume, schedule, search, upload
 from backend.config import settings
 
 
@@ -27,6 +27,7 @@ async def lifespan(app: FastAPI):
             ResumeProfile,
             User,
             UserDocument,
+            UserSchedule,
         )
         from backend.database.session import engine
 
@@ -35,6 +36,7 @@ async def lifespan(app: FastAPI):
             ChatSession.__table__,
             ChatMessage.__table__,
             ResumeProfile.__table__,
+            UserSchedule.__table__,
             UserDocument.__table__,
         ):
             table.create(bind=engine, checkfirst=True)
@@ -69,6 +71,7 @@ app.include_router(upload.router, prefix="/api/upload", tags=["upload"])
 app.include_router(admin.router, prefix="/api/admin", tags=["admin"])
 app.include_router(resume.router, prefix="/api/resume", tags=["resume"])
 app.include_router(interview.router, prefix="/api/interview", tags=["interview"])
+app.include_router(schedule.router, prefix="/api/schedule", tags=["schedule"])
 
 
 @app.get("/health", tags=["meta"])

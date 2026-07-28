@@ -175,7 +175,9 @@ export default function ResumePage() {
         <h1>毕业季</h1>
         <p>AI 简历优化与模拟面试，或搜索学术论文助力毕业设计</p>
         {loggedIn ? (
-          <p className="resume-sync-hint">{saving ? '正在同步到账号…' : '已绑定当前账号，自动保存'}</p>
+          <p className="resume-sync-hint">
+            {saving ? '正在同步到账号…' : '已绑定当前账号，与个人中心简历互通同步'}
+          </p>
         ) : (
           <div className="auth-gate-banner" style={{ marginTop: 16 }}>
             <span>登录后可将简历与面试资料绑定到账号。</span>

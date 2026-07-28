@@ -170,3 +170,70 @@ async def login(req: LoginRequest, db: Session = Depends(get_db)) -> AuthRespons
 async def me(current_user: User = Depends(get_current_user)) -> UserOut:
     """获取当前登录用户信息。"""
     return _to_user_out(current_user)
+
+
+class UpdateProfileRequest(BaseModel):
+    """更新个人资料（部分字段可选）。"""
+
+    display_name: str | None = Field(default=None, max_length=64)
+    email: str | None = Field(default=None, max_length=128)
+    role: str | None = Field(default=None, description="student / teacher")
+
+    @field_validator("display_name")
+    @classmethod
+    def validate_display_name(cls, v: str | None) -> str | None:
+        if v is None:
+            return None
+        v = v.strip()
+        return v or None
+
+    @field_validator("email")
+    @classmethod
+    def validate_email(cls, v: str | None) -> str | None:
+        if v is None:
+            return None
+        if not v.strip():
+            return None
+        v = v.strip().lower()
+        if not _EMAIL_RE.match(v):
+            raise ValueError("邮箱格式不正确")
+        return v
+
+    @field_validator("role")
+    @classmethod
+    def validate_role(cls, v: str | None) -> str | None:
+        if v is None:
+            return None
+        allowed = {"student", "teacher"}
+        v = v.strip().lower()
+        if v not in allowed:
+            raise ValueError("角色仅支持 student 或 teacher")
+        return v
+
+
+@router.patch("/me", response_model=UserOut)
+async def update_me(
+    req: UpdateProfileRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> UserOut:
+    """更新当前用户个人资料。"""
+    data = req.model_dump(exclude_unset=True)
+    if not data:
+        return _to_user_out(current_user)
+
+    if "email" in data and data["email"]:
+        taken = (
+            db.query(User)
+            .filter(User.email == data["email"], User.id != current_user.id)
+            .first()
+        )
+        if taken:
+            raise HTTPException(status_code=400, detail="邮箱已被其他账号使用")
+
+    for key, value in data.items():
+        setattr(current_user, key, value)
+    current_user.updated_at = datetime.utcnow()
+    db.commit()
+    db.refresh(current_user)
+    return _to_user_out(current_user)

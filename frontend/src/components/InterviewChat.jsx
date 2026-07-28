@@ -584,7 +584,7 @@ export default function InterviewChat({ onBack }) {
               <>
                 <div className="interview-welcome-icon">📄</div>
                 <h2>请先上传简历</h2>
-                <p>上传你的简历文件（PDF / DOCX / TXT），AI 将解析简历内容并生成针对性的面试问题</p>
+                <p>上传简历（PDF / DOCX / TXT），或与个人中心、毕业季共用同一份简历</p>
               </>
             )}
             <div className="iv-upload-zone">

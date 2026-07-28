@@ -29,6 +29,12 @@ def user_resume_dir(user_id: int) -> Path:
     return path
 
 
+def user_schedule_dir(user_id: int) -> Path:
+    path = user_root(user_id) / "schedule"
+    path.mkdir(parents=True, exist_ok=True)
+    return path
+
+
 def resolve_user_file(relative_or_abs: str | None) -> Path | None:
     """将库中记录的路径解析为绝对 Path。"""
     if not relative_or_abs:

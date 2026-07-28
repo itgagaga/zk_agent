@@ -244,6 +244,19 @@ class ResumeProfile(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 
+class UserSchedule(Base):
+    """用户课表（每人一份，Excel 解析后的 JSON）。"""
+
+    __tablename__ = "user_schedule"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, nullable=False, unique=True, index=True)
+    data = Column(Text, nullable=False, default="{}")  # JSON
+    file_path = Column(String(512))
+    filename = Column(String(256))
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
 class UserDocument(Base):
     """用户私有智能文档元数据。"""
 

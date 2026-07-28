@@ -10,7 +10,7 @@ export default function Footer() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             <a href="/">项目简介</a>
             <a href="/chat">智能问答</a>
-            <a href="/documents">智能文档</a>
+            <a href="/downloads">资料智库</a>
           </div>
         </div>
         <div>

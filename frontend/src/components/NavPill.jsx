@@ -4,9 +4,9 @@ import { getAuthSnapshot, subscribeAuth, logout } from '../authStore.js'
 
 const links = [
   { to: '/', label: '首页' },
+  { to: '/campus-today', label: '今日校园' },
   { to: '/chat', label: '智能问答' },
   { to: '/downloads', label: '资料智库' },
-  { to: '/documents', label: '智能文档' },
   { to: '/resume', label: '毕业季' },
 ]
 
@@ -35,9 +35,13 @@ export default function NavPill() {
       <div className="nav-auth">
         {user ? (
           <>
-            <span className="nav-user-name" title={user.username}>
+            <Link
+              to="/account"
+              className="nav-user-name nav-user-btn"
+              title={user.username}
+            >
               {user.display_name || user.username}
-            </span>
+            </Link>
             <button type="button" className="nav-auth-btn" onClick={() => logout()}>
               退出
             </button>

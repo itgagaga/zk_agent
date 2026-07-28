@@ -8,7 +8,8 @@ from __future__ import annotations
 import json
 from typing import Any
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, File, UploadFile
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
@@ -17,6 +18,7 @@ from backend.config import settings
 from backend.database.models import User
 from backend.database.session import get_db
 from backend.services.resume_store import load_resume_data, save_resume_data
+from backend.services.resume_upload import upload_resume_file as process_resume_upload
 
 router = APIRouter()
 
@@ -254,6 +256,19 @@ async def put_profile(
     """保存/更新当前用户简历 JSON。"""
     save_resume_data(db, current_user.id, body)
     return ResumeProfileResponse(ok=True, resume=body, message="已保存")
+
+
+@router.post("/upload")
+async def upload_resume_file(
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> JSONResponse:
+    """上传简历文件（覆盖写，与个人中心 / 模拟面试共用同一份简历）。"""
+    filename = file.filename or "resume"
+    content = await file.read()
+    result = await process_resume_upload(db, current_user.id, filename, content)
+    return JSONResponse(status_code=200, content=result)
 
 
 @router.post("/enhance", response_model=ResumeEnhanceResponse)

@@ -67,6 +67,13 @@ export function logout() {
   setSession(null, null)
 }
 
+export function setUser(user) {
+  if (!state.token) return
+  state = { ...state, user }
+  persist()
+  emit()
+}
+
 export async function login(username, password) {
   const resp = await axios.post('/api/auth/login', { username, password })
   const { access_token, user } = resp.data
@@ -79,6 +86,14 @@ export async function register(payload) {
   const { access_token, user } = resp.data
   setSession(access_token, user)
   return user
+}
+
+export async function updateProfile(payload) {
+  const resp = await axios.patch('/api/auth/me', payload, {
+    headers: getAuthHeader(),
+  })
+  setUser(resp.data)
+  return resp.data
 }
 
 /** 用当前 token 刷新用户信息；失败则登出。 */
