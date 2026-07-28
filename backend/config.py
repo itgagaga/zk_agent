@@ -122,6 +122,12 @@ class Settings(BaseSettings):
     chunk_overlap: int = Field(default=50, alias="CHUNK_OVERLAP")
     rag_top_k: int = Field(default=5, alias="RAG_TOP_K")
     rag_score_threshold: float = Field(default=0.5, alias="RAG_SCORE_THRESHOLD")
+    # 用户上传文档检索：阈值更低、召回更多，培养方案类 PDF 常分散在多个片段
+    rag_doc_top_k: int = Field(default=15, alias="RAG_DOC_TOP_K")
+    rag_doc_score_threshold: float = Field(default=0.12, alias="RAG_DOC_SCORE_THRESHOLD")
+    rag_doc_full_fetch_max_chunks: int = Field(
+        default=20, alias="RAG_DOC_FULL_FETCH_MAX_CHUNKS"
+    )
 
     # Agent
     agent_router_mode: Literal["rule", "llm"] = Field(

@@ -26,18 +26,36 @@ class ContactTool(BaseTool):
 
         items: list[dict[str, Any]] = []
         for meta in self._load_all_metadata():
+            source_url = (
+                meta.get("source_url")
+                or (meta.get("source_url_list") or [None])[0]
+                or meta.get("url")
+                or ""
+            )
             for contact in meta.get("contacts", []) or []:
                 # 把所有字段拼成一个文本用于匹配
                 match_text = " ".join(str(v) for v in contact.values())
                 if not keywords or self._keyword_match(match_text, keywords):
+                    # 校医院等条目用 location，学生工作部等用 service/department
+                    title = (
+                        contact.get("department")
+                        or contact.get("service")
+                        or contact.get("location")
+                        or contact.get("name")
+                        or ""
+                    )
+                    address = contact.get("address") or contact.get("location") or ""
+                    phone = contact.get("phone", "")
+                    snippet_parts = [p for p in (address, phone and f"电话 {phone}") if p]
                     items.append(
                         {
-                            "title": contact.get("department") or contact.get("service", ""),
-                            "phone": contact.get("phone", ""),
-                            "address": contact.get("address", ""),
+                            "title": title,
+                            "phone": phone,
+                            "address": address,
                             "location": contact.get("location", ""),
                             "department": meta.get("department", ""),
-                            "source_page_url": meta.get("source_url", ""),
+                            "source_page_url": source_url,
+                            "snippet": " · ".join(snippet_parts),
                         }
                     )
 

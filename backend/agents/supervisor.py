@@ -77,6 +77,20 @@ class EvidenceSupervisor:
         )
 
         active = [i.intent_label for i in plan.intents if i.intent_label]
+        question = evidence.get("question", "")
+
+        # 0. 用户上传文档已命中 → 优先文档，避免 composite/官网索引误导（如信计培养方案）
+        if has_doc and (
+            has_document_intent
+            or any(k in question for k in _ADVISORY_KEYWORDS)
+        ):
+            return SupervisorDecision(
+                priority="document",
+                reason="用户上传文档已命中，优先基于私有文档回答",
+                active_agents=active or ["智能文档问答"],
+                use_rag=False,
+                use_doc=True,
+            )
 
         # 1. 综合多意图 → composite 融合（文档 + 资料 + API + 工具，分区作答）
         if plan.mode == "collab" and plan.collab_reason in _COMPOSITE_COLLAB_REASONS:
@@ -259,8 +273,16 @@ class EvidenceSupervisor:
             return True
         return False
 
-    def should_fetch_doc(self, evidence: dict[str, Any], plan: RoutePlan) -> bool:
+    def should_fetch_doc(
+        self,
+        evidence: dict[str, Any],
+        plan: RoutePlan,
+        *,
+        user_id: int | None = None,
+    ) -> bool:
         """Supervisor 判断是否需要调用文档库 Agent。"""
+        if user_id is not None:
+            return True
         question = evidence.get("question", "")
         if plan.mode == "collab" and plan.collab_reason in _COMPOSITE_COLLAB_REASONS:
             return True

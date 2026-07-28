@@ -81,7 +81,7 @@ class VectorStore:
         if where:
             kwargs["where"] = where
         result = target.query(**kwargs)
-        return self._format_result(result)
+        return self._format_result(result, ids=result.get("ids", [[]])[0])
 
     def delete_documents(
         self,
@@ -108,16 +108,53 @@ class VectorStore:
             return len(result.get("ids", []))
         return target.count()
 
+    def get_chunks_by_doc_id(
+        self,
+        doc_id: str,
+        collection: str = "user_docs",
+    ) -> list[dict[str, Any]]:
+        """按 doc_id 取回该文档的全部 chunk（按片段序号排序）。"""
+        target = self._target(collection)
+        result = target.get(
+            where={"doc_id": doc_id},
+            include=["documents", "metadatas"],
+        )
+        ids = result.get("ids") or []
+        docs = result.get("documents") or []
+        metas = result.get("metadatas") or []
+        hits: list[dict[str, Any]] = []
+        for chunk_id, doc, meta in zip(ids, docs, metas):
+            chunk_index = _chunk_index_from_id(chunk_id)
+            hits.append(
+                {
+                    "snippet": doc,
+                    "title": meta.get("title", ""),
+                    "department": meta.get("department"),
+                    "url": meta.get("source_url", ""),
+                    "publish_date": meta.get("publish_date"),
+                    "score": 0.5,
+                    "metadata": meta,
+                    "chunk_id": chunk_id,
+                    "chunk_index": chunk_index,
+                }
+            )
+        hits.sort(key=lambda h: (h.get("chunk_index") or 0, h.get("chunk_id") or ""))
+        return hits
+
     @staticmethod
-    def _format_result(result: dict[str, Any]) -> list[dict[str, Any]]:
+    def _format_result(
+        result: dict[str, Any],
+        ids: list[str] | None = None,
+    ) -> list[dict[str, Any]]:
         """格式化 Chroma 返回。"""
         if not result or not result.get("documents"):
             return []
         docs = result["documents"][0]
         metas = result.get("metadatas", [[]])[0]
         dists = result.get("distances", [[]])[0]
+        chunk_ids = ids or [""] * len(docs)
         hits: list[dict[str, Any]] = []
-        for doc, meta, dist in zip(docs, metas, dists):
+        for chunk_id, doc, meta, dist in zip(chunk_ids, docs, metas, dists):
             hits.append(
                 {
                     "snippet": doc,
@@ -127,9 +164,19 @@ class VectorStore:
                     "publish_date": meta.get("publish_date"),
                     "score": 1.0 - float(dist),
                     "metadata": meta,
+                    "chunk_id": chunk_id,
+                    "chunk_index": _chunk_index_from_id(chunk_id),
                 }
             )
         return hits
+
+
+def _chunk_index_from_id(chunk_id: str) -> int:
+    """从 chunk id（如 ud_xxx_3）解析片段序号。"""
+    if not chunk_id or "_" not in chunk_id:
+        return 0
+    tail = chunk_id.rsplit("_", 1)[-1]
+    return int(tail) if tail.isdigit() else 0
 
 
 # 全局单例

@@ -4,6 +4,8 @@
 // 用 contextHint 区分。状态提到模块级，切标签不丢失；流式
 // 请求在后台继续消费，回来即可看到进行中或已完成的回复。
 
+import { getAuthHeader, getAuthSnapshot } from './authStore.js'
+
 const STORAGE_PREFIX = 'zhku_emb_chat_'
 const OPEN_PREFIX = 'zhku_emb_open_'
 
@@ -115,12 +117,13 @@ export async function ask(key, question) {
 
   try {
     inst.abortRef = new AbortController()
+    const auth = getAuthSnapshot()
     const resp = await fetch('/api/chat/stream', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
       body: JSON.stringify({
         question: text,
-        user_role: 'student',
+        user_role: auth.user?.role || 'student',
         history,
         session_id: inst.sessionId,
         context_hint: key,

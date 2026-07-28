@@ -132,7 +132,9 @@ class AgentController:
 
         # --- 阶段2：Supervisor 决定是否调用 RAG / 文档 Agent ---
         fetch_rag = self.supervisor.should_fetch_rag(evidence, plan)
-        fetch_doc = self.supervisor.should_fetch_doc(evidence, plan)
+        fetch_doc = self.supervisor.should_fetch_doc(
+            evidence, plan, user_id=user_id
+        )
         print(f"[Supervisor] 是否调用RAG={fetch_rag} 文档库={fetch_doc}")
 
         if fetch_rag:
