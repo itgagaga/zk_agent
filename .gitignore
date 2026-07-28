@@ -34,6 +34,11 @@ data/cleaned/*
 data/metadata/*
 data/sqlite/*
 data/vector_store/*
+# 用户私有文件（简历原件、上传文档）
+data/users/*
+# 旧版全局上传/简历（遗留，勿提交）
+data/uploads/*
+data/resume/*
 !data/**/.gitkeep
 !data/**/README.md
 

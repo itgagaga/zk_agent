@@ -1,6 +1,6 @@
 """向量库封装。
 
-封装 Chroma 操作，提供知识库集合、文档集合的读写接口。
+封装 Chroma 操作：校园知识库、共享文档库、用户私有文档库。
 """
 from __future__ import annotations
 
@@ -16,9 +16,11 @@ class VectorStore:
         self.persist_path = str(settings.vector_store_path)
         self.collection_zhku = settings.chroma_collection_zhku
         self.collection_doc = settings.chroma_collection_document
+        self.collection_user_docs = settings.chroma_collection_user_docs
         self._client: Any = None
         self._zhku_collection: Any = None
         self._doc_collection: Any = None
+        self._user_docs_collection: Any = None
 
     def _init_client(self) -> None:
         """初始化 Chroma 客户端。"""
@@ -34,6 +36,17 @@ class VectorStore:
         self._doc_collection = self._client.get_or_create_collection(
             self.collection_doc
         )
+        self._user_docs_collection = self._client.get_or_create_collection(
+            self.collection_user_docs
+        )
+
+    def _target(self, collection: str) -> Any:
+        self._init_client()
+        if collection in ("zhku", "campus"):
+            return self._zhku_collection
+        if collection in ("user_docs", "zhku_user_docs"):
+            return self._user_docs_collection
+        return self._doc_collection
 
     def add_documents(
         self,
@@ -45,8 +58,7 @@ class VectorStore:
         """写入文档到向量库。"""
         from backend.rag.embedder import get_embedder
 
-        self._init_client()
-        target = self._zhku_collection if collection == "zhku" else self._doc_collection
+        target = self._target(collection)
         embeddings = get_embedder().embed(texts)
         target.upsert(ids=ids, documents=texts, metadatas=metadatas, embeddings=embeddings)
 
@@ -60,8 +72,7 @@ class VectorStore:
         """检索向量库。"""
         from backend.rag.embedder import get_embedder
 
-        self._init_client()
-        target = self._zhku_collection if collection == "zhku" else self._doc_collection
+        target = self._target(collection)
         embedding = get_embedder().embed_one(text)
         kwargs: dict[str, Any] = {
             "query_embeddings": [embedding],
@@ -79,8 +90,7 @@ class VectorStore:
         collection: str = "document",
     ) -> None:
         """从向量库删除文档，支持按 id 或按元数据 where 过滤。"""
-        self._init_client()
-        target = self._zhku_collection if collection == "zhku" else self._doc_collection
+        target = self._target(collection)
         kwargs: dict[str, Any] = {}
         if ids:
             kwargs["ids"] = ids
@@ -92,8 +102,7 @@ class VectorStore:
 
     def count_documents(self, where: dict[str, Any] | None = None, collection: str = "document") -> int:
         """统计文档集合中的 chunk 数量，支持按 where 过滤。"""
-        self._init_client()
-        target = self._zhku_collection if collection == "zhku" else self._doc_collection
+        target = self._target(collection)
         if where:
             result = target.get(where=where)
             return len(result.get("ids", []))

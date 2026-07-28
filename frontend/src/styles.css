@@ -181,6 +181,202 @@ button {
   letter-spacing: -0.01em;
 }
 
+.nav-auth {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.auth-gate-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 16px 20px;
+  margin-bottom: 24px;
+  background: var(--color-white);
+  border: 1.5px solid var(--color-dust-taupe);
+  border-radius: var(--radius-md);
+  color: var(--color-slate);
+  font-size: 15px;
+}
+
+.doc-upload-zone.is-disabled {
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.resume-sync-hint {
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--color-slate);
+}
+
+.nav-user-name {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--color-ink);
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nav-auth-link {
+  font-size: 15px !important;
+  font-weight: 500;
+  color: var(--color-ink);
+}
+
+.nav-auth-btn {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-slate);
+  padding: 4px 12px;
+  border-radius: var(--radius-sm);
+}
+
+.nav-auth-btn:hover {
+  color: var(--color-ink);
+  background: var(--color-canvas);
+}
+
+.nav-auth-cta {
+  padding: 4px 16px !important;
+  font-size: 14px !important;
+  text-decoration: none !important;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* 登录 / 注册页 */
+.auth-page {
+  min-height: calc(100vh - 200px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 24px 64px;
+  background:
+    radial-gradient(ellipse 80% 50% at 10% 0%, rgba(243, 115, 56, 0.08), transparent),
+    radial-gradient(ellipse 60% 40% at 90% 100%, rgba(56, 96, 190, 0.06), transparent),
+    var(--color-canvas);
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 440px;
+  background: var(--color-white);
+  border-radius: var(--radius-lg);
+  padding: 40px 36px 36px;
+  box-shadow: var(--shadow-card);
+}
+
+.auth-title {
+  font-size: 36px;
+  margin: 12px 0 8px;
+}
+
+.auth-sub {
+  color: var(--color-slate);
+  font-size: 15px;
+  margin-bottom: 28px;
+  line-height: 1.5;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.auth-label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-ink);
+}
+
+.auth-input {
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 450;
+  padding: 12px 14px;
+  border: 1.5px solid var(--color-dust-taupe);
+  border-radius: var(--radius-md);
+  background: var(--color-canvas-lifted);
+  color: var(--color-ink);
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.auth-input:focus {
+  border-color: var(--color-ink);
+  background: var(--color-white);
+}
+
+.auth-input:disabled {
+  opacity: 0.6;
+}
+
+.auth-error {
+  color: var(--color-signal-orange);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.auth-submit {
+  width: 100%;
+  padding: 12px 24px;
+  margin-top: 8px;
+  font-size: 16px;
+}
+
+.auth-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.auth-switch {
+  margin-top: 24px;
+  text-align: center;
+  font-size: 14px;
+  color: var(--color-slate);
+}
+
+.auth-switch a {
+  color: var(--color-link-blue);
+  font-weight: 500;
+  margin-left: 4px;
+}
+
+@media (max-width: 720px) {
+  .nav-pill {
+    flex-wrap: wrap;
+    gap: 16px;
+    padding: 12px 20px;
+    border-radius: 24px;
+  }
+
+  .nav-auth {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .auth-card {
+    padding: 28px 22px;
+  }
+
+  .auth-title {
+    font-size: 28px;
+  }
+}
+
 /* 圆形卫星 CTA */
 .satellite-cta {
   width: 56px;

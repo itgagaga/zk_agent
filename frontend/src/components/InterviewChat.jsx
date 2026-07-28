@@ -1,5 +1,7 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useSyncExternalStore } from 'react'
+import { Link } from 'react-router-dom'
 import axios from 'axios'
+import { getAuthHeader, getAuthSnapshot, subscribeAuth } from '../authStore.js'
 
 const CATEGORY_LABELS = {
   tech: '技术基础',
@@ -23,6 +25,9 @@ function getScoreColor(score) {
 const STORAGE_KEY = 'interview_state'
 
 export default function InterviewChat({ onBack }) {
+  const auth = useSyncExternalStore(subscribeAuth, getAuthSnapshot)
+  const loggedIn = Boolean(auth.user && auth.token)
+
   // 从 localStorage 恢复面试状态
   const saved = useRef(null)
   try {
@@ -77,25 +82,27 @@ export default function InterviewChat({ onBack }) {
     }
   }, [messages])
 
-  // 初始化时检查是否已有持久化的简历
+  // 初始化时检查是否已有持久化的简历（需登录）
   useEffect(() => {
+    if (!loggedIn) return
     async function checkResume() {
       try {
-        const resp = await axios.get('/api/interview/resume')
+        const resp = await axios.get('/api/interview/resume', {
+          headers: getAuthHeader(),
+        })
         if (resp.data.ok && resp.data.resume) {
           setResumeData(resp.data.resume)
           setResumeFilename(resp.data.resume.filename || '')
-          // 只有在没有已保存的面试状态时才设为 ready
           if (!saved.current?.phase || saved.current.phase === 'upload') {
             setPhase('ready')
           }
         }
       } catch {
-        // 忽略
+        // ignore
       }
     }
     checkResume()
-  }, [])
+  }, [loggedIn])
 
   function buildResumeContext() {
     if (!resumeData) {
@@ -119,17 +126,20 @@ export default function InterviewChat({ onBack }) {
   async function handleUpload(e) {
     const file = e.target.files?.[0]
     if (!file) return
+    if (!loggedIn) {
+      alert('请先登录后再上传简历')
+      return
+    }
     setUploading(true)
     try {
       const formData = new FormData()
       formData.append('file', file)
       const resp = await axios.post('/api/interview/upload-resume', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
+        headers: { ...getAuthHeader(), 'Content-Type': 'multipart/form-data' },
       })
       if (resp.data.ok) {
         setResumeData(resp.data.resume)
         setResumeFilename(file.name)
-        // 只在没有进行中的面试时切到 ready；否则保留当前面试状态
         if (phase === 'upload') {
           setPhase('ready')
         }
@@ -503,6 +513,15 @@ export default function InterviewChat({ onBack }) {
         onChange={handleUpload}
         hidden
       />
+
+      {!loggedIn && (
+        <div className="auth-gate-banner">
+          <span>上传简历并绑定到账号需要先登录。</span>
+          <Link to="/login" className="btn-primary" style={{ textDecoration: 'none' }}>
+            去登录
+          </Link>
+        </div>
+      )}
 
       {/* 顶部栏 */}
       <div className="interview-header">

@@ -11,7 +11,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-from backend.api import admin, chat, interview, resources, resume, search, upload
+from backend.api import admin, auth, chat, interview, resources, resume, search, upload
 from backend.config import settings
 
 
@@ -19,7 +19,27 @@ from backend.config import settings
 async def lifespan(app: FastAPI):
     """应用生命周期：启动时初始化资源，关闭时清理。"""
     settings.ensure_dirs()
-    # TODO: 初始化向量库、LLM 客户端
+    # 确保用户相关表存在（兼容已有库未跑全量 schema 的情况）
+    try:
+        from backend.database.models import (
+            ChatMessage,
+            ChatSession,
+            ResumeProfile,
+            User,
+            UserDocument,
+        )
+        from backend.database.session import engine
+
+        for table in (
+            User.__table__,
+            ChatSession.__table__,
+            ChatMessage.__table__,
+            ResumeProfile.__table__,
+            UserDocument.__table__,
+        ):
+            table.create(bind=engine, checkfirst=True)
+    except Exception as e:
+        print(f"[Startup] 用户相关表初始化跳过: {e}")
     yield
     # TODO: 关闭资源
 
@@ -41,6 +61,7 @@ app.add_middleware(
 )
 
 # 路由挂载
+app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
 app.include_router(chat.router, prefix="/api/chat", tags=["chat"])
 app.include_router(search.router, prefix="/api/search", tags=["search"])
 app.include_router(resources.router, prefix="/api/resources", tags=["resources"])
@@ -69,19 +90,31 @@ async def root() -> dict:
 @app.get("/api/stats", tags=["meta"])
 async def stats() -> dict:
     """知识库统计数据。"""
+    from backend.database.models import UserDocument
+    from backend.database.session import SessionLocal
     from backend.rag.vector_store import get_vector_store
-    from backend.api.upload import _load_manifest
 
     store = get_vector_store()
     campus_chunks = store.count_documents(collection="zhku")
-    doc_chunks = store.count_documents(collection="document")
-    manifest = _load_manifest()
+    shared_doc_chunks = store.count_documents(collection="document")
+    user_doc_chunks = store.count_documents(collection="user_docs")
+    doc_chunks = shared_doc_chunks + user_doc_chunks
+
+    uploaded_docs = 0
+    departments: set[str] = set()
+    try:
+        with SessionLocal() as db:
+            rows = db.query(UserDocument).all()
+            uploaded_docs = len(rows)
+            departments = {r.department or "文档库" for r in rows}
+    except Exception:
+        pass
 
     return {
         "campus_chunks": campus_chunks,
         "document_chunks": doc_chunks,
-        "uploaded_docs": len(manifest),
+        "uploaded_docs": uploaded_docs,
         "total_chunks": campus_chunks + doc_chunks,
         "tools": ["major_search", "download_search", "contact_search", "service_link_search"],
-        "departments": list({d.get("department", "文档库") for d in manifest}),
+        "departments": list(departments),
     }

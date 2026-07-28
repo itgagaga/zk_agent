@@ -159,3 +159,65 @@ CREATE TABLE IF NOT EXISTS document_qa_log (
     answer TEXT,
     created_at DATETIME NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS user (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(64) NOT NULL,
+    email VARCHAR(128),
+    password_hash VARCHAR(128) NOT NULL,
+    display_name VARCHAR(64),
+    role VARCHAR(32) DEFAULT 'student',
+    is_active INT DEFAULT 1,
+    created_at DATETIME NULL,
+    updated_at DATETIME NULL,
+    UNIQUE KEY uk_user_username (username),
+    UNIQUE KEY uk_user_email (email),
+    INDEX idx_user_username (username),
+    INDEX idx_user_email (email)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS chat_session (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    title VARCHAR(256) DEFAULT '新对话',
+    created_at DATETIME NULL,
+    updated_at DATETIME NULL,
+    INDEX idx_chat_session_user (user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS chat_message (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    session_id INT NOT NULL,
+    role VARCHAR(16) NOT NULL,
+    content TEXT NOT NULL,
+    meta TEXT,
+    created_at DATETIME NULL,
+    INDEX idx_chat_message_session (session_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS resume_profile (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    data TEXT NOT NULL,
+    file_path VARCHAR(512),
+    updated_at DATETIME NULL,
+    UNIQUE KEY uk_resume_user (user_id),
+    INDEX idx_resume_user (user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS user_document (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    doc_id VARCHAR(64) NOT NULL,
+    title VARCHAR(256) NOT NULL,
+    filename VARCHAR(256),
+    file_path VARCHAR(512),
+    department VARCHAR(128) DEFAULT '文档库',
+    file_type VARCHAR(16),
+    size INT DEFAULT 0,
+    page_count INT DEFAULT 0,
+    chunk_count INT DEFAULT 0,
+    created_at DATETIME NULL,
+    UNIQUE KEY uk_user_document_doc_id (doc_id),
+    INDEX idx_user_document_user (user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

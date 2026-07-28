@@ -53,6 +53,9 @@ class Settings(BaseSettings):
     chroma_collection_document: str = Field(
         default="zhku_documents", alias="CHROMA_COLLECTION_DOCUMENT"
     )
+    chroma_collection_user_docs: str = Field(
+        default="zhku_user_docs", alias="CHROMA_COLLECTION_USER_DOCS"
+    )
 
     # MySQL
     mysql_host: str = Field(default="127.0.0.1", alias="MYSQL_HOST")
@@ -132,9 +135,17 @@ class Settings(BaseSettings):
     app_debug: bool = Field(default=True, alias="APP_DEBUG")
     log_level: str = Field(default="INFO", alias="LOG_LEVEL")
 
+    # JWT 鉴权
+    jwt_secret_key: str = Field(
+        default="zhku-campus-agent-change-me-in-production",
+        alias="JWT_SECRET_KEY",
+    )
+    jwt_algorithm: str = Field(default="HS256", alias="JWT_ALGORITHM")
+    jwt_expire_minutes: int = Field(default=60 * 24 * 7, alias="JWT_EXPIRE_MINUTES")
+
     def ensure_dirs(self) -> None:
         """创建必要的目录。"""
-        for sub in ["raw", "cleaned", "metadata", "sqlite", "vector_store"]:
+        for sub in ["raw", "cleaned", "metadata", "sqlite", "vector_store", "users", "uploads"]:
             (DATA_DIR / sub).mkdir(parents=True, exist_ok=True)
         self.vector_store_path.mkdir(parents=True, exist_ok=True)
         # 保留 sqlite 目录，便于从旧库迁移，不删除原文件

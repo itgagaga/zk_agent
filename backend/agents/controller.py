@@ -83,6 +83,7 @@ class AgentController:
         rag_query: str,
         *,
         history: list[dict[str, str]] | None = None,
+        user_id: int | None = None,
     ) -> dict[str, Any]:
         """子 Agent 取证 + Supervisor 裁决优先级并过滤证据。"""
         primary = plan.primary
@@ -139,7 +140,9 @@ class AgentController:
             print(f"[Agent] RAG Agent 命中: {len(evidence.get('rag_hits', []))} 条")
 
         if fetch_doc:
-            evidence["doc_hits"] = await self.retriever.search_documents(rag_query)
+            evidence["doc_hits"] = await self.retriever.search_documents(
+                rag_query, user_id=user_id
+            )
             if evidence.get("doc_hits"):
                 print(f"[Agent] 文档 Agent 命中: {len(evidence['doc_hits'])} 条")
 
@@ -159,6 +162,7 @@ class AgentController:
         session_id: str | None = None,
         user_role: str = "student",
         history: list[dict[str, str]] | None = None,
+        user_id: int | None = None,
     ) -> dict[str, Any]:
         plan = self.router.route(question)
         rag_query = self._clean_query(question)
@@ -167,7 +171,9 @@ class AgentController:
         if plan.primary.path == "fallback":
             return self.fallback.no_evidence(question)
 
-        evidence = await self._gather_evidence(question, plan, rag_query, history=history)
+        evidence = await self._gather_evidence(
+            question, plan, rag_query, history=history, user_id=user_id
+        )
         result = await self.answer_generator.generate(question, evidence, history=history)
 
         if not result.get("sources") and self.fallback.enabled:
@@ -189,6 +195,7 @@ class AgentController:
         session_id: str | None = None,
         user_role: str = "student",
         history: list[dict[str, str]] | None = None,
+        user_id: int | None = None,
     ):
         import json
 
@@ -210,7 +217,9 @@ class AgentController:
             yield f'data: {json.dumps({"type": "done"}, ensure_ascii=False)}\n\n'
             return
 
-        evidence = await self._gather_evidence(question, plan, rag_query, history=history)
+        evidence = await self._gather_evidence(
+            question, plan, rag_query, history=history, user_id=user_id
+        )
 
         # Supervisor 裁决事件
         supervisor_evt = {

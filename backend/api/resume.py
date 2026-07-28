@@ -8,10 +8,15 @@ from __future__ import annotations
 import json
 from typing import Any
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel, Field
+from sqlalchemy.orm import Session
 
+from backend.auth.deps import get_current_user, get_current_user_optional
 from backend.config import settings
+from backend.database.models import User
+from backend.database.session import get_db
+from backend.services.resume_store import load_resume_data, save_resume_data
 
 router = APIRouter()
 
@@ -221,13 +226,47 @@ def _parse_llm_response(text: str, req: ResumeEnhanceRequest) -> ResumeEnhanceRe
 
 # ---------- API 端点 ----------
 
+
+class ResumeProfileResponse(BaseModel):
+    ok: bool = True
+    resume: dict[str, Any] | None = None
+    message: str = ""
+
+
+@router.get("/profile", response_model=ResumeProfileResponse)
+async def get_profile(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> ResumeProfileResponse:
+    """获取当前用户简历。"""
+    data = load_resume_data(db, current_user.id)
+    if data is None:
+        return ResumeProfileResponse(ok=False, resume=None, message="尚未保存简历")
+    return ResumeProfileResponse(ok=True, resume=data)
+
+
+@router.put("/profile", response_model=ResumeProfileResponse)
+async def put_profile(
+    body: dict[str, Any],
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> ResumeProfileResponse:
+    """保存/更新当前用户简历 JSON。"""
+    save_resume_data(db, current_user.id, body)
+    return ResumeProfileResponse(ok=True, resume=body, message="已保存")
+
+
 @router.post("/enhance", response_model=ResumeEnhanceResponse)
-async def enhance_resume(req: ResumeEnhanceRequest) -> ResumeEnhanceResponse:
+async def enhance_resume(
+    req: ResumeEnhanceRequest,
+    current_user: User | None = Depends(get_current_user_optional),
+) -> ResumeEnhanceResponse:
     """简历增强接口。
 
     接收用户填写的简历信息，调用 LLM 对自我介绍、专业技能、
     项目经历等内容进行扩展优化。
     """
+    _ = current_user  # 登录用户可选，便于后续按账号统计
     prompt = _build_enhance_prompt(req)
     llm_result = await _call_llm(prompt)
     return _parse_llm_response(llm_result, req)

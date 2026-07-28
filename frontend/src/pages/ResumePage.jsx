@@ -1,9 +1,11 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect, useRef, useSyncExternalStore } from 'react'
+import { Link } from 'react-router-dom'
 import axios from 'axios'
 import ResumeForm from '../components/ResumeForm'
 import ResumePreview from '../components/ResumePreview'
 import InterviewChat from '../components/InterviewChat'
 import AcademicSearchPanel from '../components/AcademicSearchPanel'
+import { getAuthHeader, getAuthSnapshot, subscribeAuth } from '../authStore.js'
 
 const INITIAL_DATA = {
   basic: { name: '', phone: '', email: '', address: '', website: '', photo: '' },
@@ -15,7 +17,6 @@ const INITIAL_DATA = {
   intro: '',
 }
 
-// 空字段默认值，导出时自动补齐
 const DEFAULTS = {
   basic: { name: '张三', phone: '138****0000', email: 'example@email.com', address: '广东省广州市', website: '' },
   education: [{ school: '仲恺农业工程学院', major: '计算机科学与技术', degree: '本科', start: '2022.09', end: '2026.06' }],
@@ -28,7 +29,7 @@ function fillDefaults(data) {
   for (const [k, v] of Object.entries(DEFAULTS.basic)) {
     if (!basic[k]) basic[k] = v
   }
-  const education = data.education.map(e => {
+  const education = data.education.map((e) => {
     const filled = { ...e }
     for (const [k, v] of Object.entries(DEFAULTS.education[0])) {
       if (!filled[k]) filled[k] = v
@@ -40,46 +41,115 @@ function fillDefaults(data) {
   return { ...data, basic, education, target_position, intro_keywords }
 }
 
+function mergeResume(server) {
+  if (!server || typeof server !== 'object') return INITIAL_DATA
+  return {
+    ...INITIAL_DATA,
+    ...server,
+    basic: { ...INITIAL_DATA.basic, ...(server.basic || {}) },
+    education: Array.isArray(server.education) && server.education.length
+      ? server.education
+      : INITIAL_DATA.education,
+    skills: Array.isArray(server.skills) && server.skills.length
+      ? server.skills
+      : INITIAL_DATA.skills,
+    projects: Array.isArray(server.projects) && server.projects.length
+      ? server.projects
+      : INITIAL_DATA.projects,
+  }
+}
+
 export default function ResumePage() {
+  const auth = useSyncExternalStore(subscribeAuth, getAuthSnapshot)
+  const loggedIn = Boolean(auth.user && auth.token)
+
   const [data, setData] = useState(INITIAL_DATA)
   const [templateId, setTemplateId] = useState('classic')
   const [enhancing, setEnhancing] = useState(false)
-  // 子标签：resume | interview | academic
+  const [saving, setSaving] = useState(false)
   const [activeTab, setActiveTab] = useState('resume')
+  const saveTimer = useRef(null)
+  const skipNextSave = useRef(false)
 
-  const handleChange = useCallback((newData) => {
-    setData(newData)
-  }, [])
+  useEffect(() => {
+    if (!loggedIn) return
+    let cancelled = false
+    ;(async () => {
+      try {
+        const resp = await axios.get('/api/resume/profile', { headers: getAuthHeader() })
+        if (cancelled) return
+        if (resp.data?.ok && resp.data.resume) {
+          skipNextSave.current = true
+          setData(mergeResume(resp.data.resume))
+        }
+      } catch {
+        // 401 等忽略
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [loggedIn])
+
+  const persistProfile = useCallback(
+    (payload) => {
+      if (!loggedIn) return
+      if (saveTimer.current) clearTimeout(saveTimer.current)
+      saveTimer.current = setTimeout(async () => {
+        setSaving(true)
+        try {
+          await axios.put('/api/resume/profile', payload, { headers: getAuthHeader() })
+        } catch (err) {
+          console.warn('简历保存失败', err?.message || err)
+        } finally {
+          setSaving(false)
+        }
+      }, 800)
+    },
+    [loggedIn],
+  )
+
+  const handleChange = useCallback(
+    (newData) => {
+      setData(newData)
+      if (skipNextSave.current) {
+        skipNextSave.current = false
+        return
+      }
+      persistProfile(newData)
+    },
+    [persistProfile],
+  )
 
   async function handleEnhance() {
     setEnhancing(true)
     try {
-      // 补齐空字段的默认值再发给 LLM
       const filled = fillDefaults(data)
-      const resp = await axios.post('/api/resume/enhance', {
-        intro_keywords: filled.intro_keywords,
-        skills: filled.skills,
-        projects: filled.projects,
-        target_position: filled.target_position,
-        basic: filled.basic,
-        education: filled.education,
-      })
+      const resp = await axios.post(
+        '/api/resume/enhance',
+        {
+          intro_keywords: filled.intro_keywords,
+          skills: filled.skills,
+          projects: filled.projects,
+          target_position: filled.target_position,
+          basic: filled.basic,
+          education: filled.education,
+        },
+        { headers: getAuthHeader() },
+      )
       const result = resp.data
-      setData(prev => {
-        // 用默认值补齐 basic 和 education，保留用户已填的
+      setData((prev) => {
         const basic = { ...fillDefaults(prev).basic, ...prev.basic }
-        const education = prev.education.map((e, i) => {
+        const education = prev.education.map((e) => {
           const defEdu = DEFAULTS.education[0]
-          const filled = { ...defEdu, ...e }
-          return filled
+          return { ...defEdu, ...e }
         })
-        // 去掉 basic 中仍为空的默认值覆盖（只补用户没填的）
-        for (const [k, v] of Object.entries(basic)) {
+        for (const [k] of Object.entries(basic)) {
           if (!prev.basic[k] && DEFAULTS.basic[k]) {
             basic[k] = DEFAULTS.basic[k]
           }
         }
-        return {
+        const next = {
           ...prev,
           basic,
           education,
@@ -87,6 +157,8 @@ export default function ResumePage() {
           skills: result.skills.length > 0 ? result.skills : prev.skills,
           projects: result.projects.length > 0 ? result.projects : prev.projects,
         }
+        persistProfile(next)
+        return next
       })
     } catch (e) {
       console.error('简历增强失败:', e)
@@ -102,38 +174,33 @@ export default function ResumePage() {
         <div className="eyebrow">GRADUATION</div>
         <h1>毕业季</h1>
         <p>AI 简历优化与模拟面试，或搜索学术论文助力毕业设计</p>
-        {/* 子标签切换 */}
+        {loggedIn ? (
+          <p className="resume-sync-hint">{saving ? '正在同步到账号…' : '已绑定当前账号，自动保存'}</p>
+        ) : (
+          <div className="auth-gate-banner" style={{ marginTop: 16 }}>
+            <span>登录后可将简历与面试资料绑定到账号。</span>
+            <Link to="/login" className="btn-primary" style={{ textDecoration: 'none' }}>
+              去登录
+            </Link>
+          </div>
+        )}
         <div className="resume-tabs">
           <button
             className={`resume-tab ${activeTab === 'resume' ? 'active' : ''}`}
             onClick={() => setActiveTab('resume')}
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
-              <polyline points="14 2 14 8 20 8" />
-              <line x1="16" y1="13" x2="8" y2="13" />
-              <line x1="16" y1="17" x2="8" y2="17" />
-              <polyline points="10 9 9 9 8 9" />
-            </svg>
             简历生成
           </button>
           <button
             className={`resume-tab ${activeTab === 'interview' ? 'active' : ''}`}
             onClick={() => setActiveTab('interview')}
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
-            </svg>
             模拟面试
           </button>
           <button
             className={`resume-tab ${activeTab === 'academic' ? 'active' : ''}`}
             onClick={() => setActiveTab('academic')}
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="11" cy="11" r="8" />
-              <line x1="21" y1="21" x2="16.65" y2="16.65" />
-            </svg>
             学术搜索
           </button>
         </div>
@@ -161,15 +228,9 @@ export default function ResumePage() {
         </div>
       )}
 
-      {activeTab === 'interview' && (
-        <InterviewChat
-          onBack={() => setActiveTab('resume')}
-        />
-      )}
+      {activeTab === 'interview' && <InterviewChat onBack={() => setActiveTab('resume')} />}
 
-      {activeTab === 'academic' && (
-        <AcademicSearchPanel />
-      )}
+      {activeTab === 'academic' && <AcademicSearchPanel />}
     </div>
   )
 }

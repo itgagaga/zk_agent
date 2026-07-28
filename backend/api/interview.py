@@ -11,17 +11,23 @@ import time
 from pathlib import Path
 from typing import Any
 
-from fastapi import APIRouter, File, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel, Field
+from sqlalchemy.orm import Session
 
-from backend.config import DATA_DIR, settings
+from backend.auth.deps import get_current_user
+from backend.config import settings
+from backend.database.models import User
+from backend.database.session import get_db
+from backend.services.resume_store import load_resume_data, save_resume_data
+from backend.storage.user_files import (
+    delete_path,
+    to_data_relative,
+    user_resume_dir,
+)
 
 router = APIRouter()
-
-# 简历持久化目录
-RESUME_DIR = DATA_DIR / "resume"
-RESUME_JSON = RESUME_DIR / "profile.json"
 
 
 # ---------- 请求/响应模型 ----------
@@ -84,28 +90,6 @@ class SkipResponse(BaseModel):
     """跳过问题响应，直接给出参考答案。"""
     reference_answer: str = Field(default="", description="参考答案")
     tips: str = Field(default="", description="回答建议")
-
-
-# ---------- 简历持久化 ----------
-
-def _ensure_resume_dir() -> None:
-    RESUME_DIR.mkdir(parents=True, exist_ok=True)
-
-
-def _save_resume(data: dict) -> None:
-    """持久化简历数据（覆盖写入）。"""
-    _ensure_resume_dir()
-    RESUME_JSON.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
-
-
-def _load_resume() -> dict | None:
-    """读取持久化的简历数据。"""
-    if not RESUME_JSON.exists():
-        return None
-    try:
-        return json.loads(RESUME_JSON.read_text(encoding="utf-8"))
-    except Exception:
-        return None
 
 
 # ---------- LLM 调用 ----------
@@ -365,10 +349,14 @@ MAX_RESUME_SIZE = 10 * 1024 * 1024  # 10MB
 
 
 @router.post("/upload-resume")
-async def upload_resume(file: UploadFile = File(...)) -> JSONResponse:
-    """上传简历文件，解析文本后用 LLM 提取结构化信息并持久化。
+async def upload_resume(
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> JSONResponse:
+    """上传简历文件，解析文本后用 LLM 提取结构化信息并持久化到当前用户。
 
-    重新上传会覆盖之前的简历。
+    重新上传会覆盖该用户之前的简历。
     """
     filename = file.filename or "resume"
     suffix = Path(filename).suffix.lower()
@@ -384,29 +372,29 @@ async def upload_resume(file: UploadFile = File(...)) -> JSONResponse:
     if not content:
         raise HTTPException(status_code=400, detail="文件为空")
 
-    # 保存原始文件
-    _ensure_resume_dir()
-    raw_path = RESUME_DIR / f"resume_file{suffix}"
+    resume_dir = user_resume_dir(current_user.id)
+    # 清理旧原始文件
+    for old in resume_dir.glob("resume_file*"):
+        delete_path(old)
+    raw_path = resume_dir / f"resume_file{suffix}"
     raw_path.write_bytes(content)
 
-    # 解析文本
     try:
         from crawler.parse_documents import parse_file
         parsed = parse_file(raw_path)
     except Exception as e:
-        raise HTTPException(status_code=422, detail=f"文件解析失败: {e}")
+        raise HTTPException(status_code=422, detail=f"文件解析失败: {e}") from e
 
     resume_text = parsed.get("full_text", "").strip()
     if not resume_text:
         raise HTTPException(status_code=422, detail="文件解析后文本为空")
 
-    # 用 LLM 提取结构化信息
     prompt = _build_parse_resume_prompt(resume_text)
     llm_result = await _call_llm(prompt, temperature=0.3, max_tokens=2000)
     data = _parse_json(llm_result)
+    rel = to_data_relative(raw_path)
 
     if data:
-        # 确保必要字段存在
         data.setdefault("basic", {})
         data.setdefault("education", [])
         data.setdefault("skills", [])
@@ -416,7 +404,7 @@ async def upload_resume(file: UploadFile = File(...)) -> JSONResponse:
         data["raw_text"] = resume_text
         data["filename"] = filename
         data["upload_time"] = time.strftime("%Y-%m-%d %H:%M:%S")
-        _save_resume(data)
+        save_resume_data(db, current_user.id, data, file_path=rel)
         return JSONResponse(status_code=200, content={
             "ok": True,
             "filename": filename,
@@ -424,7 +412,6 @@ async def upload_resume(file: UploadFile = File(...)) -> JSONResponse:
             "message": "简历上传并解析成功",
         })
 
-    # LLM 解析失败，保存原始文本作为降级
     fallback = {
         "basic": {},
         "education": [],
@@ -436,7 +423,7 @@ async def upload_resume(file: UploadFile = File(...)) -> JSONResponse:
         "filename": filename,
         "upload_time": time.strftime("%Y-%m-%d %H:%M:%S"),
     }
-    _save_resume(fallback)
+    save_resume_data(db, current_user.id, fallback, file_path=rel)
     return JSONResponse(status_code=200, content={
         "ok": True,
         "filename": filename,
@@ -446,9 +433,12 @@ async def upload_resume(file: UploadFile = File(...)) -> JSONResponse:
 
 
 @router.get("/resume")
-async def get_resume() -> dict:
-    """获取当前持久化的简历数据。"""
-    data = _load_resume()
+async def get_resume(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> dict:
+    """获取当前用户持久化的简历数据。"""
+    data = load_resume_data(db, current_user.id)
     if data is None:
         return {"ok": False, "resume": None, "message": "尚未上传简历"}
     return {"ok": True, "resume": data}

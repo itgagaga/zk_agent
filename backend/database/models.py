@@ -189,3 +189,75 @@ class DocumentChunk(Base):
     embedding_id = Column(String(64))
     token_count = Column(Integer)
     chunk_index = Column(Integer)
+
+
+class User(Base):
+    """系统用户（登录注册）。"""
+
+    __tablename__ = "user"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    username = Column(String(64), nullable=False, unique=True, index=True)
+    email = Column(String(128), unique=True, index=True)
+    password_hash = Column(String(128), nullable=False)
+    display_name = Column(String(64))
+    role = Column(String(32), default="student")  # student / teacher / admin
+    is_active = Column(Integer, default=1)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class ChatSession(Base):
+    """用户聊天会话。"""
+
+    __tablename__ = "chat_session"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, nullable=False, index=True)
+    title = Column(String(256), default="新对话")
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class ChatMessage(Base):
+    """聊天消息。"""
+
+    __tablename__ = "chat_message"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    session_id = Column(Integer, nullable=False, index=True)
+    role = Column(String(16), nullable=False)  # user / assistant
+    content = Column(Text, nullable=False, default="")
+    meta = Column(Text)  # JSON 字符串：sources 等
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class ResumeProfile(Base):
+    """用户简历（每人一份）。"""
+
+    __tablename__ = "resume_profile"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, nullable=False, unique=True, index=True)
+    data = Column(Text, nullable=False, default="{}")  # JSON
+    file_path = Column(String(512))
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class UserDocument(Base):
+    """用户私有智能文档元数据。"""
+
+    __tablename__ = "user_document"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, nullable=False, index=True)
+    doc_id = Column(String(64), nullable=False, unique=True, index=True)
+    title = Column(String(256), nullable=False)
+    filename = Column(String(256))
+    file_path = Column(String(512))
+    department = Column(String(128), default="文档库")
+    file_type = Column(String(16))
+    size = Column(Integer, default=0)
+    page_count = Column(Integer, default=0)
+    chunk_count = Column(Integer, default=0)
+    created_at = Column(DateTime, default=datetime.utcnow)

@@ -1,4 +1,6 @@
 import { Link, NavLink } from 'react-router-dom'
+import { useSyncExternalStore } from 'react'
+import { getAuthSnapshot, subscribeAuth, logout } from '../authStore.js'
 
 const links = [
   { to: '/', label: '首页' },
@@ -9,12 +11,14 @@ const links = [
 ]
 
 export default function NavPill() {
+  const { user } = useSyncExternalStore(subscribeAuth, getAuthSnapshot)
+
   return (
     <nav className="nav-pill">
       <Link to="/" style={{ fontWeight: 700 }}>
         ZHKU Agent
       </Link>
-      <div style={{ display: 'flex', gap: 32 }}>
+      <div style={{ display: 'flex', gap: 32, flex: 1 }}>
         {links.map((l) => (
           <NavLink
             key={l.to}
@@ -27,6 +31,27 @@ export default function NavPill() {
             {l.label}
           </NavLink>
         ))}
+      </div>
+      <div className="nav-auth">
+        {user ? (
+          <>
+            <span className="nav-user-name" title={user.username}>
+              {user.display_name || user.username}
+            </span>
+            <button type="button" className="nav-auth-btn" onClick={() => logout()}>
+              退出
+            </button>
+          </>
+        ) : (
+          <>
+            <Link to="/login" className="nav-auth-link">
+              登录
+            </Link>
+            <Link to="/register" className="btn-primary nav-auth-cta">
+              注册
+            </Link>
+          </>
+        )}
       </div>
     </nav>
   )

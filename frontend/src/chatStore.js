@@ -1,14 +1,18 @@
 // 聊天状态与流式请求逻辑，独立于组件生命周期。
-//
-// ChatPage 是路由组件，切到其他标签时会被卸载。若状态与 fetch
-// 放在组件内，卸载后流式回调无法更新组件，回来就只剩用户发的
-// 话。把状态提到模块级，组件只订阅，请求在后台继续，回来即可
-// 看到进行中或已完成的回复。
+// 未登录：localStorage 临时存储；登录后：服务端会话为真源。
+
+import axios from 'axios'
+import {
+  getAuthHeader,
+  getAuthSnapshot,
+  subscribeAuth,
+} from './authStore.js'
 
 const STORAGE_KEY = 'zhku_chat_messages'
 const SESSION_KEY = 'zhku_session_id'
+const SERVER_SESSION_KEY = 'zhku_server_chat_session_id'
 
-function getSessionId() {
+function getGuestSessionId() {
   let id = localStorage.getItem(SESSION_KEY)
   if (!id) {
     id = 's_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10)
@@ -17,7 +21,7 @@ function getSessionId() {
   return id
 }
 
-function loadSaved() {
+function loadLocalMessages() {
   try {
     const saved = localStorage.getItem(STORAGE_KEY)
     if (saved) {
@@ -25,21 +29,21 @@ function loadSaved() {
       if (Array.isArray(parsed) && parsed.length > 0) return parsed
     }
   } catch {
-    // localStorage 读取失败，忽略
+    // ignore
   }
-  return null
+  return []
 }
 
 let state = {
-  messages: loadSaved() || [],
+  messages: loadLocalMessages(),
   loading: false,
+  serverSessionId: null,
+  syncing: false,
+  authMode: 'guest', // guest | user
 }
-// 进行中的流式请求；切走标签时保留，回来继续消费
-let abortRef = null
-// 标志：是否还有未完成（streaming:true）的助手消息。组件重新挂载时
-// 据此判断是否需要恢复一次后台请求。
-let hasUnfinished = state.messages.some((m) => m.streaming)
 
+let abortRef = null
+let hasUnfinished = state.messages.some((m) => m.streaming)
 const listeners = new Set()
 
 function emit() {
@@ -51,9 +55,15 @@ function setState(patch) {
   emit()
 }
 
-function persist() {
+function persistLocal() {
+  if (state.authMode === 'user') return
   const toSave = state.messages.filter((m) => !m.streaming)
-  if (toSave.length === 0) return
+  if (toSave.length === 0) {
+    try {
+      localStorage.removeItem(STORAGE_KEY)
+    } catch {}
+    return
+  }
   const slim = toSave.map((m) => ({
     role: m.role,
     content: m.content,
@@ -62,14 +72,14 @@ function persist() {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(slim))
   } catch {
-    // 存储空间不足，忽略
+    // ignore
   }
 }
 
 function setMessages(updater) {
   state = { ...state, messages: updater(state.messages) }
   hasUnfinished = state.messages.some((m) => m.streaming)
-  persist()
+  persistLocal()
   emit()
 }
 
@@ -84,7 +94,9 @@ export function getState() {
 }
 
 export function getSessionIdRef() {
-  return getSessionId()
+  return state.serverSessionId
+    ? String(state.serverSessionId)
+    : getGuestSessionId()
 }
 
 export function isLoading() {
@@ -102,9 +114,148 @@ function buildHistory() {
     .map((m) => ({ role: m.role, content: m.content }))
 }
 
-// 恢复进行中的流式请求：若存在 streaming:true 的助手消息但 loading
-// 已为 false（比如页面刷新前请求未完成），尝试重连。当前后端不支
-// 持断点续传，这里直接把残留的 streaming 消息标记为已中断。
+function authHeaders(extra = {}) {
+  return { ...extra, ...getAuthHeader() }
+}
+
+async function ensureServerSession() {
+  const auth = getAuthSnapshot()
+  if (!auth.token || !auth.user) return null
+
+  let sid = state.serverSessionId
+  if (!sid) {
+    try {
+      const raw = localStorage.getItem(SERVER_SESSION_KEY)
+      if (raw) sid = Number(raw) || null
+    } catch {}
+  }
+
+  if (sid) {
+    try {
+      await axios.get(`/api/chat/sessions/${sid}/messages`, {
+        headers: getAuthHeader(),
+      })
+      state = { ...state, serverSessionId: sid, authMode: 'user' }
+      return sid
+    } catch {
+      sid = null
+    }
+  }
+
+  // 取最近会话，没有则新建
+  const list = await axios.get('/api/chat/sessions', { headers: getAuthHeader() })
+  const sessions = list.data || []
+  if (sessions.length > 0) {
+    sid = sessions[0].id
+  } else {
+    const created = await axios.post(
+      '/api/chat/sessions',
+      { title: '新对话' },
+      { headers: getAuthHeader() },
+    )
+    sid = created.data.id
+  }
+
+  try {
+    localStorage.setItem(SERVER_SESSION_KEY, String(sid))
+  } catch {}
+  state = { ...state, serverSessionId: sid, authMode: 'user' }
+  return sid
+}
+
+async function loadServerMessages(sessionId) {
+  const resp = await axios.get(`/api/chat/sessions/${sessionId}/messages`, {
+    headers: getAuthHeader(),
+  })
+  return (resp.data || []).map((m) => ({
+    role: m.role,
+    content: m.content || '',
+    data: m.meta || null,
+  }))
+}
+
+async function savePairToServer(userContent, assistantMsg) {
+  const sid = state.serverSessionId
+  if (!sid || !getAuthSnapshot().token) return
+  try {
+    await axios.post(
+      `/api/chat/sessions/${sid}/messages`,
+      {
+        messages: [
+          { role: 'user', content: userContent },
+          {
+            role: 'assistant',
+            content: assistantMsg.content || '',
+            meta: assistantMsg.data || null,
+          },
+        ],
+      },
+      { headers: getAuthHeader() },
+    )
+  } catch (err) {
+    console.warn('[chatStore] 服务端保存失败', err?.message || err)
+  }
+}
+
+/** 登录后：把本机临时聊天迁移到服务端（仅当服务端会话为空时）。 */
+async function migrateLocalIfNeeded(sessionId, serverMessages) {
+  if (serverMessages.length > 0) return serverMessages
+  const local = loadLocalMessages().filter((m) => !m.streaming && m.content)
+  if (local.length === 0) return serverMessages
+  try {
+    await axios.post(
+      `/api/chat/sessions/${sessionId}/messages`,
+      {
+        messages: local.map((m) => ({
+          role: m.role,
+          content: m.content,
+          meta: m.data || null,
+        })),
+      },
+      { headers: getAuthHeader() },
+    )
+    try {
+      localStorage.removeItem(STORAGE_KEY)
+    } catch {}
+    return local
+  } catch {
+    return local
+  }
+}
+
+export async function syncWithAuth() {
+  const auth = getAuthSnapshot()
+  if (!auth.token || !auth.user) {
+    setState({
+      authMode: 'guest',
+      serverSessionId: null,
+      messages: loadLocalMessages(),
+    })
+    return
+  }
+  if (state.syncing) return
+  setState({ syncing: true, authMode: 'user' })
+  try {
+    const sid = await ensureServerSession()
+    if (!sid) return
+    let msgs = await loadServerMessages(sid)
+    msgs = await migrateLocalIfNeeded(sid, msgs)
+    hasUnfinished = false
+    setState({ messages: msgs, serverSessionId: sid, authMode: 'user' })
+  } catch (err) {
+    console.warn('[chatStore] 同步失败', err?.message || err)
+  } finally {
+    setState({ syncing: false })
+  }
+}
+
+// 鉴权变化时自动同步
+subscribeAuth(() => {
+  syncWithAuth()
+})
+// 启动时尝试同步
+syncWithAuth()
+
 export function recoverIfNeeded() {
   if (!hasUnfinished) return
   setMessages((prev) =>
@@ -115,8 +266,8 @@ export function recoverIfNeeded() {
             streaming: false,
             content: m.content || '（请求未完成，已中断）',
           }
-        : m
-    )
+        : m,
+    ),
   )
 }
 
@@ -133,17 +284,23 @@ export async function ask(question, autoStick) {
   setMessages((prev) => [...prev, assistantMsg])
 
   const history = buildHistory()
+  const auth = getAuthSnapshot()
+  const role = auth.user?.role || 'student'
 
   try {
+    if (auth.token) {
+      await ensureServerSession()
+    }
+
     abortRef = new AbortController()
     const resp = await fetch('/api/chat/stream', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({
         question: text,
-        user_role: 'student',
+        user_role: role,
         history,
-        session_id: getSessionId(),
+        session_id: getSessionIdRef(),
       }),
       signal: abortRef.signal,
     })
@@ -224,11 +381,10 @@ export async function ask(question, autoStick) {
             })
           }
         } catch {
-          // skip malformed
+          // skip
         }
       }
     }
-    // 流结束但后端没发 done：兜底置为已完成
     setMessages((prev) => {
       if (idx < 0 || idx >= prev.length) return prev
       if (!prev[idx].streaming) return prev
@@ -236,6 +392,14 @@ export async function ask(question, autoStick) {
       next[idx] = { ...next[idx], streaming: false }
       return next
     })
+
+    // 登录用户：落库本轮问答
+    if (getAuthSnapshot().token && state.serverSessionId) {
+      const last = state.messages[state.messages.length - 1]
+      if (last?.role === 'assistant') {
+        await savePairToServer(text, last)
+      }
+    }
   } catch (err) {
     if (err?.name === 'AbortError') {
       setMessages((prev) => {
@@ -274,10 +438,21 @@ export function stopGenerating() {
   if (abortRef) abortRef.abort()
 }
 
-export function clearChat() {
+export async function clearChat() {
   if (state.loading) return
   if (state.messages.length > 0 && !confirm('确定要清除所有聊天记录吗？')) return
-  localStorage.removeItem(STORAGE_KEY)
+
+  if (state.authMode === 'user' && state.serverSessionId && getAuthSnapshot().token) {
+    try {
+      await axios.delete(`/api/chat/sessions/${state.serverSessionId}/messages`, {
+        headers: getAuthHeader(),
+      })
+    } catch {
+      // ignore
+    }
+  } else {
+    localStorage.removeItem(STORAGE_KEY)
+  }
   hasUnfinished = false
   setState({ messages: [] })
 }

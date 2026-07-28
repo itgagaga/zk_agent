@@ -46,5 +46,9 @@ tenacity>=9.0.0
 loguru>=0.7.2
 tqdm>=4.66.6
 
+# 用户鉴权
+bcrypt>=4.2.0
+PyJWT>=2.9.0
+
 # 任务调度
 apscheduler>=3.10.4
