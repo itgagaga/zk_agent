@@ -166,9 +166,12 @@ class AgentController:
         history: list[dict[str, str]] | None = None,
         user_id: int | None = None,
     ) -> dict[str, Any]:
-        plan = self.router.route(question)
+        plan = await self.router.route(question)
         rag_query = self._clean_query(question)
-        print(f"[Agent] RAG 查询: '{rag_query}' (原始: '{question}')")
+        print(
+            f"[Agent] 路由={plan.router_source} 模式={plan.mode} "
+            f"RAG查询='{rag_query}' (原始: '{question}')"
+        )
 
         if plan.primary.path == "fallback":
             return self.fallback.no_evidence(question)
@@ -182,6 +185,7 @@ class AgentController:
             return self.fallback.no_evidence(question)
 
         result["route_mode"] = plan.mode
+        result["router_source"] = plan.router_source
         result["evidence_priority"] = evidence.get("evidence_priority")
         result["supervisor_reason"] = evidence.get("supervisor_reason")
         if plan.mode == "collab":
@@ -201,8 +205,12 @@ class AgentController:
     ):
         import json
 
-        plan = self.router.route(question)
+        plan = await self.router.route(question)
         rag_query = self._clean_query(question)
+        print(
+            f"[Agent] 路由={plan.router_source} 模式={plan.mode} "
+            f"RAG查询='{rag_query}' (原始: '{question}')"
+        )
 
         if plan.primary.path == "fallback":
             fb = self.fallback.no_evidence(question)
@@ -218,6 +226,15 @@ class AgentController:
             yield f'data: {json.dumps({"type": "token", "content": fb.get("answer", "")}, ensure_ascii=False)}\n\n'
             yield f'data: {json.dumps({"type": "done"}, ensure_ascii=False)}\n\n'
             return
+
+        router_evt = {
+            "type": "router",
+            "source": plan.router_source,
+            "mode": plan.mode,
+            "intents": [i.intent_label for i in plan.intents if i.intent_label],
+            "collab_reason": plan.collab_reason,
+        }
+        yield f"data: {json.dumps(router_evt, ensure_ascii=False)}\n\n"
 
         evidence = await self._gather_evidence(
             question, plan, rag_query, history=history, user_id=user_id

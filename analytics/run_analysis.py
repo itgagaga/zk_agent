@@ -105,9 +105,8 @@ def evaluate_routes() -> dict[str, Any]:
     from backend.agents.router import QuestionRouter
 
     router = QuestionRouter()
-    router.mode = "rule"
     expected = [case.expected_label for case in ROUTE_CASES]
-    predicted = [router.route(case.query).primary.intent_label for case in ROUTE_CASES]
+    predicted = [router.route_rule(case.query).primary.intent_label for case in ROUTE_CASES]
     matrix = build_confusion_matrix(expected, predicted, ROUTE_LABELS)
     correct = sum(truth == guess for truth, guess in zip(expected, predicted))
     return {

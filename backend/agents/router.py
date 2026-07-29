@@ -14,6 +14,7 @@ from backend.config import settings
 
 PathType = Literal["general_rag", "document_rag", "tool", "hybrid", "fallback"]
 RouteMode = Literal["fast", "collab"]
+RouterSource = Literal["rule", "llm", "hybrid_rule", "hybrid_llm", "rule_fallback"]
 
 # 办事协作 Agent 组（材料 / 联系 / 入口）
 _AFFAIRS_TOOLS = frozenset({"download_search", "contact_search", "service_link_search"})
@@ -62,6 +63,7 @@ class RoutePlan(BaseModel):
     mode: RouteMode = "fast"
     intents: list[IntentResult] = Field(default_factory=list)
     collab_reason: str = ""
+    router_source: RouterSource = "rule"
 
     @property
     def primary(self) -> IntentResult:
@@ -117,16 +119,77 @@ _RULES = [
 
 
 class QuestionRouter:
-    """问题路由器：判定 fast / collab 并输出意图列表。"""
+    """问题路由器：判定 fast / collab 并输出意图列表。
+
+    支持三种模式（由 AGENT_ROUTER_MODE 控制）：
+    - rule：纯关键词规则（低延迟、可复现，用于评测）
+    - llm：LLM Structured Output 选路（理解换说法、模糊意图）
+    - hybrid（默认）：规则高置信快路径 + LLM 兜底
+    """
 
     def __init__(self) -> None:
         self.mode = settings.agent_router_mode
+        self._llm_router: Any = None
 
-    def route(self, question: str) -> RoutePlan:
+    @property
+    def llm_router(self) -> Any:
+        if self._llm_router is None:
+            from backend.agents.llm_router import LLMRouter
+
+            self._llm_router = LLMRouter()
+        return self._llm_router
+
+    def route_rule(self, question: str) -> RoutePlan:
+        """同步规则路由（评测与离线分析用）。"""
+        plan = self._route_by_rule(question)
+        plan.router_source = "rule"
+        return plan
+
+    async def route(self, question: str) -> RoutePlan:
         """根据问题文本判断路由计划。"""
-        if self.mode == "llm":
-            return self._route_by_llm(question)
-        return self._route_by_rule(question)
+        if self.mode == "rule":
+            return self.route_rule(question)
+
+        matched = self._match_all_intents(question)
+
+        if self.mode == "hybrid" and self._is_confident_rule_match(question, matched):
+            plan = self._route_by_rule(question)
+            plan.router_source = "hybrid_rule"
+            return plan
+
+        llm_plan = await self.llm_router.route(question)
+        if llm_plan is not None:
+            llm_plan.router_source = "hybrid_llm" if self.mode == "hybrid" else "llm"
+            return llm_plan
+
+        plan = self._route_by_rule(question)
+        plan.router_source = "rule_fallback"
+        return plan
+
+    @staticmethod
+    def _is_confident_rule_match(question: str, matched: list[IntentResult]) -> bool:
+        """规则路由是否足够可信，无需 LLM 介入。"""
+        if not matched:
+            return False
+
+        if len(matched) >= 2:
+            if QuestionRouter._has_affair_process_keywords(question):
+                return True
+            if QuestionRouter._has_multi_intent_connectors(question):
+                return True
+            tool_set = {i.tool for i in matched if i.tool}
+            if tool_set >= {"map_route", "weather_search"}:
+                return True
+            return False
+
+        intent = matched[0]
+        if intent.tool in _STANDALONE_TOOLS:
+            return True
+        if intent.path == "document_rag":
+            return True
+        if intent.tool in _AFFAIRS_TOOLS:
+            return True
+        return True
 
     def _match_all_intents(self, question: str) -> list[IntentResult]:
         """匹配所有命中的意图（去重）。"""
@@ -252,10 +315,6 @@ class QuestionRouter:
                     intent.path = "hybrid"
 
         return RoutePlan(mode=mode, intents=intents, collab_reason=reason)
-
-    def _route_by_llm(self, question: str) -> RoutePlan:
-        """LLM 路由：复杂/模糊问题可升级（第一版回退规则）。"""
-        return self._route_by_rule(question)
 
 
 def is_standalone_tool(tool: str | None) -> bool:

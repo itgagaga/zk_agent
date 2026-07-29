@@ -1,0 +1,53 @@
+{
+  "metadata": {
+    "evaluated_at": "2026-07-29",
+    "rag_sample_size": 20,
+    "route_sample_size": 27,
+    "latency_sample_size": 8,
+    "api_base": "http://127.0.0.1:8000",
+    "confidence_level": 0.95
+  },
+  "rag": {
+    "k": [1, 3, 5, 10],
+    "hits": [14, 17, 18, 18],
+    "recall": [0.70, 0.85, 0.90, 0.90]
+  },
+  "routing": {
+    "labels": [
+      "通用问答",
+      "智能文档",
+      "资料下载",
+      "联系方式",
+      "专业学院",
+      "服务入口",
+      "天气查询",
+      "学术搜索",
+      "路线规划"
+    ],
+    "confusion_matrix": [
+      [3, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 3, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 3, 0, 0, 0, 0, 0, 0],
+      [0, 0, 1, 2, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 3, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 3, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 3, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 3, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 3]
+    ]
+  },
+  "latency": {
+    "fast_seconds": [6.0051, 8.7835, 7.8549, 8.7583],
+    "collab_seconds": [12.7864, 17.7007, 10.9010, 23.3025],
+    "successes": 8,
+    "requests": 8
+  },
+  "top_k_optimization": {
+    "current_k": 10,
+    "recommended_k": 5,
+    "current_recall": 0.90,
+    "recommended_recall": 0.90,
+    "context_reduction": 0.50,
+    "status": "offline recommendation; not yet deployed"
+  }
+}

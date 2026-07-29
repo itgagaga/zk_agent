@@ -130,8 +130,8 @@ class Settings(BaseSettings):
     )
 
     # Agent
-    agent_router_mode: Literal["rule", "llm"] = Field(
-        default="rule", alias="AGENT_ROUTER_MODE"
+    agent_router_mode: Literal["rule", "llm", "hybrid"] = Field(
+        default="hybrid", alias="AGENT_ROUTER_MODE"
     )
     enable_fallback: bool = Field(default=True, alias="ENABLE_FALLBACK")
 
