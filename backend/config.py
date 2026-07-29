@@ -7,19 +7,20 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Literal
 
-from pydantic import Field
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 # 项目根目录
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 DATA_DIR = PROJECT_ROOT / "data"
+ENV_FILE = PROJECT_ROOT / ".env"
 
 
 class Settings(BaseSettings):
-    """应用配置。从 .env 文件读取。"""
+    """应用配置。从项目根目录 .env 读取，不依赖启动时的 cwd。"""
 
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=str(ENV_FILE) if ENV_FILE.is_file() else None,
         env_file_encoding="utf-8",
         case_sensitive=False,
         extra="ignore",
@@ -148,6 +149,15 @@ class Settings(BaseSettings):
     )
     jwt_algorithm: str = Field(default="HS256", alias="JWT_ALGORITHM")
     jwt_expire_minutes: int = Field(default=60 * 24 * 7, alias="JWT_EXPIRE_MINUTES")
+
+    @field_validator("vector_store_path", "sqlite_path", mode="before")
+    @classmethod
+    def _resolve_data_path(cls, value: str | Path) -> Path:
+        """将 .env 中的相对路径固定解析到项目根目录。"""
+        path = Path(value)
+        if not path.is_absolute():
+            path = PROJECT_ROOT / path
+        return path.resolve()
 
     def ensure_dirs(self) -> None:
         """创建必要的目录。"""

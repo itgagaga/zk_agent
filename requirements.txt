@@ -27,6 +27,7 @@ pymysql>=1.1.0
 cryptography>=42.0.0
 
 # Excel 课表解析
+pandas>=2.2.0
 openpyxl>=3.1.5
 xlrd>=2.0.1
 

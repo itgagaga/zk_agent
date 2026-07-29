@@ -63,3 +63,6 @@ test-results/
 
 # Jupyter
 .ipynb_checkpoints/
+
+/plantUML
+

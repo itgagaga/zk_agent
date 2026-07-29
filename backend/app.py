@@ -1,11 +1,20 @@
 """ZHKU Campus Agent 后端入口。
 
 提供 FastAPI 应用实例、路由挂载和健康检查。
+
+直接运行本文件即可启动服务：
+    python backend/app.py
 """
 from __future__ import annotations
 
+import sys
 from contextlib import asynccontextmanager
 from pathlib import Path
+
+# 允许 `python backend/app.py` 直接运行时正确解析 backend 包
+_PROJECT_ROOT = Path(__file__).resolve().parent.parent
+if str(_PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(_PROJECT_ROOT))
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -125,3 +134,20 @@ async def stats() -> dict:
         "tools": ["major_search", "download_search", "contact_search", "service_link_search"],
         "departments": list(departments),
     }
+
+
+if __name__ == "__main__":
+    import os
+
+    import uvicorn
+
+    # 统一工作目录，避免 IDE 从 backend/ 启动时相对路径与 .env 解析异常
+    os.chdir(_PROJECT_ROOT)
+
+    uvicorn.run(
+        "backend.app:app",
+        host=settings.app_host,
+        port=settings.app_port,
+        reload=settings.app_debug,
+        log_level=settings.log_level.lower(),
+    )
