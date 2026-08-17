@@ -124,19 +124,24 @@ def parse_file(file_path: str | Path) -> dict[str, Any]:
 
 
 def split_into_chunks(
-    text: str, chunk_size: int = 500, chunk_overlap: int = 50
+    text: str,
+    chunk_size: int = 600,
+    chunk_overlap: int = 80,
+    **kwargs: Any,
 ) -> list[str]:
-    """按字符长度切分文本。
+    """结构感知切分（兼容旧接口，返回 embed 文本列表）。"""
+    from crawler.chunking import split_into_chunks as _split
 
-    第一版按字符切分，后续可升级为按章节 / 语义切分。
-    """
-    if not text:
-        return []
-    chunks: list[str] = []
-    start = 0
-    while start < len(text):
-        end = start + chunk_size
-        chunk = text[start:end]
-        chunks.append(chunk.strip())
-        start = end - chunk_overlap
-    return [c for c in chunks if c]
+    return _split(
+        text,
+        chunk_size=chunk_size,
+        chunk_overlap=chunk_overlap,
+        **kwargs,
+    )
+
+
+def split_document(text: str, **kwargs: Any) -> list[Any]:
+    """结构感知切分，返回 ChunkRecord 列表。"""
+    from crawler.chunking import split_document as _split_document
+
+    return _split_document(text, **kwargs)

@@ -136,6 +136,21 @@ async def _stream_llm(prompt: str, temperature: float = 0.7, max_tokens: int = 2
         yield ""
 
 
+def _parse_json(text: str) -> dict | None:
+    """从 LLM 输出中解析 JSON（支持 markdown 代码块包裹）。"""
+    if not text:
+        return None
+    json_str = text
+    if "```json" in text:
+        json_str = text.split("```json")[1].split("```")[0].strip()
+    elif "```" in text:
+        json_str = text.split("```")[1].split("```")[0].strip()
+    try:
+        return json.loads(json_str)
+    except (json.JSONDecodeError, TypeError):
+        return None
+
+
 def _build_resume_summary(resume: ResumeContext) -> str:
     """构建简历摘要文本。"""
     parts = []

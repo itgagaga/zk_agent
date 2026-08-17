@@ -6,14 +6,13 @@
 from __future__ import annotations
 
 import json
-import re
 from pathlib import Path
 from typing import Any, Iterable
 
 from backend.config import settings
 from backend.rag.vector_store import get_vector_store
 from crawler.common import DATA_CLEANED_DIR, DATA_METADATA_DIR
-from crawler.parse_documents import split_into_chunks
+from crawler.chunking import records_to_store_payload, split_document
 
 
 def build_campus_kb() -> int:
@@ -40,33 +39,37 @@ def build_campus_kb() -> int:
             text = text_file.read_text(encoding="utf-8")
             if not text.strip():
                 continue
-            text = _strip_markdown(text)
-            if not text.strip():
-                continue
-            chunks = split_into_chunks(
-                text,
-                chunk_size=settings.chunk_size,
-                chunk_overlap=settings.chunk_overlap,
-            )
-            if not chunks:
-                continue
             meta = _load_metadata(sub_dir.name, text_file.stem)
-            ids = [f"{sub_dir.name}_{text_file.stem}_{i}" for i in range(len(chunks))]
-            metadatas = [
+            doc_title = meta.get("title") or text_file.stem
+            records = split_document(
+                text,
+                doc_title=doc_title,
+                department=department,
+                short_doc_max=settings.short_doc_max_size,
+                parent_max_size=settings.parent_max_size,
+                child_target_size=settings.chunk_size,
+                chunk_overlap=settings.chunk_overlap,
+                min_chunk_size=settings.chunk_min_size,
+            )
+            if not records:
+                continue
+            id_prefix = f"{sub_dir.name}_{text_file.stem}"
+            ids, chunk_texts, metadatas = records_to_store_payload(
+                records,
+                id_prefix,
                 {
-                    "title": meta.get("title") or text_file.stem,
+                    "title": doc_title,
                     "department": department,
                     "source_url": meta.get("source_url") or "",
                     "publish_date": meta.get("publish_date") or "",
                     "sub_dir": sub_dir.name,
-                }
-                for _ in chunks
-            ]
-            store.add_documents(
-                ids=ids, texts=chunks, metadatas=metadatas, collection="zhku"
+                },
             )
-            total += len(chunks)
-            print(f"  - {sub_dir.name}/{text_file.name}: {len(chunks)} chunks")
+            store.add_documents(
+                ids=ids, texts=chunk_texts, metadatas=metadatas, collection="zhku"
+            )
+            total += len(records)
+            print(f"  - {sub_dir.name}/{text_file.name}: {len(records)} chunks")
 
     return total
 
@@ -89,28 +92,34 @@ def build_document_kb() -> int:
         text = txt_file.read_text(encoding="utf-8")
         if not text.strip():
             continue
-        text = _strip_markdown(text)
-        if not text.strip():
-            continue
-        chunks = split_into_chunks(
+        doc_title = txt_file.stem
+        records = split_document(
             text,
-            chunk_size=settings.chunk_size,
+            doc_title=doc_title,
+            department="智能文档",
+            short_doc_max=settings.short_doc_max_size,
+            parent_max_size=settings.parent_max_size,
+            child_target_size=settings.chunk_size,
             chunk_overlap=settings.chunk_overlap,
+            min_chunk_size=settings.chunk_min_size,
         )
-        ids = [f"doc_{txt_file.stem}_{i}" for i in range(len(chunks))]
-        metadatas = [
+        if not records:
+            continue
+        id_prefix = f"doc_{txt_file.stem}"
+        ids, chunk_texts, metadatas = records_to_store_payload(
+            records,
+            id_prefix,
             {
-                "title": txt_file.stem,
+                "title": doc_title,
                 "department": "智能文档",
                 "source_url": "",
                 "doc_id": txt_file.stem,
-            }
-            for _ in chunks
-        ]
-        store.add_documents(
-            ids=ids, texts=chunks, metadatas=metadatas, collection="document"
+            },
         )
-        total += len(chunks)
+        store.add_documents(
+            ids=ids, texts=chunk_texts, metadatas=metadatas, collection="document"
+        )
+        total += len(records)
 
     return total
 
@@ -136,56 +145,6 @@ def _iter_text_files(directory: Path) -> Iterable[Path]:
     """遍历目录下的 .txt 和 .md 文件。"""
     yield from sorted(directory.glob("*.txt"))
     yield from sorted(directory.glob("*.md"))
-
-
-def _strip_markdown(text: str) -> str:
-    """剥离 Markdown 的 YAML front matter 和常见标记符号，返回纯文本。
-
-    保留标题文字、列表文字、表格单元、引用文字，方便后续切分与向量化。
-    """
-    # 1) 去掉 YAML front matter（--- ... ---）
-    text = re.sub(r"\A---\s*\n.*?\n---\s*\n", "", text, count=1, flags=re.DOTALL)
-
-    lines: list[str] = []
-    for raw_line in text.splitlines():
-        line = raw_line.rstrip()
-
-        # 2) 去掉表格分隔行（|---|---|）
-        if re.match(r"^\s*\|?[\s\-:|]+\|?\s*$", line) and "-" in line:
-            continue
-
-        # 3) 去掉行首的标题井号
-        line = re.sub(r"^\s{0,3}#{1,6}\s+", "", line)
-
-        # 4) 去掉粗体/斜体标记 ** __ * _
-        line = re.sub(r"\*\*([^*]+)\*\*", r"\1", line)
-        line = re.sub(r"__([^_]+)__", r"\1", line)
-        line = re.sub(r"(?<!\w)\*([^*\s][^*]*)\*(?!\w)", r"\1", line)
-
-        # 5) 链接 [text](url) -> text
-        line = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", line)
-
-        # 6) 行内代码 `code` -> code
-        line = re.sub(r"`([^`]+)`", r"\1", line)
-
-        # 7) 引用前缀 > 去掉
-        line = re.sub(r"^\s{0,3}>\s?", "", line)
-
-        # 8) 列表前缀 - / * / 1. 去掉
-        line = re.sub(r"^\s{0,3}[-*+]\s+", "", line)
-        line = re.sub(r"^\s{0,3}\d+\.\s+", "", line)
-
-        # 9) 表格首尾的 | 替换为空格，中间 | 替换为空格
-        if line.lstrip().startswith("|"):
-            line = line.replace("|", " ").strip()
-            line = re.sub(r"\s+", " ", line)
-
-        lines.append(line)
-
-    cleaned = "\n".join(lines)
-    # 折叠多余空行
-    cleaned = re.sub(r"\n{3,}", "\n\n", cleaned)
-    return cleaned.strip()
 
 
 def _load_metadata(subdir: str, stem: str) -> dict[str, Any]:

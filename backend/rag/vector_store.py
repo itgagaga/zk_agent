@@ -108,6 +108,45 @@ class VectorStore:
             return len(result.get("ids", []))
         return target.count()
 
+    def get_chunks_by_parent_id(
+        self,
+        parent_id: str,
+        doc_id: str | None = None,
+        collection: str = "zhku",
+    ) -> list[dict[str, Any]]:
+        """按 parent_id 取回同一 Parent 下的全部 chunk（按片段序号排序）。"""
+        target = self._target(collection)
+        where: dict[str, Any] = {"parent_id": parent_id}
+        if doc_id:
+            where = {"$and": [{"parent_id": parent_id}, {"doc_id": doc_id}]}
+        result = target.get(
+            where=where,
+            include=["documents", "metadatas"],
+        )
+        ids = result.get("ids") or []
+        docs = result.get("documents") or []
+        metas = result.get("metadatas") or []
+        hits: list[dict[str, Any]] = []
+        for chunk_id, doc, meta in zip(ids, docs, metas):
+            chunk_index = meta.get("chunk_index")
+            if chunk_index is None:
+                chunk_index = _chunk_index_from_id(chunk_id)
+            hits.append(
+                {
+                    "snippet": doc,
+                    "title": meta.get("title", ""),
+                    "department": meta.get("department"),
+                    "url": meta.get("source_url", ""),
+                    "publish_date": meta.get("publish_date"),
+                    "score": 0.5,
+                    "metadata": meta,
+                    "chunk_id": chunk_id,
+                    "chunk_index": chunk_index,
+                }
+            )
+        hits.sort(key=lambda h: (h.get("chunk_index") or 0, h.get("chunk_id") or ""))
+        return hits
+
     def get_chunks_by_doc_id(
         self,
         doc_id: str,

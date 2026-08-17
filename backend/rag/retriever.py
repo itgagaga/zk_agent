@@ -1,6 +1,6 @@
 """RAG 检索器。
 
-封装 RAG 检索流程：向量化 → 向量库检索 → 过滤 → 返回命中。
+封装 RAG 检索流程：向量化 → 向量库检索 → 过滤 → Parent 扩展 → 返回命中。
 """
 from __future__ import annotations
 
@@ -31,7 +31,9 @@ class RAGRetriever:
             where=where,
             collection="zhku",
         )
-        return [h for h in hits if h.get("score", 0) >= self.score_threshold]
+        hits = [h for h in hits if h.get("score", 0) >= self.score_threshold]
+        hits = self._expand_parent_hits(hits, collection="zhku")
+        return hits[: top_k or self.top_k]
 
     async def search_documents(
         self,
@@ -46,9 +48,7 @@ class RAGRetriever:
         若提供 user_id，检索用户私有集合 zhku_user_docs 并强制过滤；
         否则检索共享文档集合（兼容旧数据 / 未登录）。
 
-        用户上传文档（如培养方案 PDF）常按 500 字切分为多段，且向量相似度
-        整体偏低；因此对私有文档使用更低阈值、更大 top_k，并在命中后对小
-        文档（片段数 ≤ rag_doc_full_fetch_max_chunks）拉取全文片段。
+        命中 Child 片段时会扩展为完整 Parent 节；小文档仍会拉取全部片段。
         """
         is_user_doc = user_id is not None
         collection = "user_docs" if is_user_doc else "document"
@@ -65,7 +65,6 @@ class RAGRetriever:
             if where:
                 user_where = {"$and": [user_where, where]}
 
-        # 多取一些候选，便于后续扩展与小文档全文拉取
         query_top_k = effective_top_k * 3 if is_user_doc else effective_top_k
         hits = self.store.query(
             text=query,
@@ -74,6 +73,7 @@ class RAGRetriever:
             collection=collection,
         )
         hits = [h for h in hits if h.get("score", 0) >= threshold]
+        hits = self._expand_parent_hits(hits, collection=collection)
 
         if is_user_doc and hits:
             hits, full_doc = self._enrich_user_doc_hits(hits, effective_top_k)
@@ -81,6 +81,53 @@ class RAGRetriever:
                 return hits
 
         return hits[:effective_top_k]
+
+    def _expand_parent_hits(
+        self,
+        hits: list[dict[str, Any]],
+        *,
+        collection: str,
+    ) -> list[dict[str, Any]]:
+        """Child 命中时合并同一 Parent 下的全部片段，返回完整章节上下文。"""
+        if not hits:
+            return hits
+
+        merged: dict[str, dict[str, Any]] = {}
+        order: list[str] = []
+
+        for hit in hits:
+            meta = hit.get("metadata") or {}
+            chunk_role = meta.get("chunk_role", "")
+            parent_id = meta.get("parent_id", "")
+
+            if chunk_role == "child" and parent_id:
+                siblings = self.store.get_chunks_by_parent_id(
+                    parent_id,
+                    collection=collection,
+                )
+                if len(siblings) > 1:
+                    best_score = hit.get("score", 0)
+                    combined_snippet = "\n".join(
+                        s.get("snippet", "") for s in siblings if s.get("snippet")
+                    )
+                    key = f"parent:{parent_id}"
+                    if key not in merged:
+                        order.append(key)
+                    merged[key] = {
+                        **hit,
+                        "snippet": combined_snippet,
+                        "score": best_score,
+                        "metadata": {**meta, "chunk_role": "parent_expanded"},
+                    }
+                    continue
+
+            key = hit.get("chunk_id") or str(id(hit))
+            if key not in merged:
+                order.append(key)
+            if key not in merged or hit.get("score", 0) > merged[key].get("score", 0):
+                merged[key] = hit
+
+        return [merged[k] for k in order if k in merged]
 
     def _enrich_user_doc_hits(
         self,

@@ -31,7 +31,7 @@ from backend.storage.user_files import (
     to_data_relative,
     user_uploads_dir,
 )
-from crawler.parse_documents import parse_file, split_into_chunks
+from crawler.chunking import records_to_store_payload, split_document
 
 router = APIRouter()
 
@@ -104,20 +104,26 @@ async def upload_file(
     title = _guess_title(Path(filename).stem)
     department = department.strip() or "文档库"
 
-    chunks = split_into_chunks(
+    records = split_document(
         text,
-        chunk_size=settings.chunk_size,
+        doc_title=title,
+        department=department,
+        short_doc_max=settings.short_doc_max_size,
+        parent_max_size=settings.parent_max_size,
+        child_target_size=settings.chunk_size,
         chunk_overlap=settings.chunk_overlap,
+        min_chunk_size=settings.chunk_min_size,
     )
-    if not chunks:
+    if not records:
         delete_path(raw_path)
         raise HTTPException(status_code=422, detail="文件切分后无有效内容")
 
     replaced_count = _clear_user_documents(current_user.id, db)
 
     store = get_vector_store()
-    ids = [f"{doc_id}_{i}" for i in range(len(chunks))]
-    metadatas = [
+    ids, chunk_texts, metadatas = records_to_store_payload(
+        records,
+        doc_id,
         {
             "title": title,
             "department": department,
@@ -125,10 +131,9 @@ async def upload_file(
             "doc_id": doc_id,
             "filename": filename,
             "user_id": int(current_user.id),
-        }
-        for _ in chunks
-    ]
-    store.add_documents(ids=ids, texts=chunks, metadatas=metadatas, collection="user_docs")
+        },
+    )
+    store.add_documents(ids=ids, texts=chunk_texts, metadatas=metadatas, collection="user_docs")
 
     rel = to_data_relative(raw_path)
     row = UserDocument(
@@ -141,7 +146,7 @@ async def upload_file(
         file_type=suffix.lstrip("."),
         size=len(content),
         page_count=int(parsed.get("page_count") or 0),
-        chunk_count=len(chunks),
+        chunk_count=len(records),
         created_at=datetime.utcnow(),
     )
     db.add(row)
@@ -155,7 +160,7 @@ async def upload_file(
             "filename": filename,
             "title": title,
             "department": department,
-            "chunk_count": len(chunks),
+            "chunk_count": len(records),
             "page_count": parsed.get("page_count", 0),
             "replaced_count": replaced_count,
             "message": (

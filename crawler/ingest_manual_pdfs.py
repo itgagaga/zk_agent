@@ -22,7 +22,8 @@ from typing import Any
 from backend.config import settings
 from backend.rag.vector_store import get_vector_store
 from crawler.common import save_cleaned, save_metadata, save_raw
-from crawler.parse_documents import parse_pdf, split_into_chunks
+from crawler.chunking import records_to_store_payload, split_document
+from crawler.parse_documents import parse_pdf
 
 # 手动 PDF 投放目录
 MANUAL_PDF_DIR = settings.vector_store_path.parent / "manual_pdfs"
@@ -111,30 +112,36 @@ def ingest_one(pdf_path: Path, store: Any) -> int:
     )
 
     # 增量写入向量库
-    chunks = split_into_chunks(
+    records = split_document(
         text,
-        chunk_size=settings.chunk_size,
+        doc_title=title,
+        department=department,
+        short_doc_max=settings.short_doc_max_size,
+        parent_max_size=settings.parent_max_size,
+        child_target_size=settings.chunk_size,
         chunk_overlap=settings.chunk_overlap,
+        min_chunk_size=settings.chunk_min_size,
     )
-    if not chunks:
+    if not records:
         print("⚠️ 切分为 0 chunk，跳过")
         return 0
 
-    ids = [f"{subdir_key}_manual_{stem}_{i}" for i in range(len(chunks))]
-    metadatas = [
+    id_prefix = f"{subdir_key}_manual_{stem}"
+    ids, chunk_texts, metadatas = records_to_store_payload(
+        records,
+        id_prefix,
         {
             "title": title,
             "department": department,
             "source_url": source_url,
             "publish_date": "",
             "sub_dir": subdir_key,
-        }
-        for _ in chunks
-    ]
-    store.add_documents(ids=ids, texts=chunks, metadatas=metadatas, collection="zhku")
+        },
+    )
+    store.add_documents(ids=ids, texts=chunk_texts, metadatas=metadatas, collection="zhku")
 
-    print(f"OK ({parsed.get('page_count', 0)} 页, {len(chunks)} chunks)")
-    return len(chunks)
+    print(f"OK ({parsed.get('page_count', 0)} 页, {len(records)} chunks)")
+    return len(records)
 
 
 def main() -> None:

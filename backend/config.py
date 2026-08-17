@@ -118,9 +118,16 @@ class Settings(BaseSettings):
         alias="CRAWL_USER_AGENT",
     )
 
-    # RAG
-    chunk_size: int = Field(default=500, alias="CHUNK_SIZE")
-    chunk_overlap: int = Field(default=50, alias="CHUNK_OVERLAP")
+    # RAG 切分：结构优先 + Parent-Child
+    chunk_size: int = Field(
+        default=600,
+        alias="CHUNK_SIZE",
+        description="Child 目标长度（字符）；Parent 超长时在节内递归切分",
+    )
+    chunk_overlap: int = Field(default=80, alias="CHUNK_OVERLAP")
+    chunk_min_size: int = Field(default=80, alias="CHUNK_MIN_SIZE")
+    parent_max_size: int = Field(default=1500, alias="PARENT_MAX_SIZE")
+    short_doc_max_size: int = Field(default=800, alias="SHORT_DOC_MAX_SIZE")
     rag_top_k: int = Field(default=5, alias="RAG_TOP_K")
     rag_score_threshold: float = Field(default=0.5, alias="RAG_SCORE_THRESHOLD")
     # 用户上传文档检索：阈值更低、召回更多，培养方案类 PDF 常分散在多个片段

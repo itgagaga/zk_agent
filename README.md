@@ -44,7 +44,6 @@ zhku-campus-agent/
 ├── docs/                   # 项目文档
 ├── README.md
 ├── requirements.txt
-├── docker-compose.yml
 └── .env.example
 ```
 
@@ -107,6 +106,4 @@ npm run dev
 
 ## 文档
 
-- [项目说明](docs/ZHKU_Campus_Agent.md)
-- [开发顺序建议](docs/仲恺校园信息服务智能体_开发顺序建议.md)
-- [设计规范](backend/docs/DESIGN-mastercard.md)
+- [开发说明](docs/ZHKU_Campus_Agent_开发.md)
