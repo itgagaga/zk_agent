@@ -13,6 +13,7 @@ from backend.config import settings
 from backend.rag.vector_store import get_vector_store
 from crawler.common import DATA_CLEANED_DIR, DATA_METADATA_DIR
 from crawler.chunking import records_to_store_payload, split_document
+from crawler.classification import classify_metadata
 
 
 def build_campus_kb() -> int:
@@ -40,6 +41,7 @@ def build_campus_kb() -> int:
             if not text.strip():
                 continue
             meta = _load_metadata(sub_dir.name, text_file.stem)
+            meta = classify_metadata(meta, sub_dir.name, text_file.name)
             doc_title = meta.get("title") or text_file.stem
             records = split_document(
                 text,
@@ -63,6 +65,11 @@ def build_campus_kb() -> int:
                     "source_url": meta.get("source_url") or "",
                     "publish_date": meta.get("publish_date") or "",
                     "sub_dir": sub_dir.name,
+                    "category": meta.get("category") or "",
+                    "subcategory": meta.get("subcategory") or "",
+                    "audience": meta.get("audience") or "",
+                    "document_type": meta.get("document_type") or "",
+                    "tags": ",".join(meta.get("tags") or []),
                 },
             )
             store.add_documents(

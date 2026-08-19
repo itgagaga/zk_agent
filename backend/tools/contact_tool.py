@@ -35,6 +35,7 @@ class ContactTool(BaseTool):
             for contact in meta.get("contacts", []) or []:
                 # 把所有字段拼成一个文本用于匹配
                 match_text = " ".join(str(v) for v in contact.values())
+                match_text += " " + self._metadata_search_text(meta)
                 if not keywords or self._keyword_match(match_text, keywords):
                     # 校医院等条目用 location，学生工作部等用 service/department
                     title = (
@@ -54,6 +55,8 @@ class ContactTool(BaseTool):
                             "address": address,
                             "location": contact.get("location", ""),
                             "department": meta.get("department", ""),
+                            "category": meta.get("category", ""),
+                            "subcategory": meta.get("subcategory", ""),
                             "source_page_url": source_url,
                             "snippet": " · ".join(snippet_parts),
                         }

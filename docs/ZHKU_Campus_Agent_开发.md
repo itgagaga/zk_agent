@@ -586,11 +586,9 @@ document_qa_log
 
 | 接口 | 作用 |
 |---|---|
-| `POST /api/admin/crawl` | 触发采集任务 |
-| `POST /api/admin/rebuild-kb` | 重建知识库 |
-| `GET /api/admin/crawl-logs` | 查看采集日志 |
-| `GET /api/admin/broken-links` | 查看失效链接 |
-| `GET /api/admin/feedback` | 查看用户反馈 |
+| `POST /api/admin/kb/rebuild` | 提交知识库重建任务（当前为占位接口） |
+| `GET /api/admin/links/check` | 提交来源 URL 检测任务（当前为占位接口） |
+| `POST /api/admin/crawl/run` | 提交官网采集任务（当前为占位接口） |
 
 ---
 

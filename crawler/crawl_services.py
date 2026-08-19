@@ -14,6 +14,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from crawler.resource_download import acquire_html_resources, write_resource_manifest
+
 from crawler.common import (
     extract_main_text,
     extract_publish_date,
@@ -34,6 +36,8 @@ def crawl_logistics_contacts() -> dict[str, Any]:
     title = extract_title(soup)
     text = extract_main_text(soup)
     publish_date = extract_publish_date(soup)
+    download_items = acquire_html_resources(html, url, "hqyzc")
+    write_resource_manifest("hqyzc", download_items)
     save_raw("hqyzc", "lxwm.html", html)
     save_cleaned("hqyzc", "lxwm.txt", text)
     metadata = {
@@ -41,6 +45,7 @@ def crawl_logistics_contacts() -> dict[str, Any]:
         "title": title,
         "department": "总务后勤部",
         "publish_date": publish_date,
+        "download_items": download_items,
     }
     save_metadata("hqyzc", "lxwm.json", metadata)
     return metadata
@@ -53,9 +58,16 @@ def crawl_it_center_services() -> dict[str, Any]:
     soup = parse_html(html)
     title = extract_title(soup)
     text = extract_main_text(soup)
+    download_items = acquire_html_resources(html, url, "wlzx")
+    write_resource_manifest("wlzx", download_items)
     save_raw("wlzx", "index.html", html)
     save_cleaned("wlzx", "index.txt", text)
-    metadata = {"url": url, "title": title, "department": "现代教育技术中心"}
+    metadata = {
+        "url": url,
+        "title": title,
+        "department": "现代教育技术中心",
+        "download_items": download_items,
+    }
     save_metadata("wlzx", "index.json", metadata)
     return metadata
 
@@ -68,6 +80,8 @@ def crawl_hospital_guide() -> dict[str, Any]:
     title = extract_title(soup)
     text = extract_main_text(soup)
     publish_date = extract_publish_date(soup)
+    download_items = acquire_html_resources(html, url, "xys")
+    write_resource_manifest("xys", download_items)
     save_raw("xys", "medical_guide.html", html)
     save_cleaned("xys", "medical_guide.txt", text)
     metadata = {
@@ -75,6 +89,7 @@ def crawl_hospital_guide() -> dict[str, Any]:
         "title": title,
         "department": "校医院",
         "publish_date": publish_date,
+        "download_items": download_items,
     }
     save_metadata("xys", "medical_guide.json", metadata)
     return metadata
@@ -88,6 +103,8 @@ def crawl_hospital_reimbursement() -> dict[str, Any]:
     title = extract_title(soup)
     text = extract_main_text(soup)
     publish_date = extract_publish_date(soup)
+    download_items = acquire_html_resources(html, url, "xys")
+    write_resource_manifest("xys", download_items)
     save_raw("xys", "reimbursement.html", html)
     save_cleaned("xys", "reimbursement.txt", text)
     metadata = {
@@ -95,6 +112,7 @@ def crawl_hospital_reimbursement() -> dict[str, Any]:
         "title": title,
         "department": "校医院",
         "publish_date": publish_date,
+        "download_items": download_items,
     }
     save_metadata("xys", "reimbursement.json", metadata)
     return metadata

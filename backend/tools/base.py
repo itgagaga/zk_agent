@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any
 
 from backend.config import DATA_DIR
+from crawler.resource_download import normalize_download_items
 
 
 class BaseTool:
@@ -36,9 +37,15 @@ class BaseTool:
         if not metadata_dir.exists():
             return []
         results: list[dict[str, Any]] = []
-        for json_file in sorted(metadata_dir.glob("*.json")):
+        for json_file in sorted(metadata_dir.rglob("*.json")):
             try:
-                results.append(json.loads(json_file.read_text(encoding="utf-8")))
+                data = json.loads(json_file.read_text(encoding="utf-8"))
+                if not isinstance(data, dict):
+                    continue
+                download_items = normalize_download_items(data)
+                if download_items:
+                    data = {**data, "download_items": download_items}
+                results.append(data)
             except Exception:
                 continue
         return results
@@ -48,6 +55,21 @@ class BaseTool:
         """检查 text 中是否包含任意关键词。"""
         text_lower = text.lower()
         return any(k.lower() in text_lower for k in keywords if k)
+
+    @staticmethod
+    def _metadata_search_text(meta: dict[str, Any]) -> str:
+        """把功能分类字段纳入结构化工具的关键词匹配。"""
+        values = [
+            meta.get("title", ""),
+            meta.get("summary", ""),
+            meta.get("department", ""),
+            meta.get("category", ""),
+            meta.get("subcategory", ""),
+            meta.get("audience", ""),
+            meta.get("document_type", ""),
+            meta.get("tags", ""),
+        ]
+        return " ".join(",".join(value) if isinstance(value, list) else str(value) for value in values)
 
     @staticmethod
     def _extract_keywords(question: str) -> list[str]:
@@ -64,4 +86,3 @@ class BaseTool:
             return [clean] if clean else []
         # 取所有 2-gram
         return [clean[i : i + 2] for i in range(len(clean) - 1)]
-

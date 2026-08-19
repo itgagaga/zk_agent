@@ -32,6 +32,7 @@ from backend.storage.user_files import (
     user_uploads_dir,
 )
 from crawler.chunking import records_to_store_payload, split_document
+from crawler.parse_documents import parse_file
 
 router = APIRouter()
 
@@ -55,9 +56,26 @@ def _remove_user_document(row: UserDocument, db: Session) -> None:
     db.delete(row)
 
 
+def _list_user_documents(user_id: int, db: Session) -> list[UserDocument]:
+    return db.query(UserDocument).filter(UserDocument.user_id == user_id).all()
+
+
+def _cleanup_document_artifacts(row: UserDocument, store) -> None:
+    """Best-effort cleanup after a replacement has been committed."""
+    try:
+        store.delete_documents(
+            where={"doc_id": row.doc_id},
+            collection="user_docs",
+        )
+    except Exception as e:
+        print(f"[Upload] 清理旧文档向量失败（{row.doc_id}）: {e}")
+    finally:
+        delete_path(resolve_user_file(row.file_path))
+
+
 def _clear_user_documents(user_id: int, db: Session) -> int:
     """清空用户全部私有文档，返回删除数量（不 commit，由调用方统一提交）。"""
-    rows = db.query(UserDocument).filter(UserDocument.user_id == user_id).all()
+    rows = _list_user_documents(user_id, db)
     for row in rows:
         _remove_user_document(row, db)
     return len(rows)
@@ -118,9 +136,8 @@ async def upload_file(
         delete_path(raw_path)
         raise HTTPException(status_code=422, detail="文件切分后无有效内容")
 
-    replaced_count = _clear_user_documents(current_user.id, db)
-
     store = get_vector_store()
+    old_rows = _list_user_documents(current_user.id, db)
     ids, chunk_texts, metadatas = records_to_store_payload(
         records,
         doc_id,
@@ -133,8 +150,6 @@ async def upload_file(
             "user_id": int(current_user.id),
         },
     )
-    store.add_documents(ids=ids, texts=chunk_texts, metadatas=metadatas, collection="user_docs")
-
     rel = to_data_relative(raw_path)
     row = UserDocument(
         user_id=current_user.id,
@@ -149,8 +164,36 @@ async def upload_file(
         chunk_count=len(records),
         created_at=datetime.utcnow(),
     )
-    db.add(row)
-    db.commit()
+    new_vector_attempted = False
+    try:
+        new_vector_attempted = True
+        store.add_documents(
+            ids=ids,
+            texts=chunk_texts,
+            metadatas=metadatas,
+            collection="user_docs",
+        )
+        db.add(row)
+        for old_row in old_rows:
+            db.delete(old_row)
+        db.commit()
+    except Exception:
+        db.rollback()
+        if new_vector_attempted:
+            try:
+                store.delete_documents(
+                    where={"doc_id": doc_id},
+                    collection="user_docs",
+                )
+            except Exception as cleanup_error:
+                print(f"[Upload] 清理新文档向量失败（{doc_id}）: {cleanup_error}")
+        delete_path(raw_path)
+        raise
+
+    for old_row in old_rows:
+        _cleanup_document_artifacts(old_row, store)
+
+    replaced_count = len(old_rows)
 
     return JSONResponse(
         status_code=200,

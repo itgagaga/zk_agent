@@ -31,6 +31,7 @@ from crawler.common import (
     save_metadata,
     save_raw,
 )
+from crawler.resource_download import acquire_html_resources, write_resource_manifest
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 DATA_CLEANED_DIR = PROJECT_ROOT / "data" / "cleaned"
@@ -91,15 +92,18 @@ def crawl_xsc_contacts() -> list[dict[str, Any]]:
 
             save_raw("xsc", f"{item['filename']}.html", html)
             save_cleaned("xsc", f"{item['filename']}.txt", text)
+            download_items = acquire_html_resources(html, url, "xsc")
+            write_resource_manifest("xsc", download_items)
             meta = {
                 "url": url,
                 "title": title,
                 "department": "学生工作部",
                 "publish_date": publish_date,
+                "download_items": download_items,
             }
             save_metadata("xsc", f"{item['filename']}.json", meta)
             results.append(meta)
-            print(f"  - {item['name']}: {title}")
+            print(f"  - {item['name']}: {item['filename']}")
         except Exception as e:
             print(f"  - {item['name']}: 采集失败 - {e}")
     return results
@@ -141,14 +145,17 @@ def crawl_zsb_portal() -> list[dict[str, Any]]:
 
             save_raw("zsb", f"{item['filename']}.html", html)
             save_cleaned("zsb", f"{item['filename']}.txt", text)
+            download_items = acquire_html_resources(html, url, "zsb")
+            write_resource_manifest("zsb", download_items)
             meta = {
                 "url": url,
                 "title": title or item["name"],
                 "department": "招生办公室",
+                "download_items": download_items,
             }
             save_metadata("zsb", f"{item['filename']}.json", meta)
             results.append(meta)
-            print(f"  - {item['name']}: {title or item['name']}")
+            print(f"  - {item['name']}: {item['filename']}")
         except Exception as e:
             print(f"  - {item['name']}: 采集失败 - {e}")
     return results
@@ -206,15 +213,18 @@ def crawl_yjs_extra() -> list[dict[str, Any]]:
 
             save_raw("yjs", f"{item['filename']}.html", html)
             save_cleaned("yjs", f"{item['filename']}.txt", text)
+            download_items = acquire_html_resources(html, url, "yjs")
+            write_resource_manifest("yjs", download_items)
             meta = {
                 "url": url,
                 "title": title or item["name"],
                 "department": "研究生部",
                 "publish_date": publish_date,
+                "download_items": download_items,
             }
             save_metadata("yjs", f"{item['filename']}.json", meta)
             results.append(meta)
-            print(f"  - {item['name']}: {title or item['name']}")
+            print(f"  - {item['name']}: {item['filename']}")
         except Exception as e:
             print(f"  - {item['name']}: 采集失败 - {e}")
     return results
@@ -257,15 +267,18 @@ def crawl_cwc() -> list[dict[str, Any]]:
 
             save_raw("cwc", f"{item['filename']}.html", html)
             save_cleaned("cwc", f"{item['filename']}.txt", text)
+            download_items = acquire_html_resources(html, url, "cwc")
+            write_resource_manifest("cwc", download_items)
             meta = {
                 "url": url,
                 "title": title or item["name"],
                 "department": "财务部",
                 "publish_date": publish_date,
+                "download_items": download_items,
             }
             save_metadata("cwc", f"{item['filename']}.json", meta)
             results.append(meta)
-            print(f"  - {item['name']}: {title or item['name']}")
+            print(f"  - {item['name']}: {item['filename']}")
         except Exception as e:
             print(f"  - {item['name']}: 采集失败 - {e}")
     return results

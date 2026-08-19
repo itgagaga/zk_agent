@@ -1,0 +1,2292 @@
+{
+  "version": 1,
+  "total": 53,
+  "facets": {
+    "category": {
+      "财务与报销": 4,
+      "后勤服务": 2,
+      "就业与招聘": 3,
+      "教学与教务": 6,
+      "网络与信息化": 2,
+      "学生事务": 7,
+      "校医院服务": 3,
+      "研究生教育与招生": 13,
+      "学校概况与机构设置": 6,
+      "本科招生": 7
+    },
+    "subcategory": {
+      "财务资料": 4,
+      "后勤联系与办事": 2,
+      "校园招聘活动": 1,
+      "公开职位": 2,
+      "专业目录": 2,
+      "培养方案": 2,
+      "学生事务": 2,
+      "信息化服务": 2,
+      "学生服务": 7,
+      "医疗服务": 3,
+      "研究生招生": 12,
+      "研究生资料下载": 1,
+      "学校信息": 4,
+      "其他": 2,
+      "本科招生信息": 5,
+      "招生资料": 2
+    },
+    "audience": {
+      "全校师生": 14,
+      "毕业生/求职者": 3,
+      "本科生": 3,
+      "学生": 2,
+      "在校学生": 7,
+      "研究生": 13,
+      "全校师生/访客": 4,
+      "本科生/考生": 7
+    },
+    "document_type": {
+      "网页资料": 18,
+      "办事指南": 5,
+      "联系方式": 13,
+      "招聘活动": 1,
+      "职位列表": 2,
+      "专业目录": 4,
+      "资料下载": 1,
+      "申请表": 2,
+      "报销指南": 2,
+      "招生章程": 5
+    }
+  },
+  "items": [
+    {
+      "metadata_path": "metadata/cwc/chailvfei.json",
+      "title": "（仲财字〔2026〕1 号）关于我校市内交通费、差旅费业务报账的补充通知-仲恺农业工程学院财务处",
+      "source_url": "https://cwc.zhku.edu.cn/info/2019/4287.htm",
+      "department": "财务部",
+      "source_key": "cwc",
+      "category": "财务与报销",
+      "subcategory": "财务资料",
+      "audience": "全校师生",
+      "document_type": "网页资料",
+      "tags": [
+        "cwc",
+        "财务部",
+        "财务与报销",
+        "财务资料",
+        "全校师生",
+        "网页资料"
+      ],
+      "resources": [
+        {
+          "name": "（仲财字〔2026〕1 号）关于我校市内交通费、差旅费业务报账的补充通知.pdf",
+          "url": "https://cwc.zhku.edu.cn/system/_content/download.jsp?urltype=news.DownloadAttachUrl&owner=1275397459&wbfileid=2A356441EAFE2F17EE6A0A0D8D6EE983",
+          "local_path": "data/raw/cwc/_仲财字_2026_1 号_关于我校市内交通费_差旅费业务报账的补充通知_e782d729df.pdf",
+          "file_type": "pdf",
+          "category": "财务与报销",
+          "subcategory": "财务资料",
+          "audience": "全校师生",
+          "document_type": "网页资料",
+          "tags": [
+            "cwc",
+            "财务部",
+            "财务与报销",
+            "财务资料",
+            "全校师生",
+            "网页资料"
+          ]
+        }
+      ]
+    },
+    {
+      "metadata_path": "metadata/cwc/xingchou_baozhang.json",
+      "title": "薪酬劳务无纸化报账指引-仲恺农业工程学院财务处",
+      "source_url": "https://cwc.zhku.edu.cn/info/1585/4257.htm",
+      "department": "财务部",
+      "source_key": "cwc",
+      "category": "财务与报销",
+      "subcategory": "财务资料",
+      "audience": "全校师生",
+      "document_type": "办事指南",
+      "tags": [
+        "cwc",
+        "财务部",
+        "财务与报销",
+        "财务资料",
+        "全校师生",
+        "办事指南"
+      ],
+      "resources": [
+        {
+          "name": "薪酬劳务无纸化报账指引.docx",
+          "url": "https://cwc.zhku.edu.cn/system/_content/download.jsp?urltype=news.DownloadAttachUrl&owner=1275397459&wbfileid=419FED2465B3AE6035A8A2DDCD69E1B9",
+          "local_path": "data/raw/cwc/薪酬劳务无纸化报账指引_cba70e749e.docx",
+          "file_type": "docx",
+          "category": "财务与报销",
+          "subcategory": "财务资料",
+          "audience": "全校师生",
+          "document_type": "办事指南",
+          "tags": [
+            "cwc",
+            "财务部",
+            "财务与报销",
+            "财务资料",
+            "全校师生",
+            "办事指南"
+          ]
+        }
+      ]
+    },
+    {
+      "metadata_path": "metadata/cwc/yilf_baozhang.json",
+      "title": "​医疗费无纸化报账操作流程-仲恺农业工程学院财务处",
+      "source_url": "https://cwc.zhku.edu.cn/info/1585/3927.htm",
+      "department": "财务部",
+      "source_key": "cwc",
+      "category": "财务与报销",
+      "subcategory": "财务资料",
+      "audience": "全校师生",
+      "document_type": "办事指南",
+      "tags": [
+        "cwc",
+        "财务部",
+        "财务与报销",
+        "财务资料",
+        "全校师生",
+        "办事指南"
+      ],
+      "resources": [
+        {
+          "name": "医疗费无纸化报账操作流程2026-5-26.pptx",
+          "url": "https://cwc.zhku.edu.cn/system/_content/download.jsp?urltype=news.DownloadAttachUrl&owner=1275397459&wbfileid=0C9AD750C41F0D7361D72B08C2BE11B4",
+          "local_path": "data/raw/cwc/医疗费无纸化报账操作流程2026-5-26_6b53d2005d.pptx",
+          "file_type": "",
+          "category": "财务与报销",
+          "subcategory": "财务资料",
+          "audience": "全校师生",
+          "document_type": "办事指南",
+          "tags": [
+            "cwc",
+            "财务部",
+            "财务与报销",
+            "财务资料",
+            "全校师生",
+            "办事指南"
+          ]
+        }
+      ]
+    },
+    {
+      "metadata_path": "metadata/cwc_service_guide.json",
+      "title": "仲恺农业工程学院财务部服务指南",
+      "source_url": "https://cwc.zhku.edu.cn/",
+      "department": "财务部",
+      "source_key": "cwc",
+      "category": "财务与报销",
+      "subcategory": "财务资料",
+      "audience": "全校师生",
+      "document_type": "办事指南",
+      "tags": [
+        "财务",
+        "报账",
+        "报销",
+        "公务卡",
+        "学费",
+        "无纸化",
+        "cwc",
+        "财务部",
+        "财务与报销",
+        "财务资料",
+        "全校师生",
+        "办事指南"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/hqyzc/lxwm.json",
+      "title": "联系我们-仲恺农业工程学院总务后勤部",
+      "source_url": "https://hqyzc.zhku.edu.cn/bmgk/lxwm.htm",
+      "department": "总务后勤部",
+      "source_key": "hqyzc",
+      "category": "后勤服务",
+      "subcategory": "后勤联系与办事",
+      "audience": "全校师生",
+      "document_type": "联系方式",
+      "tags": [
+        "hqyzc",
+        "总务后勤部",
+        "后勤服务",
+        "后勤联系与办事",
+        "全校师生",
+        "联系方式"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/hqyzc_lxwm.json",
+      "title": "总务后勤部各科室联系方式",
+      "source_url": "https://hqyzc.zhku.edu.cn/bmgk/lxwm.htm",
+      "department": "总务后勤部",
+      "source_key": "hqyzc",
+      "category": "后勤服务",
+      "subcategory": "后勤联系与办事",
+      "audience": "全校师生",
+      "document_type": "联系方式",
+      "tags": [
+        "后勤",
+        "联系方式",
+        "电话",
+        "维修",
+        "食堂",
+        "水电",
+        "hqyzc",
+        "总务后勤部",
+        "后勤服务",
+        "后勤联系与办事",
+        "全校师生"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_fairs.json",
+      "title": "job_fairs",
+      "source_url": "",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "校园招聘活动",
+      "audience": "毕业生/求职者",
+      "document_type": "招聘活动",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "校园招聘活动",
+        "毕业生/求职者",
+        "招聘活动"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_postings.json",
+      "title": "job_postings",
+      "source_url": "https://job.zhku.edu.cn/web/index/job-list",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位列表",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位列表"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job_services.json",
+      "title": "仲恺农业工程学院就业指导中心服务指南",
+      "source_url": "http://job.zhku.edu.cn/",
+      "department": "就业指导中心",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位列表",
+      "tags": [
+        "就业",
+        "招聘",
+        "就业协议",
+        "毕业生",
+        "服务入口",
+        "联系方式",
+        "job",
+        "就业指导中心",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位列表"
+      ],
+      "resources": [
+        {
+          "name": "仲恺农业工程学院2026届毕业生资源信息表",
+          "url": "https://job.zhku.edu.cn/web/download/download?id=206",
+          "local_path": "",
+          "file_type": "",
+          "category": "就业与招聘",
+          "subcategory": "公开职位",
+          "audience": "毕业生/求职者",
+          "document_type": "申请表",
+          "tags": [
+            "就业",
+            "招聘",
+            "就业协议",
+            "毕业生",
+            "服务入口",
+            "联系方式",
+            "job",
+            "就业指导中心",
+            "就业与招聘",
+            "公开职位",
+            "毕业生/求职者",
+            "职位列表",
+            "申请表"
+          ]
+        },
+        {
+          "name": "生涯咨询信息收纳表",
+          "url": "https://job.zhku.edu.cn/web/download/download?id=205",
+          "local_path": "",
+          "file_type": "",
+          "category": "就业与招聘",
+          "subcategory": "公开职位",
+          "audience": "毕业生/求职者",
+          "document_type": "申请表",
+          "tags": [
+            "就业",
+            "招聘",
+            "就业协议",
+            "毕业生",
+            "服务入口",
+            "联系方式",
+            "job",
+            "就业指导中心",
+            "就业与招聘",
+            "公开职位",
+            "毕业生/求职者",
+            "职位列表",
+            "申请表"
+          ]
+        }
+      ]
+    },
+    {
+      "metadata_path": "metadata/jwc/major_catalog.json",
+      "title": "仲恺农业工程学院本科专业目录（截至2026年5月）-教务处",
+      "source_url": "https://jwc.zhku.edu.cn/info/1094/5377.htm",
+      "department": "教务部",
+      "source_key": "jwc",
+      "category": "教学与教务",
+      "subcategory": "专业目录",
+      "audience": "本科生",
+      "document_type": "专业目录",
+      "tags": [
+        "jwc",
+        "教务部",
+        "教学与教务",
+        "专业目录",
+        "本科生"
+      ],
+      "resources": [
+        {
+          "name": "仲恺农业工程学院本科专业目录（截至2026年5月）.docx",
+          "url": "https://jwc.zhku.edu.cn/system/_content/download.jsp?urltype=news.DownloadAttachUrl&owner=1275397040&wbfileid=E3C0E0BC7E7F3388F6A627654E879AC2",
+          "local_path": "data/raw/jwc/仲恺农业工程学院本科专业目录_截至2026年5月__cfd77af2ad.docx",
+          "file_type": "docx",
+          "category": "教学与教务",
+          "subcategory": "专业目录",
+          "audience": "本科生",
+          "document_type": "专业目录",
+          "tags": [
+            "jwc",
+            "教务部",
+            "教学与教务",
+            "专业目录",
+            "本科生"
+          ]
+        }
+      ]
+    },
+    {
+      "metadata_path": "metadata/jwc/pyfa2024.json",
+      "title": "培养方案2024-教务处",
+      "source_url": "https://jwc.zhku.edu.cn/xsfw/pyfa2024.htm",
+      "department": "教务部",
+      "source_key": "jwc",
+      "category": "教学与教务",
+      "subcategory": "培养方案",
+      "audience": "全校师生",
+      "document_type": "网页资料",
+      "tags": [
+        "jwc",
+        "教务部",
+        "教学与教务",
+        "培养方案",
+        "全校师生",
+        "网页资料"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/jwc/training_plans_index.json",
+      "title": "2024版本科专业人才培养方案总览",
+      "source_url": "https://jwc.zhku.edu.cn/info/1991/28582.htm",
+      "department": "教务部",
+      "source_key": "jwc",
+      "category": "教学与教务",
+      "subcategory": "培养方案",
+      "audience": "全校师生",
+      "document_type": "网页资料",
+      "tags": [
+        "jwc",
+        "教务部",
+        "教学与教务",
+        "培养方案",
+        "全校师生",
+        "网页资料"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/jwc/xsxz.json",
+      "title": "学生下载",
+      "source_url": "https://jwc.zhku.edu.cn/jwfw/jwzlxz/xsxz.htm",
+      "department": "教务部",
+      "source_key": "jwc",
+      "category": "教学与教务",
+      "subcategory": "学生事务",
+      "audience": "本科生",
+      "document_type": "资料下载",
+      "tags": [
+        "jwc",
+        "教务部",
+        "教学与教务",
+        "学生事务",
+        "本科生",
+        "资料下载"
+      ],
+      "resources": [
+        {
+          "name": "· 结业换毕业证书申请表",
+          "url": "https://jwc.zhku.edu.cn/C908EDEC8352EB5DDC60503ECC4_F7F5A196_9800.doc",
+          "local_path": "data/raw/jwc/_ 结业换毕业证书申请表_73489d1a63.doc",
+          "file_type": "doc",
+          "category": "教学与教务",
+          "subcategory": "学生事务",
+          "audience": "本科生",
+          "document_type": "申请表",
+          "tags": [
+            "jwc",
+            "教务部",
+            "教学与教务",
+            "学生事务",
+            "本科生",
+            "资料下载",
+            "申请表"
+          ]
+        },
+        {
+          "name": "· 辅修专业学生（个人）成绩表",
+          "url": "https://jwc.zhku.edu.cn/__local/2/16/1C/AB9894424CE46B843C2E3103ACE_A654C8FB_4000.xls?e=.xls",
+          "local_path": "data/raw/jwc/_ 辅修专业学生_个人_成绩表_60ac31e1c0.xls",
+          "file_type": "xls",
+          "category": "教学与教务",
+          "subcategory": "学生事务",
+          "audience": "本科生",
+          "document_type": "申请表",
+          "tags": [
+            "jwc",
+            "教务部",
+            "教学与教务",
+            "学生事务",
+            "本科生",
+            "资料下载",
+            "申请表"
+          ]
+        },
+        {
+          "name": "· 辅修申请表",
+          "url": "https://jwc.zhku.edu.cn/fx.doc",
+          "local_path": "data/raw/jwc/_ 辅修申请表_fced250c3b.doc",
+          "file_type": "doc",
+          "category": "教学与教务",
+          "subcategory": "学生事务",
+          "audience": "本科生",
+          "document_type": "申请表",
+          "tags": [
+            "jwc",
+            "教务部",
+            "教学与教务",
+            "学生事务",
+            "本科生",
+            "资料下载",
+            "申请表"
+          ]
+        },
+        {
+          "name": "· （2023年更新）在读证明（申请国外大学用）",
+          "url": "https://jwc.zhku.edu.cn/zdzm.doc",
+          "local_path": "data/raw/jwc/_ _2023年更新_在读证明_申请国外大学用__a6187613e8.doc",
+          "file_type": "doc",
+          "category": "教学与教务",
+          "subcategory": "学生事务",
+          "audience": "本科生",
+          "document_type": "申请表",
+          "tags": [
+            "jwc",
+            "教务部",
+            "教学与教务",
+            "学生事务",
+            "本科生",
+            "资料下载",
+            "申请表"
+          ]
+        },
+        {
+          "name": "· 课程重修申请表",
+          "url": "https://jwc.zhku.edu.cn/cx.doc",
+          "local_path": "data/raw/jwc/_ 课程重修申请表_b9f3344b21.doc",
+          "file_type": "doc",
+          "category": "教学与教务",
+          "subcategory": "学生事务",
+          "audience": "本科生",
+          "document_type": "申请表",
+          "tags": [
+            "jwc",
+            "教务部",
+            "教学与教务",
+            "学生事务",
+            "本科生",
+            "资料下载",
+            "申请表"
+          ]
+        },
+        {
+          "name": "· 仲恺-尔雅学习平台学生操作手册",
+          "url": "https://jwc.zhku.edu.cn/__local/4/12/F8/B8997E9F9D45675D9D4D46DB0AA_29CB07A3_ED200.doc?e=.doc",
+          "local_path": "data/raw/jwc/_ 仲恺-尔雅学习平台学生操作手册_7db498af23.doc",
+          "file_type": "doc",
+          "category": "教学与教务",
+          "subcategory": "学生事务",
+          "audience": "本科生",
+          "document_type": "网页资料",
+          "tags": [
+            "jwc",
+            "教务部",
+            "教学与教务",
+            "学生事务",
+            "本科生",
+            "资料下载",
+            "网页资料"
+          ]
+        },
+        {
+          "name": "· 学生转学申请表",
+          "url": "https://jwc.zhku.edu.cn/__local/7/E8/39/B6E17E922D2B597914CF8E5DFF6_F151B855_8000.doc?e=.doc",
+          "local_path": "data/raw/jwc/_ 学生转学申请表_7438fac57a.doc",
+          "file_type": "doc",
+          "category": "教学与教务",
+          "subcategory": "学生事务",
+          "audience": "本科生",
+          "document_type": "申请表",
+          "tags": [
+            "jwc",
+            "教务部",
+            "教学与教务",
+            "学生事务",
+            "本科生",
+            "资料下载",
+            "申请表"
+          ]
+        },
+        {
+          "name": "· 学位申请表",
+          "url": "https://jwc.zhku.edu.cn/__local/8/72/7D/6A02C90F860A0DFFB4BBA18D652_14E3D78B_6000.doc?e=.doc",
+          "local_path": "data/raw/jwc/_ 学位申请表_5bfd973c5f.doc",
+          "file_type": "doc",
+          "category": "教学与教务",
+          "subcategory": "学生事务",
+          "audience": "本科生",
+          "document_type": "申请表",
+          "tags": [
+            "jwc",
+            "教务部",
+            "教学与教务",
+            "学生事务",
+            "本科生",
+            "资料下载",
+            "申请表"
+          ]
+        },
+        {
+          "name": "· 学生卡片",
+          "url": "https://jwc.zhku.edu.cn/__local/2/E1/B3/C0A070CECAA630AC88E0E7842F8_4B8529B1_F800.doc?e=.doc",
+          "local_path": "data/raw/jwc/_ 学生卡片_fe7bcaf6f2.doc",
+          "file_type": "doc",
+          "category": "教学与教务",
+          "subcategory": "学生事务",
+          "audience": "本科生",
+          "document_type": "网页资料",
+          "tags": [
+            "jwc",
+            "教务部",
+            "教学与教务",
+            "学生事务",
+            "本科生",
+            "资料下载",
+            "网页资料"
+          ]
+        },
+        {
+          "name": "· 补发毕业证书申请表",
+          "url": "https://jwc.zhku.edu.cn/__local/4/57/E5/3B931ECD13F80A854DF62C64B8F_7B69809A_9A00.doc?e=.doc",
+          "local_path": "data/raw/jwc/_ 补发毕业证书申请表_2ca99ad850.doc",
+          "file_type": "doc",
+          "category": "教学与教务",
+          "subcategory": "学生事务",
+          "audience": "本科生",
+          "document_type": "申请表",
+          "tags": [
+            "jwc",
+            "教务部",
+            "教学与教务",
+            "学生事务",
+            "本科生",
+            "资料下载",
+            "申请表"
+          ]
+        },
+        {
+          "name": "· 试读申请表",
+          "url": "https://jwc.zhku.edu.cn/__local/E/E5/12/0E57331E7180D099D59A398486B_966C98C1_7600.doc?e=.doc",
+          "local_path": "data/raw/jwc/_ 试读申请表_544defbc37.doc",
+          "file_type": "doc",
+          "category": "教学与教务",
+          "subcategory": "学生事务",
+          "audience": "本科生",
+          "document_type": "申请表",
+          "tags": [
+            "jwc",
+            "教务部",
+            "教学与教务",
+            "学生事务",
+            "本科生",
+            "资料下载",
+            "申请表"
+          ]
+        },
+        {
+          "name": "· 辅修课程申请表",
+          "url": "https://jwc.zhku.edu.cn/__local/9/1F/A8/5009EC53824EE63365AA57BE6E5_2BB9AA4D_5800.doc?e=.doc",
+          "local_path": "data/raw/jwc/_ 辅修课程申请表_f94503e75d.doc",
+          "file_type": "doc",
+          "category": "教学与教务",
+          "subcategory": "学生事务",
+          "audience": "本科生",
+          "document_type": "申请表",
+          "tags": [
+            "jwc",
+            "教务部",
+            "教学与教务",
+            "学生事务",
+            "本科生",
+            "资料下载",
+            "申请表"
+          ]
+        },
+        {
+          "name": "学生考试规则（2025版）.docx",
+          "url": "https://jwc.zhku.edu.cn/system/_content/download.jsp?urltype=news.DownloadAttachUrl&owner=1275397040&wbfileid=617806FC6285B32AB1F7F4F3208BB491",
+          "local_path": "data/raw/jwc/学生考试规则_2025版__d48412bb1c.docx",
+          "file_type": "docx",
+          "category": "教学与教务",
+          "subcategory": "学生事务",
+          "audience": "本科生",
+          "document_type": "网页资料",
+          "tags": [
+            "jwc",
+            "教务部",
+            "教学与教务",
+            "学生事务",
+            "本科生",
+            "资料下载",
+            "网页资料"
+          ]
+        },
+        {
+          "name": "仲恺农业工程学院免修申请表(2026年版）.doc",
+          "url": "https://jwc.zhku.edu.cn/system/_content/download.jsp?urltype=news.DownloadAttachUrl&owner=1275397040&wbfileid=1E356F36E8BD69B91F85555E97367CF9",
+          "local_path": "data/raw/jwc/仲恺农业工程学院免修申请表(2026年版__18ba11f191.doc",
+          "file_type": "doc",
+          "category": "教学与教务",
+          "subcategory": "学生事务",
+          "audience": "本科生",
+          "document_type": "申请表",
+          "tags": [
+            "jwc",
+            "教务部",
+            "教学与教务",
+            "学生事务",
+            "本科生",
+            "资料下载",
+            "申请表"
+          ]
+        },
+        {
+          "name": "仲 恺 农 业 工 程 学 院 免 听 申 请 表.doc",
+          "url": "https://jwc.zhku.edu.cn/system/_content/download.jsp?urltype=news.DownloadAttachUrl&owner=1275397040&wbfileid=1EC47B5059827058D101A7AA0709EEAA",
+          "local_path": "data/raw/jwc/仲 恺 农 业 工 程 学 院 免 听 申 请 表_c7a7568356.doc",
+          "file_type": "doc",
+          "category": "教学与教务",
+          "subcategory": "学生事务",
+          "audience": "本科生",
+          "document_type": "申请表",
+          "tags": [
+            "jwc",
+            "教务部",
+            "教学与教务",
+            "学生事务",
+            "本科生",
+            "资料下载",
+            "申请表"
+          ]
+        },
+        {
+          "name": "学生成绩复查申请表.pdf",
+          "url": "https://jwc.zhku.edu.cn/system/_content/download.jsp?urltype=news.DownloadAttachUrl&owner=1275397040&wbfileid=117397E29CBAE3924070A28A2600CCEB",
+          "local_path": "data/raw/jwc/学生成绩复查申请表_835e6eb13d.pdf",
+          "file_type": "pdf",
+          "category": "教学与教务",
+          "subcategory": "学生事务",
+          "audience": "本科生",
+          "document_type": "申请表",
+          "tags": [
+            "jwc",
+            "教务部",
+            "教学与教务",
+            "学生事务",
+            "本科生",
+            "资料下载",
+            "申请表"
+          ]
+        },
+        {
+          "name": "仲恺农业工程学院缓考申请表（2025版）.docx",
+          "url": "https://jwc.zhku.edu.cn/system/_content/download.jsp?urltype=news.DownloadAttachUrl&owner=1275397040&wbfileid=FB38CD75264978B19EB3D0BCA38661F3",
+          "local_path": "data/raw/jwc/仲恺农业工程学院缓考申请表_2025版__dd6d1a6811.docx",
+          "file_type": "docx",
+          "category": "教学与教务",
+          "subcategory": "学生事务",
+          "audience": "本科生",
+          "document_type": "申请表",
+          "tags": [
+            "jwc",
+            "教务部",
+            "教学与教务",
+            "学生事务",
+            "本科生",
+            "资料下载",
+            "申请表"
+          ]
+        },
+        {
+          "name": "补办学生证流程图（2024版）.pdf",
+          "url": "https://jwc.zhku.edu.cn/system/_content/download.jsp?urltype=news.DownloadAttachUrl&owner=1275397040&wbfileid=FC0780D30B46CA143C45EA91A0D95620",
+          "local_path": "data/raw/jwc/补办学生证流程图_2024版__7bcc7a380d.pdf",
+          "file_type": "pdf",
+          "category": "教学与教务",
+          "subcategory": "学生事务",
+          "audience": "本科生",
+          "document_type": "办事指南",
+          "tags": [
+            "jwc",
+            "教务部",
+            "教学与教务",
+            "学生事务",
+            "本科生",
+            "资料下载",
+            "办事指南"
+          ]
+        },
+        {
+          "name": "仲恺农业工程学院补办学生证申请表（2024版）.pdf",
+          "url": "https://jwc.zhku.edu.cn/system/_content/download.jsp?urltype=news.DownloadAttachUrl&owner=1275397040&wbfileid=428FAA65F05FD87CE0984B5A061B5FEE",
+          "local_path": "data/raw/jwc/仲恺农业工程学院补办学生证申请表_2024版__3526eb5336.pdf",
+          "file_type": "pdf",
+          "category": "教学与教务",
+          "subcategory": "学生事务",
+          "audience": "本科生",
+          "document_type": "申请表",
+          "tags": [
+            "jwc",
+            "教务部",
+            "教学与教务",
+            "学生事务",
+            "本科生",
+            "资料下载",
+            "申请表"
+          ]
+        },
+        {
+          "name": "补办学生证流程图（2024版）.pdf",
+          "url": "https://jwc.zhku.edu.cn/system/_content/download.jsp?urltype=news.DownloadAttachUrl&owner=1275397040&wbfileid=FBEA607A624241FD2C4A107689F74006",
+          "local_path": "data/raw/jwc/补办学生证流程图_2024版__5d0b761418.pdf",
+          "file_type": "pdf",
+          "category": "教学与教务",
+          "subcategory": "学生事务",
+          "audience": "本科生",
+          "document_type": "办事指南",
+          "tags": [
+            "jwc",
+            "教务部",
+            "教学与教务",
+            "学生事务",
+            "本科生",
+            "资料下载",
+            "办事指南"
+          ]
+        },
+        {
+          "name": "仲恺农业工程学院补办学生证申请表（2024版）.pdf",
+          "url": "https://jwc.zhku.edu.cn/system/_content/download.jsp?urltype=news.DownloadAttachUrl&owner=1275397040&wbfileid=39614B114B86FF5DE1FEB46161C8EB9E",
+          "local_path": "data/raw/jwc/仲恺农业工程学院补办学生证申请表_2024版__973e247c0e.pdf",
+          "file_type": "pdf",
+          "category": "教学与教务",
+          "subcategory": "学生事务",
+          "audience": "本科生",
+          "document_type": "申请表",
+          "tags": [
+            "jwc",
+            "教务部",
+            "教学与教务",
+            "学生事务",
+            "本科生",
+            "资料下载",
+            "申请表"
+          ]
+        },
+        {
+          "name": "在校残疾大学生报考全国大学英语四、六级考试合理便利申请表(2022.9.19).docx",
+          "url": "https://jwc.zhku.edu.cn/system/_content/download.jsp?urltype=news.DownloadAttachUrl&owner=1275397040&wbfileid=77740E17C6AB5C5EA95957C98B11BAB7",
+          "local_path": "data/raw/jwc/在校残疾大学生报考全国大学英语四_六级考试合理便利申请表(2022.9.19)_81a23584c5.docx",
+          "file_type": "docx",
+          "category": "教学与教务",
+          "subcategory": "学生事务",
+          "audience": "本科生",
+          "document_type": "申请表",
+          "tags": [
+            "jwc",
+            "教务部",
+            "教学与教务",
+            "学生事务",
+            "本科生",
+            "资料下载",
+            "申请表"
+          ]
+        },
+        {
+          "name": "仲恺农业工程学院普通本科学生转专业退转申请表.docx",
+          "url": "https://jwc.zhku.edu.cn/system/_content/download.jsp?urltype=news.DownloadAttachUrl&owner=1275397040&wbfileid=19F8E436B9B0904427A5B60074DC53C3",
+          "local_path": "data/raw/jwc/仲恺农业工程学院普通本科学生转专业退转申请表_e54a26234f.docx",
+          "file_type": "docx",
+          "category": "教学与教务",
+          "subcategory": "学生事务",
+          "audience": "本科生",
+          "document_type": "申请表",
+          "tags": [
+            "jwc",
+            "教务部",
+            "教学与教务",
+            "学生事务",
+            "本科生",
+            "资料下载",
+            "申请表"
+          ]
+        },
+        {
+          "name": "仲恺农业工程学院普通本科学生学籍异动申请表.docx",
+          "url": "https://jwc.zhku.edu.cn/system/_content/download.jsp?urltype=news.DownloadAttachUrl&owner=1275397040&wbfileid=2A38FFFF99038F99723AF2D3D0ACED4D",
+          "local_path": "data/raw/jwc/仲恺农业工程学院普通本科学生学籍异动申请表_a3ad606368.docx",
+          "file_type": "docx",
+          "category": "教学与教务",
+          "subcategory": "学生事务",
+          "audience": "本科生",
+          "document_type": "申请表",
+          "tags": [
+            "jwc",
+            "教务部",
+            "教学与教务",
+            "学生事务",
+            "本科生",
+            "资料下载",
+            "申请表"
+          ]
+        },
+        {
+          "name": "仲恺农业工程学院普通本科学生学籍信息变更申请表.docx",
+          "url": "https://jwc.zhku.edu.cn/system/_content/download.jsp?urltype=news.DownloadAttachUrl&owner=1275397040&wbfileid=F53DA220B57C13DC797290D1AA7E95CC",
+          "local_path": "data/raw/jwc/仲恺农业工程学院普通本科学生学籍信息变更申请表_c10563e57c.docx",
+          "file_type": "docx",
+          "category": "教学与教务",
+          "subcategory": "学生事务",
+          "audience": "本科生",
+          "document_type": "申请表",
+          "tags": [
+            "jwc",
+            "教务部",
+            "教学与教务",
+            "学生事务",
+            "本科生",
+            "资料下载",
+            "申请表"
+          ]
+        },
+        {
+          "name": "仲恺农业工程学院辅修专业学生合格资格统计表.xls",
+          "url": "https://jwc.zhku.edu.cn/system/_content/download.jsp?urltype=news.DownloadAttachUrl&owner=1275397040&wbfileid=BBD1968AA6CD8F0983D0D9FD50DA1A36",
+          "local_path": "data/raw/jwc/仲恺农业工程学院辅修专业学生合格资格统计表_517068d6b0.xls",
+          "file_type": "xls",
+          "category": "教学与教务",
+          "subcategory": "学生事务",
+          "audience": "本科生",
+          "document_type": "申请表",
+          "tags": [
+            "jwc",
+            "教务部",
+            "教学与教务",
+            "学生事务",
+            "本科生",
+            "资料下载",
+            "申请表"
+          ]
+        }
+      ]
+    },
+    {
+      "metadata_path": "metadata/jwc_major_and_pyfa.json",
+      "title": "本科专业目录入口与培养方案2024入口",
+      "source_url": "https://jwc.zhku.edu.cn/info/1094/5377.htm",
+      "department": "教务部",
+      "source_key": "jwc",
+      "category": "教学与教务",
+      "subcategory": "专业目录",
+      "audience": "本科生",
+      "document_type": "专业目录",
+      "tags": [
+        "本科专业目录",
+        "培养方案",
+        "通识选修课",
+        "jwc",
+        "教务部",
+        "教学与教务",
+        "专业目录",
+        "本科生"
+      ],
+      "resources": [
+        {
+          "name": "仲恺农业工程学院本科专业目录（截至2026年5月）.docx",
+          "url": "https://jwc.zhku.edu.cn/system/_content/download.jsp?urltype=news.DownloadAttachUrl&owner=1275397040&wbfileid=E3C0E0BC7E7F3388F6A627654E879AC2",
+          "local_path": "",
+          "file_type": "",
+          "category": "教学与教务",
+          "subcategory": "专业目录",
+          "audience": "本科生",
+          "document_type": "专业目录",
+          "tags": [
+            "本科专业目录",
+            "培养方案",
+            "通识选修课",
+            "jwc",
+            "教务部",
+            "教学与教务",
+            "专业目录",
+            "本科生"
+          ]
+        },
+        {
+          "name": "仲恺农业工程学院本科专业目录（2024年6月更新）",
+          "url": "https://jwc.zhku.edu.cn/info/1991/28602.htm",
+          "local_path": "",
+          "file_type": "",
+          "category": "教学与教务",
+          "subcategory": "专业目录",
+          "audience": "本科生",
+          "document_type": "专业目录",
+          "tags": [
+            "本科专业目录",
+            "培养方案",
+            "通识选修课",
+            "jwc",
+            "教务部",
+            "教学与教务",
+            "专业目录",
+            "本科生"
+          ]
+        },
+        {
+          "name": "仲恺农业工程学院本科通识选修课目录（2024年6月更新）",
+          "url": "https://jwc.zhku.edu.cn/info/1991/28592.htm",
+          "local_path": "",
+          "file_type": "",
+          "category": "教学与教务",
+          "subcategory": "专业目录",
+          "audience": "本科生",
+          "document_type": "专业目录",
+          "tags": [
+            "本科专业目录",
+            "培养方案",
+            "通识选修课",
+            "jwc",
+            "教务部",
+            "教学与教务",
+            "专业目录",
+            "本科生"
+          ]
+        },
+        {
+          "name": "2024版本科专业人才培养方案",
+          "url": "https://jwc.zhku.edu.cn/info/1991/28582.htm",
+          "local_path": "",
+          "file_type": "",
+          "category": "教学与教务",
+          "subcategory": "培养方案",
+          "audience": "本科生",
+          "document_type": "网页资料",
+          "tags": [
+            "本科专业目录",
+            "培养方案",
+            "通识选修课",
+            "jwc",
+            "教务部",
+            "教学与教务",
+            "专业目录",
+            "本科生",
+            "网页资料"
+          ]
+        }
+      ]
+    },
+    {
+      "metadata_path": "metadata/jwc_xsxz.json",
+      "title": "教务部学生下载栏目资料清单",
+      "source_url": "https://jwc.zhku.edu.cn/jwfw/jwzlxz/xsxz.htm",
+      "department": "教务部",
+      "source_key": "jwc",
+      "category": "教学与教务",
+      "subcategory": "学生事务",
+      "audience": "学生",
+      "document_type": "申请表",
+      "tags": [
+        "教务资料",
+        "学生下载",
+        "申请表",
+        "学生证",
+        "缓考",
+        "重修",
+        "jwc",
+        "教务部",
+        "教学与教务",
+        "学生事务",
+        "学生"
+      ],
+      "resources": [
+        {
+          "name": "补办学生证申请表（2024版）",
+          "url": "https://jwc.zhku.edu.cn/info/1099/4092.htm",
+          "local_path": "",
+          "file_type": "",
+          "category": "教学与教务",
+          "subcategory": "学生事务",
+          "audience": "学生",
+          "document_type": "申请表",
+          "tags": [
+            "教务资料",
+            "学生下载",
+            "申请表",
+            "学生证",
+            "缓考",
+            "重修",
+            "jwc",
+            "教务部",
+            "教学与教务",
+            "学生事务",
+            "学生"
+          ]
+        },
+        {
+          "name": "补办学生证流程图（2024版）",
+          "url": "https://jwc.zhku.edu.cn/info/1099/28032.htm",
+          "local_path": "",
+          "file_type": "",
+          "category": "教学与教务",
+          "subcategory": "学生事务",
+          "audience": "学生",
+          "document_type": "办事指南",
+          "tags": [
+            "教务资料",
+            "学生下载",
+            "申请表",
+            "学生证",
+            "缓考",
+            "重修",
+            "jwc",
+            "教务部",
+            "教学与教务",
+            "学生事务",
+            "学生",
+            "办事指南"
+          ]
+        },
+        {
+          "name": "仲恺农业工程学院缓考申请表（2025版）",
+          "url": "https://jwc.zhku.edu.cn/info/1099/29262.htm",
+          "local_path": "",
+          "file_type": "",
+          "category": "教学与教务",
+          "subcategory": "学生事务",
+          "audience": "学生",
+          "document_type": "申请表",
+          "tags": [
+            "教务资料",
+            "学生下载",
+            "申请表",
+            "学生证",
+            "缓考",
+            "重修",
+            "jwc",
+            "教务部",
+            "教学与教务",
+            "学生事务",
+            "学生"
+          ]
+        },
+        {
+          "name": "学生成绩复查申请表",
+          "url": "https://jwc.zhku.edu.cn/info/1099/29452.htm",
+          "local_path": "",
+          "file_type": "",
+          "category": "教学与教务",
+          "subcategory": "学生事务",
+          "audience": "学生",
+          "document_type": "申请表",
+          "tags": [
+            "教务资料",
+            "学生下载",
+            "申请表",
+            "学生证",
+            "缓考",
+            "重修",
+            "jwc",
+            "教务部",
+            "教学与教务",
+            "学生事务",
+            "学生"
+          ]
+        },
+        {
+          "name": "仲恺农业工程学院免修申请表（2026年版）",
+          "url": "https://jwc.zhku.edu.cn/info/1099/3269.htm",
+          "local_path": "",
+          "file_type": "",
+          "category": "教学与教务",
+          "subcategory": "学生事务",
+          "audience": "学生",
+          "document_type": "申请表",
+          "tags": [
+            "教务资料",
+            "学生下载",
+            "申请表",
+            "学生证",
+            "缓考",
+            "重修",
+            "jwc",
+            "教务部",
+            "教学与教务",
+            "学生事务",
+            "学生"
+          ]
+        },
+        {
+          "name": "免听申请表",
+          "url": "https://jwc.zhku.edu.cn/info/1099/29902.htm",
+          "local_path": "",
+          "file_type": "",
+          "category": "教学与教务",
+          "subcategory": "学生事务",
+          "audience": "学生",
+          "document_type": "申请表",
+          "tags": [
+            "教务资料",
+            "学生下载",
+            "申请表",
+            "学生证",
+            "缓考",
+            "重修",
+            "jwc",
+            "教务部",
+            "教学与教务",
+            "学生事务",
+            "学生"
+          ]
+        },
+        {
+          "name": "仲恺农业工程学院普通本科学生学籍异动申请表",
+          "url": "https://jwc.zhku.edu.cn/info/1099/3960.htm",
+          "local_path": "",
+          "file_type": "",
+          "category": "教学与教务",
+          "subcategory": "学生事务",
+          "audience": "学生",
+          "document_type": "申请表",
+          "tags": [
+            "教务资料",
+            "学生下载",
+            "申请表",
+            "学生证",
+            "缓考",
+            "重修",
+            "jwc",
+            "教务部",
+            "教学与教务",
+            "学生事务",
+            "学生"
+          ]
+        },
+        {
+          "name": "仲恺农业工程学院普通本科学生学籍信息变更申请表",
+          "url": "https://jwc.zhku.edu.cn/info/1099/3959.htm",
+          "local_path": "",
+          "file_type": "",
+          "category": "教学与教务",
+          "subcategory": "学生事务",
+          "audience": "学生",
+          "document_type": "申请表",
+          "tags": [
+            "教务资料",
+            "学生下载",
+            "申请表",
+            "学生证",
+            "缓考",
+            "重修",
+            "jwc",
+            "教务部",
+            "教学与教务",
+            "学生事务",
+            "学生"
+          ]
+        },
+        {
+          "name": "仲恺农业工程学院普通本科学生转专业退转申请表",
+          "url": "https://jwc.zhku.edu.cn/info/1099/26902.htm",
+          "local_path": "",
+          "file_type": "",
+          "category": "教学与教务",
+          "subcategory": "学生事务",
+          "audience": "学生",
+          "document_type": "申请表",
+          "tags": [
+            "教务资料",
+            "学生下载",
+            "申请表",
+            "学生证",
+            "缓考",
+            "重修",
+            "jwc",
+            "教务部",
+            "教学与教务",
+            "学生事务",
+            "学生"
+          ]
+        },
+        {
+          "name": "课程重修申请表",
+          "url": "https://jwc.zhku.edu.cn/cx.doc",
+          "local_path": "",
+          "file_type": "",
+          "category": "教学与教务",
+          "subcategory": "学生事务",
+          "audience": "学生",
+          "document_type": "申请表",
+          "tags": [
+            "教务资料",
+            "学生下载",
+            "申请表",
+            "学生证",
+            "缓考",
+            "重修",
+            "jwc",
+            "教务部",
+            "教学与教务",
+            "学生事务",
+            "学生"
+          ]
+        },
+        {
+          "name": "辅修申请表",
+          "url": "https://jwc.zhku.edu.cn/fx.doc",
+          "local_path": "",
+          "file_type": "",
+          "category": "教学与教务",
+          "subcategory": "学生事务",
+          "audience": "学生",
+          "document_type": "申请表",
+          "tags": [
+            "教务资料",
+            "学生下载",
+            "申请表",
+            "学生证",
+            "缓考",
+            "重修",
+            "jwc",
+            "教务部",
+            "教学与教务",
+            "学生事务",
+            "学生"
+          ]
+        },
+        {
+          "name": "在读证明（申请国外大学用）",
+          "url": "https://jwc.zhku.edu.cn/zdzm.doc",
+          "local_path": "",
+          "file_type": "",
+          "category": "教学与教务",
+          "subcategory": "学生事务",
+          "audience": "学生",
+          "document_type": "申请表",
+          "tags": [
+            "教务资料",
+            "学生下载",
+            "申请表",
+            "学生证",
+            "缓考",
+            "重修",
+            "jwc",
+            "教务部",
+            "教学与教务",
+            "学生事务",
+            "学生"
+          ]
+        },
+        {
+          "name": "结业换毕业证书申请表",
+          "url": "https://jwc.zhku.edu.cn/C908EDEC8352EB5DDC60503ECC4_F7F5A196_9800.doc",
+          "local_path": "",
+          "file_type": "",
+          "category": "教学与教务",
+          "subcategory": "学生事务",
+          "audience": "学生",
+          "document_type": "申请表",
+          "tags": [
+            "教务资料",
+            "学生下载",
+            "申请表",
+            "学生证",
+            "缓考",
+            "重修",
+            "jwc",
+            "教务部",
+            "教学与教务",
+            "学生事务",
+            "学生"
+          ]
+        },
+        {
+          "name": "仲恺农业工程学院学生考试规则",
+          "url": "https://jwc.zhku.edu.cn/__local/4/8C/EF/C097A44B0A8433A8C736488F520_9C987B49_1D41A.pdf",
+          "local_path": "",
+          "file_type": "",
+          "category": "教学与教务",
+          "subcategory": "学生事务",
+          "audience": "学生",
+          "document_type": "网页资料",
+          "tags": [
+            "教务资料",
+            "学生下载",
+            "申请表",
+            "学生证",
+            "缓考",
+            "重修",
+            "jwc",
+            "教务部",
+            "教学与教务",
+            "学生事务",
+            "学生",
+            "网页资料"
+          ]
+        }
+      ]
+    },
+    {
+      "metadata_path": "metadata/wlzx/index.json",
+      "title": "现代教育技术中心",
+      "source_url": "https://wlzx.zhku.edu.cn/",
+      "department": "现代教育技术中心",
+      "source_key": "wlzx",
+      "category": "网络与信息化",
+      "subcategory": "信息化服务",
+      "audience": "全校师生",
+      "document_type": "网页资料",
+      "tags": [
+        "wlzx",
+        "现代教育技术中心",
+        "网络与信息化",
+        "信息化服务",
+        "全校师生",
+        "网页资料"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/wlzx_services.json",
+      "title": "现代教育技术中心服务与联系方式",
+      "source_url": "https://wlzx.zhku.edu.cn/",
+      "department": "现代教育技术中心",
+      "source_key": "wlzx",
+      "category": "网络与信息化",
+      "subcategory": "信息化服务",
+      "audience": "全校师生",
+      "document_type": "联系方式",
+      "tags": [
+        "网络",
+        "邮箱",
+        "VPN",
+        "多媒体",
+        "校园网",
+        "网络报障",
+        "wlzx",
+        "现代教育技术中心",
+        "网络与信息化",
+        "信息化服务",
+        "全校师生",
+        "联系方式"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/xsc/community.json",
+      "title": "学生社区管理服务中心联系方式-学生工作部(人民武装部)",
+      "source_url": "https://xsc.zhku.edu.cn/info/1156/11312.htm",
+      "department": "学生工作部",
+      "source_key": "xsc",
+      "category": "学生事务",
+      "subcategory": "学生服务",
+      "audience": "在校学生",
+      "document_type": "联系方式",
+      "tags": [
+        "xsc",
+        "学生工作部",
+        "学生事务",
+        "学生服务",
+        "在校学生",
+        "联系方式"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/xsc/dorm_repair.json",
+      "title": "两校区宿舍报修流程和意见反馈渠道-学生工作部(人民武装部)",
+      "source_url": "https://xsc.zhku.edu.cn/info/1156/11332.htm",
+      "department": "学生工作部",
+      "source_key": "xsc",
+      "category": "学生事务",
+      "subcategory": "学生服务",
+      "audience": "在校学生",
+      "document_type": "办事指南",
+      "tags": [
+        "xsc",
+        "学生工作部",
+        "学生事务",
+        "学生服务",
+        "在校学生",
+        "办事指南"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/xsc/job.json",
+      "title": "就业指导中心联系方式-学生工作部(人民武装部)",
+      "source_url": "https://xsc.zhku.edu.cn/info/1156/11352.htm",
+      "department": "学生工作部",
+      "source_key": "xsc",
+      "category": "学生事务",
+      "subcategory": "学生服务",
+      "audience": "在校学生",
+      "document_type": "联系方式",
+      "tags": [
+        "xsc",
+        "学生工作部",
+        "学生事务",
+        "学生服务",
+        "在校学生",
+        "联系方式"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/xsc/mental_health.json",
+      "title": "心理健康教育与咨询中心联系方式-学生工作部(人民武装部)",
+      "source_url": "https://xsc.zhku.edu.cn/info/1156/11322.htm",
+      "department": "学生工作部",
+      "source_key": "xsc",
+      "category": "学生事务",
+      "subcategory": "学生服务",
+      "audience": "在校学生",
+      "document_type": "联系方式",
+      "tags": [
+        "xsc",
+        "学生工作部",
+        "学生事务",
+        "学生服务",
+        "在校学生",
+        "联系方式"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/xsc/wubu.json",
+      "title": "人民武装部联系方式-学生工作部(人民武装部)",
+      "source_url": "https://xsc.zhku.edu.cn/info/1156/11342.htm",
+      "department": "学生工作部",
+      "source_key": "xsc",
+      "category": "学生事务",
+      "subcategory": "学生服务",
+      "audience": "在校学生",
+      "document_type": "联系方式",
+      "tags": [
+        "xsc",
+        "学生工作部",
+        "学生事务",
+        "学生服务",
+        "在校学生",
+        "联系方式"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/xsc/zzgl.json",
+      "title": "学生资助管理服务联系方式-学生工作部(人民武装部)",
+      "source_url": "https://xsc.zhku.edu.cn/info/1156/11362.htm",
+      "department": "学生工作部",
+      "source_key": "xsc",
+      "category": "学生事务",
+      "subcategory": "学生服务",
+      "audience": "在校学生",
+      "document_type": "联系方式",
+      "tags": [
+        "xsc",
+        "学生工作部",
+        "学生事务",
+        "学生服务",
+        "在校学生",
+        "联系方式"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/xsc_contacts.json",
+      "title": "仲恺农业工程学院学生工作部联系方式汇总",
+      "source_url": "https://xsc.zhku.edu.cn/index/lxwm.htm",
+      "department": "学生工作部",
+      "source_key": "xsc",
+      "category": "学生事务",
+      "subcategory": "学生服务",
+      "audience": "在校学生",
+      "document_type": "联系方式",
+      "tags": [
+        "学生工作部",
+        "资助",
+        "奖学金",
+        "助学金",
+        "贷款",
+        "宿舍报修",
+        "心理咨询",
+        "武装部",
+        "参军入伍",
+        "社区管理",
+        "xsc",
+        "学生事务",
+        "学生服务",
+        "在校学生",
+        "联系方式"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/xys/medical_guide.json",
+      "title": "|一年一度|新生就医指引-校医院",
+      "source_url": "https://xys.zhku.edu.cn/info/1180/1542.htm",
+      "department": "校医院",
+      "source_key": "xys",
+      "category": "校医院服务",
+      "subcategory": "医疗服务",
+      "audience": "全校师生",
+      "document_type": "办事指南",
+      "tags": [
+        "xys",
+        "校医院",
+        "校医院服务",
+        "医疗服务",
+        "全校师生",
+        "办事指南"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/xys/reimbursement.json",
+      "title": "医药费报销审核注意事项-校医院",
+      "source_url": "https://xys.zhku.edu.cn/info/1160/1322.htm",
+      "department": "校医院",
+      "source_key": "xys",
+      "category": "校医院服务",
+      "subcategory": "医疗服务",
+      "audience": "全校师生",
+      "document_type": "报销指南",
+      "tags": [
+        "xys",
+        "校医院",
+        "校医院服务",
+        "医疗服务",
+        "全校师生",
+        "报销指南"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/xys_medical_guide.json",
+      "title": "校医院新生就医指引与医保报销说明",
+      "source_url": "https://xys.zhku.edu.cn/info/1180/1542.htm",
+      "department": "校医院",
+      "source_key": "xys",
+      "category": "校医院服务",
+      "subcategory": "医疗服务",
+      "audience": "学生",
+      "document_type": "报销指南",
+      "tags": [
+        "校医院",
+        "医保",
+        "报销",
+        "就医",
+        "新生",
+        "xys",
+        "校医院服务",
+        "医疗服务",
+        "学生",
+        "报销指南"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/yjs/admission_charter.json",
+      "title": "仲恺农业工程学院2026年硕士研究生招生章程-仲恺农业工程学院研究生处",
+      "source_url": "https://yjs.zhku.edu.cn/info/1047/7135.htm",
+      "department": "研究生处",
+      "source_key": "yjs",
+      "category": "研究生教育与招生",
+      "subcategory": "研究生招生",
+      "audience": "研究生",
+      "document_type": "招生章程",
+      "tags": [
+        "yjs",
+        "研究生处",
+        "研究生教育与招生",
+        "研究生招生",
+        "研究生",
+        "招生章程"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/yjs/admission_charter_2026_full.json",
+      "title": "仲恺农业工程学院2026年硕士研究生招生章程-仲恺农业工程学院研究生处",
+      "source_url": "https://yjs.zhku.edu.cn/info/1047/7135.htm",
+      "department": "研究生部",
+      "source_key": "yjs",
+      "category": "研究生教育与招生",
+      "subcategory": "研究生招生",
+      "audience": "研究生",
+      "document_type": "招生章程",
+      "tags": [
+        "yjs",
+        "研究生部",
+        "研究生教育与招生",
+        "研究生招生",
+        "研究生",
+        "招生章程"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/yjs/fushi_2026.json",
+      "title": "仲恺农业工程学院2026年硕士研究生招生复试录取办法-仲恺农业工程学院研究生处",
+      "source_url": "https://yjs.zhku.edu.cn/info/1047/7425.htm",
+      "department": "研究生部",
+      "source_key": "yjs",
+      "category": "研究生教育与招生",
+      "subcategory": "研究生招生",
+      "audience": "研究生",
+      "document_type": "网页资料",
+      "tags": [
+        "yjs",
+        "研究生部",
+        "研究生教育与招生",
+        "研究生招生",
+        "研究生",
+        "网页资料"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/yjs/fushi_query_2026.json",
+      "title": "2026年各学院研究生招生复试及调剂事宜查询方式-仲恺农业工程学院研究生处",
+      "source_url": "https://yjs.zhku.edu.cn/info/1047/7545.htm",
+      "department": "研究生部",
+      "source_key": "yjs",
+      "category": "研究生教育与招生",
+      "subcategory": "研究生招生",
+      "audience": "研究生",
+      "document_type": "网页资料",
+      "tags": [
+        "yjs",
+        "研究生部",
+        "研究生教育与招生",
+        "研究生招生",
+        "研究生",
+        "网页资料"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/yjs/graduate_downloads.json",
+      "title": "graduate_downloads",
+      "source_url": "https://yjs.zhku.edu.cn/xgxz/yjspy_xsxzl_.htm",
+      "department": "研究生处",
+      "source_key": "yjs",
+      "category": "研究生教育与招生",
+      "subcategory": "研究生资料下载",
+      "audience": "研究生",
+      "document_type": "网页资料",
+      "tags": [
+        "yjs",
+        "研究生处",
+        "研究生教育与招生",
+        "研究生资料下载",
+        "研究生",
+        "网页资料"
+      ],
+      "resources": [
+        {
+          "name": "研究生申请表.pdf",
+          "url": "https://example.edu/form.pdf",
+          "local_path": "",
+          "file_type": "",
+          "category": "研究生教育与招生",
+          "subcategory": "研究生资料下载",
+          "audience": "研究生",
+          "document_type": "申请表",
+          "tags": [
+            "yjs",
+            "研究生处",
+            "研究生教育与招生",
+            "研究生资料下载",
+            "研究生",
+            "网页资料",
+            "申请表"
+          ]
+        }
+      ]
+    },
+    {
+      "metadata_path": "metadata/yjs/major_catalog_2026.json",
+      "title": "仲恺农业工程学院2026年硕士研究生招生专业目录-仲恺农业工程学院研究生处",
+      "source_url": "https://yjs.zhku.edu.cn/info/1047/7145.htm",
+      "department": "研究生部",
+      "source_key": "yjs",
+      "category": "研究生教育与招生",
+      "subcategory": "研究生招生",
+      "audience": "研究生",
+      "document_type": "专业目录",
+      "tags": [
+        "yjs",
+        "研究生部",
+        "研究生教育与招生",
+        "研究生招生",
+        "研究生",
+        "专业目录"
+      ],
+      "resources": [
+        {
+          "name": "附件1.仲恺农业工程学院2026年硕士研究生招生专业目录.pdf",
+          "url": "https://yjs.zhku.edu.cn/system/_content/download.jsp?urltype=news.DownloadAttachUrl&owner=1299223740&wbfileid=89A04BBEAECE2D35350CE45086889D5D",
+          "local_path": "data/raw/yjs/附件1.仲恺农业工程学院2026年硕士研究生招生专业目录_02cadc62cd.pdf",
+          "file_type": "pdf",
+          "category": "研究生教育与招生",
+          "subcategory": "研究生资料下载",
+          "audience": "研究生",
+          "document_type": "专业目录",
+          "tags": [
+            "yjs",
+            "研究生部",
+            "研究生教育与招生",
+            "研究生招生",
+            "研究生",
+            "专业目录",
+            "研究生资料下载"
+          ]
+        },
+        {
+          "name": "附件2.仲恺农业工程学院2026年硕士研究生招生考试大纲（更新）.zip",
+          "url": "https://yjs.zhku.edu.cn/system/_content/download.jsp?urltype=news.DownloadAttachUrl&owner=1299223740&wbfileid=E999DFD5DB7AAAE025992A8272BBFD45",
+          "local_path": "data/raw/yjs/附件2.仲恺农业工程学院2026年硕士研究生招生考试大纲_更新__e18e06e597.zip",
+          "file_type": "zip",
+          "category": "研究生教育与招生",
+          "subcategory": "研究生资料下载",
+          "audience": "研究生",
+          "document_type": "网页资料",
+          "tags": [
+            "yjs",
+            "研究生部",
+            "研究生教育与招生",
+            "研究生招生",
+            "研究生",
+            "专业目录",
+            "研究生资料下载",
+            "网页资料"
+          ]
+        }
+      ]
+    },
+    {
+      "metadata_path": "metadata/yjs/tiaoji_2026.json",
+      "title": "仲恺农业工程学院2026年硕士研究生招生调剂说明-仲恺农业工程学院研究生处",
+      "source_url": "https://yjs.zhku.edu.cn/info/1047/7525.htm",
+      "department": "研究生部",
+      "source_key": "yjs",
+      "category": "研究生教育与招生",
+      "subcategory": "研究生招生",
+      "audience": "研究生",
+      "document_type": "网页资料",
+      "tags": [
+        "yjs",
+        "研究生部",
+        "研究生教育与招生",
+        "研究生招生",
+        "研究生",
+        "网页资料"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/yjs/yjs_contacts.json",
+      "title": "仲恺农业工程学院各研究生招生学院及研招办联系方式-仲恺农业工程学院研究生处",
+      "source_url": "https://yjs.zhku.edu.cn/info/1047/7155.htm",
+      "department": "研究生部",
+      "source_key": "yjs",
+      "category": "研究生教育与招生",
+      "subcategory": "研究生招生",
+      "audience": "研究生",
+      "document_type": "联系方式",
+      "tags": [
+        "yjs",
+        "研究生部",
+        "研究生教育与招生",
+        "研究生招生",
+        "研究生",
+        "联系方式"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/yjs_admission_charter_2026.json",
+      "title": "仲恺农业工程学院2026年硕士研究生招生章程",
+      "source_url": "https://yjs.zhku.edu.cn/info/1047/7135.htm",
+      "department": "研究生处",
+      "source_key": "yjs",
+      "category": "研究生教育与招生",
+      "subcategory": "研究生招生",
+      "audience": "研究生",
+      "document_type": "招生章程",
+      "tags": [
+        "研究生招生",
+        "招生章程",
+        "硕士研究生",
+        "学费",
+        "奖助学金",
+        "2026",
+        "yjs",
+        "研究生处",
+        "研究生教育与招生",
+        "研究生"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/yjs_contacts.json",
+      "title": "仲恺农业工程学院各研究生招生学院及研招办联系方式",
+      "source_url": "https://yjs.zhku.edu.cn/info/1047/7155.htm",
+      "department": "研究生部",
+      "source_key": "yjs",
+      "category": "研究生教育与招生",
+      "subcategory": "研究生招生",
+      "audience": "研究生",
+      "document_type": "联系方式",
+      "tags": [
+        "研究生",
+        "联系方式",
+        "学院",
+        "研招办",
+        "yjs",
+        "研究生部",
+        "研究生教育与招生",
+        "研究生招生"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/yjs_fushi_2026.json",
+      "title": "仲恺农业工程学院2026年硕士研究生招生复试录取办法",
+      "source_url": "https://yjs.zhku.edu.cn/info/1047/7425.htm",
+      "department": "研究生部",
+      "source_key": "yjs",
+      "category": "研究生教育与招生",
+      "subcategory": "研究生招生",
+      "audience": "研究生",
+      "document_type": "网页资料",
+      "tags": [
+        "研究生",
+        "复试",
+        "录取",
+        "调剂",
+        "面试",
+        "综合成绩",
+        "yjs",
+        "研究生部",
+        "研究生教育与招生",
+        "研究生招生",
+        "网页资料"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/yjs_major_catalog_2026.json",
+      "title": "仲恺农业工程学院2026年硕士研究生招生专业目录",
+      "source_url": "https://yjs.zhku.edu.cn/info/1047/7145.htm",
+      "department": "研究生部",
+      "source_key": "yjs",
+      "category": "研究生教育与招生",
+      "subcategory": "研究生招生",
+      "audience": "研究生",
+      "document_type": "专业目录",
+      "tags": [
+        "研究生",
+        "招生专业",
+        "专业目录",
+        "考试大纲",
+        "硕士",
+        "yjs",
+        "研究生部",
+        "研究生教育与招生",
+        "研究生招生"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/yjs_tiaoji_2026.json",
+      "title": "仲恺农业工程学院2026年硕士研究生招生调剂说明",
+      "source_url": "https://yjs.zhku.edu.cn/info/1047/7525.htm",
+      "department": "研究生部",
+      "source_key": "yjs",
+      "category": "研究生教育与招生",
+      "subcategory": "研究生招生",
+      "audience": "研究生",
+      "document_type": "申请表",
+      "tags": [
+        "研究生",
+        "调剂",
+        "复试",
+        "研招网",
+        "yjs",
+        "研究生部",
+        "研究生教育与招生",
+        "研究生招生",
+        "申请表"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/zhku_main/org_admin.json",
+      "title": "党政管理机构、群团组织-仲恺农业工程学院官网",
+      "source_url": "https://www.zhku.edu.cn/jgsz/dzgljg_qtzuz.htm",
+      "department": "学校主站",
+      "source_key": "zhku_main",
+      "category": "学校概况与机构设置",
+      "subcategory": "学校信息",
+      "audience": "全校师生/访客",
+      "document_type": "网页资料",
+      "tags": [
+        "zhku_main",
+        "学校主站",
+        "学校概况与机构设置",
+        "学校信息",
+        "全校师生/访客",
+        "网页资料"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/zhku_main/org_support_research.json",
+      "title": "教辅、科研机构及服务平台-仲恺农业工程学院官网",
+      "source_url": "https://www.zhku.edu.cn/jgsz/jf_kyjgjfwpt.htm",
+      "department": "学校主站",
+      "source_key": "zhku_main",
+      "category": "学校概况与机构设置",
+      "subcategory": "学校信息",
+      "audience": "全校师生/访客",
+      "document_type": "网页资料",
+      "tags": [
+        "zhku_main",
+        "学校主站",
+        "学校概况与机构设置",
+        "学校信息",
+        "全校师生/访客",
+        "网页资料"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/zhku_main/org_teaching.json",
+      "title": "教学机构-仲恺农业工程学院官网",
+      "source_url": "https://www.zhku.edu.cn/jgsz/jxjg.htm",
+      "department": "学校主站",
+      "source_key": "zhku_main",
+      "category": "学校概况与机构设置",
+      "subcategory": "学校信息",
+      "audience": "全校师生/访客",
+      "document_type": "网页资料",
+      "tags": [
+        "zhku_main",
+        "学校主站",
+        "学校概况与机构设置",
+        "学校信息",
+        "全校师生/访客",
+        "网页资料"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/zhku_main/xxgk.json",
+      "title": "学校概况-仲恺农业工程学院官网",
+      "source_url": "https://www.zhku.edu.cn/xxgk.htm",
+      "department": "学校主站",
+      "source_key": "zhku_main",
+      "category": "学校概况与机构设置",
+      "subcategory": "学校信息",
+      "audience": "全校师生/访客",
+      "document_type": "网页资料",
+      "tags": [
+        "zhku_main",
+        "学校主站",
+        "学校概况与机构设置",
+        "学校信息",
+        "全校师生/访客",
+        "网页资料"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/zhku_main_jgsz.json",
+      "title": "仲恺农业工程学院机构设置与教学机构",
+      "source_url": "https://www.zhku.edu.cn/jgsz.htm",
+      "department": "学校主站",
+      "source_key": "zhku_main_jgsz",
+      "category": "学校概况与机构设置",
+      "subcategory": "其他",
+      "audience": "全校师生",
+      "document_type": "网页资料",
+      "tags": [
+        "机构设置",
+        "二级学院",
+        "教学机构",
+        "部门",
+        "zhku_main_jgsz",
+        "学校主站",
+        "其他",
+        "全校师生",
+        "网页资料",
+        "学校概况与机构设置"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/zhku_main_xxgk.json",
+      "title": "仲恺农业工程学院学校概况",
+      "source_url": "https://www.zhku.edu.cn/xxgk.htm",
+      "department": "学校主站",
+      "source_key": "zhku_main_xxgk",
+      "category": "学校概况与机构设置",
+      "subcategory": "其他",
+      "audience": "全校师生",
+      "document_type": "网页资料",
+      "tags": [
+        "学校概况",
+        "学校简介",
+        "历史沿革",
+        "办学规模",
+        "师资",
+        "国际交流",
+        "校区",
+        "zhku_main_xxgk",
+        "学校主站",
+        "其他",
+        "全校师生",
+        "网页资料",
+        "学校概况与机构设置"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/zsb/bkzs_scores_2025_gd.json",
+      "title": "2025年本科招生录取情况(广东省)",
+      "source_url": "https://zsb-portal.zhku.edu.cn/detail?id=3206",
+      "department": "招生办公室",
+      "source_key": "zsb",
+      "category": "本科招生",
+      "subcategory": "本科招生信息",
+      "audience": "本科生/考生",
+      "document_type": "网页资料",
+      "tags": [
+        "zsb",
+        "招生办公室",
+        "本科招生",
+        "本科招生信息",
+        "本科生/考生",
+        "网页资料"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/zsb/bkzs_scores_2025_other.json",
+      "title": "2025年本科招生录取情况(广东省外)",
+      "source_url": "https://zsb-portal.zhku.edu.cn/detail?id=3207",
+      "department": "招生办公室",
+      "source_key": "zsb",
+      "category": "本科招生",
+      "subcategory": "本科招生信息",
+      "audience": "本科生/考生",
+      "document_type": "网页资料",
+      "tags": [
+        "zsb",
+        "招生办公室",
+        "本科招生",
+        "本科招生信息",
+        "本科生/考生",
+        "网页资料"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/zsb/bkzs_zc_2026.json",
+      "title": "2026年夏季高考招生章程",
+      "source_url": "https://zsb-portal.zhku.edu.cn/detail?id=3214",
+      "department": "招生办公室",
+      "source_key": "zsb",
+      "category": "本科招生",
+      "subcategory": "本科招生信息",
+      "audience": "本科生/考生",
+      "document_type": "招生章程",
+      "tags": [
+        "zsb",
+        "招生办公室",
+        "本科招生",
+        "本科招生信息",
+        "本科生/考生",
+        "招生章程"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/zsb_bkzs_jj_2026.json",
+      "title": "仲恺农业工程学院2026年本科招生简章",
+      "source_url": "https://zsb-portal.zhku.edu.cn/",
+      "department": "招生办公室",
+      "source_key": "zsb",
+      "category": "本科招生",
+      "subcategory": "招生资料",
+      "audience": "本科生/考生",
+      "document_type": "联系方式",
+      "tags": [
+        "本科招生",
+        "招生简章",
+        "招生计划",
+        "学院联系方式",
+        "2026",
+        "zsb",
+        "招生办公室",
+        "招生资料",
+        "本科生/考生",
+        "联系方式"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/zsb_bkzs_scores_2025.json",
+      "title": "仲恺农业工程学院2025年本科招生录取情况",
+      "source_url": "https://zsb-portal.zhku.edu.cn/",
+      "department": "招生办公室",
+      "source_key": "zsb",
+      "category": "本科招生",
+      "subcategory": "本科招生信息",
+      "audience": "本科生/考生",
+      "document_type": "网页资料",
+      "tags": [
+        "本科招生",
+        "录取分数",
+        "录取情况",
+        "2025",
+        "广东省",
+        "zsb",
+        "招生办公室",
+        "本科招生信息",
+        "本科生/考生",
+        "网页资料"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/zsb_bkzs_zc_2026.json",
+      "title": "仲恺农业工程学院2026年本科招生章程（夏季高考）",
+      "source_url": "https://zsb-portal.zhku.edu.cn/detail?id=3214",
+      "department": "招生办公室",
+      "source_key": "zsb",
+      "category": "本科招生",
+      "subcategory": "本科招生信息",
+      "audience": "本科生/考生",
+      "document_type": "招生章程",
+      "tags": [
+        "本科招生",
+        "招生章程",
+        "录取规则",
+        "收费标准",
+        "资助政策",
+        "体检要求",
+        "zsb",
+        "招生办公室",
+        "本科招生信息",
+        "本科生/考生"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/zsb_college_contacts.json",
+      "title": "仲恺农业工程学院各招生学院联系方式",
+      "source_url": "https://zsb-portal.zhku.edu.cn/detail?id=3140",
+      "department": "招生办公室",
+      "source_key": "zsb",
+      "category": "本科招生",
+      "subcategory": "招生资料",
+      "audience": "本科生/考生",
+      "document_type": "联系方式",
+      "tags": [
+        "招生",
+        "联系方式",
+        "二级学院",
+        "教学机构",
+        "学院电话",
+        "zsb",
+        "招生办公室",
+        "本科招生",
+        "招生资料",
+        "本科生/考生"
+      ],
+      "resources": []
+    }
+  ]
+}

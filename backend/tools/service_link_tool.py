@@ -30,13 +30,15 @@ class ServiceLinkTool(BaseTool):
             if not isinstance(service_links, dict):
                 continue
             for link_name, link_url in service_links.items():
-                match_text = link_name
+                match_text = f"{link_name} {self._metadata_search_text(meta)}"
                 if not keywords or self._keyword_match(match_text, keywords):
                     items.append(
                         {
                             "title": link_name,
                             "url": link_url,
                             "department": meta.get("department", ""),
+                            "category": meta.get("category", ""),
+                            "subcategory": meta.get("subcategory", ""),
                             "source_page_url": meta.get("source_url", ""),
                         }
                     )

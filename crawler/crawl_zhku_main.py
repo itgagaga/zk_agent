@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from crawler.resource_download import acquire_html_resources, write_resource_manifest
+
 from backend.config import settings
 from crawler.common import (
     extract_attachments,
@@ -25,6 +27,25 @@ from crawler.common import (
 )
 
 
+ORGANIZATION_PAGES = [
+    {
+        "url": "https://www.zhku.edu.cn/jgsz/dzgljg_qtzuz.htm",
+        "filename": "org_admin",
+        "name": "党政管理机构、群团组织",
+    },
+    {
+        "url": "https://www.zhku.edu.cn/jgsz/jxjg.htm",
+        "filename": "org_teaching",
+        "name": "教学机构",
+    },
+    {
+        "url": "https://www.zhku.edu.cn/jgsz/jf_kyjgjfwpt.htm",
+        "filename": "org_support_research",
+        "name": "教辅、科研机构及服务平台",
+    },
+]
+
+
 def crawl_school_profile() -> dict[str, Any]:
     """采集学校概况页。"""
     url = "https://www.zhku.edu.cn/xxgk.htm"
@@ -35,6 +56,8 @@ def crawl_school_profile() -> dict[str, Any]:
     text = extract_main_text(soup)
     publish_date = extract_publish_date(soup)
     attachments = extract_attachments(soup, base_url=url)
+    download_items = acquire_html_resources(html, url, "zhku_main")
+    write_resource_manifest("zhku_main", download_items)
 
     save_raw("zhku_main", "xxgk.html", html)
     save_cleaned("zhku_main", "xxgk.txt", text)
@@ -44,31 +67,38 @@ def crawl_school_profile() -> dict[str, Any]:
         "publish_date": publish_date,
         "department": "学校主站",
         "attachments": attachments,
+        "download_items": download_items,
     }
     save_metadata("zhku_main", "xxgk.json", metadata)
     return metadata
 
 
 def crawl_organizations() -> dict[str, Any]:
-    """采集机构设置页。"""
-    url = "https://www.zhku.edu.cn/jgsz.htm"
-    html = fetch(url)
-    soup = parse_html(html)
+    """采集官网当前的三个机构设置分页面。"""
+    results: list[dict[str, Any]] = []
+    for item in ORGANIZATION_PAGES:
+        url = item["url"]
+        html = fetch(url, referer="https://www.zhku.edu.cn/")
+        soup = parse_html(html)
 
-    title = extract_title(soup)
-    text = extract_main_text(soup)
-    attachments = extract_attachments(soup, base_url=url)
+        title = extract_title(soup)
+        text = extract_main_text(soup)
+        attachments = extract_attachments(soup, base_url=url)
+        download_items = acquire_html_resources(html, url, "zhku_main")
+        write_resource_manifest("zhku_main", download_items)
 
-    save_raw("zhku_main", "jgsz.html", html)
-    save_cleaned("zhku_main", "jgsz.txt", text)
-    metadata = {
-        "url": url,
-        "title": title,
-        "department": "学校主站",
-        "attachments": attachments,
-    }
-    save_metadata("zhku_main", "jgsz.json", metadata)
-    return metadata
+        save_raw("zhku_main", f"{item['filename']}.html", html)
+        save_cleaned("zhku_main", f"{item['filename']}.txt", text)
+        metadata = {
+            "url": url,
+            "title": title or item["name"],
+            "department": "学校主站",
+            "attachments": attachments,
+            "download_items": download_items,
+        }
+        save_metadata("zhku_main", f"{item['filename']}.json", metadata)
+        results.append(metadata)
+    return results[0]
 
 
 def crawl_news_list(category: str = "学校要闻") -> list[dict[str, Any]]:

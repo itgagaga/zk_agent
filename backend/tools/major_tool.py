@@ -39,6 +39,7 @@ class MajorTool(BaseTool):
                 str(meta.get(k, ""))
                 for k in ("title", "summary", "department")
             )
+            match_text += " " + self._metadata_search_text(meta)
             if not keywords or self._keyword_match(match_text, keywords):
                 # 把 download_items 中的专业目录 / 培养方案入口也带上
                 for dl in meta.get("download_items", []) or []:
@@ -49,6 +50,8 @@ class MajorTool(BaseTool):
                             "source_page_url": meta.get("source_url", ""),
                             "publish_date": dl.get("date", ""),
                             "department": meta.get("department", ""),
+                            "category": meta.get("category", ""),
+                            "subcategory": meta.get("subcategory", ""),
                         }
                     )
                 if not meta.get("download_items"):

@@ -12,6 +12,7 @@ import requests
 from bs4 import BeautifulSoup
 
 from backend.config import settings
+from crawler.classification import classify_metadata
 
 # 项目根
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -20,9 +21,11 @@ DATA_CLEANED_DIR = PROJECT_ROOT / "data" / "cleaned"
 DATA_METADATA_DIR = PROJECT_ROOT / "data" / "metadata"
 
 
-def fetch(url: str, *, encoding: str = "utf-8") -> str:
+def fetch(url: str, *, encoding: str = "utf-8", referer: str = "") -> str:
     """发起 HTTP 请求，返回 HTML 文本。"""
     headers = {"User-Agent": settings.crawl_user_agent}
+    if referer:
+        headers["Referer"] = referer
     resp = requests.get(
         url, headers=headers, timeout=settings.crawl_timeout
     )
@@ -124,6 +127,7 @@ def save_metadata(subdir: str, filename: str, data: dict[str, Any]) -> Path:
     """保存元数据 JSON 到 data/metadata/<subdir>/<filename>。"""
     import json
 
+    data = classify_metadata(data, subdir, filename)
     target_dir = DATA_METADATA_DIR / subdir
     target_dir.mkdir(parents=True, exist_ok=True)
     target = target_dir / filename

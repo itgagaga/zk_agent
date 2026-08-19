@@ -23,27 +23,37 @@ def run_all(skip_job: bool = False) -> None:
     from crawler.crawl_yjs import main as run_yjs
     from crawler.crawl_zhku_main import main as run_main
 
-    print("\n[1/5] 学校主站")
-    run_main()
-    print("\n[2/5] 教务部")
-    run_jwc()
-    print("\n[2.5/5] 培养方案 PDF（可能较慢）")
-    from crawler.crawl_training_plans import main as run_training_plans
-
-    run_training_plans()
-    print("\n[3/5] 研究生处")
-    run_yjs()
+    stages = [
+        ("学校主站", run_main),
+        ("教务部", run_jwc),
+        ("研究生处", run_yjs),
+    ]
+    for index, (name, runner) in enumerate(stages, start=1):
+        print(f"\n[{index}/5] {name}")
+        try:
+            runner()
+        except Exception as error:
+            print(f"[run_all] {name} 阶段失败，继续后续阶段: {error}")
     if not skip_job:
         print("\n[4/5] 就业指导中心（可能较慢）")
         from crawler.crawl_job import main as run_job
 
-        run_job()
+        try:
+            run_job()
+        except Exception as error:
+            print(f"[run_all] 就业指导中心阶段失败，继续后续阶段: {error}")
     print("\n[5/6] 公共服务模块（后勤 / 网络 / 校医院）")
-    run_services()
+    try:
+        run_services()
+    except Exception as error:
+        print(f"[run_all] 公共服务阶段失败，继续后续阶段: {error}")
     print("\n[6/6] 新增模块（学生处 / 招生网 / 研究生补充 / 财务部）")
     from crawler.crawl_extra import main as run_extra
 
-    run_extra()
+    try:
+        run_extra()
+    except Exception as error:
+        print(f"[run_all] 新增模块阶段失败: {error}")
 
     print("\n" + "=" * 60)
     print("采集完成，可执行 python -m crawler.build_kb 构建知识库")

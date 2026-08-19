@@ -21,34 +21,74 @@ class DownloadTool(BaseTool):
 
         从 metadata JSON 的 download_items 字段中按关键词匹配。
         """
-        top_k = kwargs.get("top_k", 10)
+        top_k = int(kwargs.get("top_k", 10))
+        category = kwargs.get("category") or None
+        audience = kwargs.get("audience") or None
         keywords = self._extract_keywords(question)
 
-        items: list[dict[str, Any]] = []
+        candidates: list[dict[str, Any]] = []
         for meta in self._load_all_metadata():
             for item in meta.get("download_items", []) or []:
-                name = item.get("name", "")
-                if not name:
+                if not isinstance(item, dict):
                     continue
-                # 如果没有关键词，返回全部；否则按关键词匹配
-                if not keywords or self._keyword_match(name, keywords):
-                    items.append(
-                        {
-                            "title": name,
-                            "file_url": item.get("url", ""),
-                            "source_page_url": meta.get("source_url", ""),
-                            "publish_date": item.get("date", ""),
-                            "department": meta.get("department", ""),
-                        }
-                    )
+                item_url = item.get("url") or item.get("file_url") or ""
+                title = item.get("name") or item.get("title") or item.get("filename") or ""
+                if not title:
+                    continue
+                normalized = {
+                    "title": title,
+                    "file_url": item_url,
+                    "source_page_url": (
+                        item.get("source_page_url")
+                        or meta.get("source_page_url")
+                        or meta.get("source_url")
+                        or ""
+                    ),
+                    "publish_date": (
+                        item.get("date")
+                        or item.get("publish_date")
+                        or meta.get("publish_date")
+                        or ""
+                    ),
+                    "department": item.get("department") or meta.get("department") or "",
+                    "category": item.get("category") or meta.get("category") or "",
+                    "subcategory": item.get("subcategory") or meta.get("subcategory") or "",
+                    "audience": item.get("audience") or meta.get("audience") or "",
+                    "document_type": item.get("document_type") or meta.get("document_type") or "",
+                    "file_type": item.get("file_type") or "",
+                }
+                match_text = f"{title} {self._metadata_search_text(meta)}"
+                if keywords and not self._keyword_match(match_text, keywords):
+                    continue
+                candidates.append(normalized)
 
-        # 去重
-        seen: set[str] = set()
+        facets = {
+            "categories": sorted(
+                {item["category"] for item in candidates if item["category"]}
+            ),
+            "audiences": sorted(
+                {item["audience"] for item in candidates if item["audience"]}
+            ),
+        }
+        filtered = [
+            item
+            for item in candidates
+            if (category is None or item["category"] == category)
+            and (audience is None or item["audience"] == audience)
+        ]
+
+        seen: set[tuple[str, str]] = set()
         unique: list[dict[str, Any]] = []
-        for item in items:
-            key = item["title"]
-            if key not in seen:
-                seen.add(key)
-                unique.append(item)
+        for item in filtered:
+            key = (item["title"], item["file_url"] or item["source_page_url"])
+            if key in seen:
+                continue
+            seen.add(key)
+            unique.append(item)
 
-        return {"tool": self.name, "items": unique[:top_k], "total": len(unique)}
+        return {
+            "tool": self.name,
+            "items": unique[:top_k],
+            "total": len(unique),
+            "facets": facets,
+        }

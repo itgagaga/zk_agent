@@ -11,6 +11,12 @@ from __future__ import annotations
 
 from typing import Any
 
+from crawler.resource_download import (
+    acquire_html_resources,
+    acquire_listing_resources,
+    write_resource_manifest,
+)
+
 from crawler.common import (
     extract_attachments,
     extract_main_text,
@@ -33,6 +39,8 @@ def crawl_major_catalog() -> dict[str, Any]:
     text = extract_main_text(soup)
     publish_date = extract_publish_date(soup)
     attachments = extract_attachments(soup, base_url=url)
+    download_items = acquire_html_resources(html, url, "jwc")
+    write_resource_manifest("jwc", download_items)
     save_raw("jwc", "major_catalog.html", html)
     save_cleaned("jwc", "major_catalog.txt", text)
     metadata = {
@@ -41,6 +49,7 @@ def crawl_major_catalog() -> dict[str, Any]:
         "department": "教务部",
         "publish_date": publish_date,
         "attachments": attachments,
+        "download_items": download_items,
     }
     save_metadata("jwc", "major_catalog.json", metadata)
     return metadata
@@ -72,38 +81,17 @@ def crawl_student_downloads() -> list[dict[str, Any]]:
     返回每条资料的元数据列表。
     """
     url = "https://jwc.zhku.edu.cn/jwfw/jwzlxz/xsxz.htm"
-    html = fetch(url)
-    soup = parse_html(html)
-    title = extract_title(soup)
-    save_raw("jwc", "xsxz.html", html)
-
-    resources: list[dict[str, Any]] = []
-    for a in soup.find_all("a", href=True):
-        name = a.get_text(strip=True)
-        href = a["href"]
-        if not name or not href.lower().endswith(
-            (".doc", ".docx", ".pdf", ".xls", ".xlsx", ".zip", ".rar")
-        ):
-            continue
-        from urllib.parse import urljoin
-
-        abs_url = urljoin(url, href)
-        resources.append(
-            {
-                "title": name,
-                "category": "学生下载",
-                "audience": "学生",
-                "file_type": href.lower().rsplit(".", 1)[-1],
-                "source_page_url": url,
-                "file_url": abs_url,
-                "department": "教务部",
-            }
-        )
-
+    resources = acquire_listing_resources(url, "jwc")
+    write_resource_manifest("jwc", resources)
     save_metadata(
         "jwc",
         "xsxz.json",
-        {"url": url, "title": title, "department": "教务部", "resources": resources},
+        {
+            "url": url,
+            "title": "学生下载",
+            "department": "教务部",
+            "download_items": resources,
+        },
     )
     return resources
 
