@@ -5,15 +5,16 @@
 """
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Literal
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel, Field
 
 from backend.agents.answer_generator import AnswerGenerator
 from backend.tools.academic_search_tool import AcademicSearchTool
 from backend.tools.contact_tool import ContactTool
 from backend.tools.download_tool import DownloadTool
+from backend.tools.job_tool import JobDataError, JobTool
 from backend.tools.major_tool import MajorTool
 from backend.tools.service_link_tool import ServiceLinkTool
 
@@ -22,6 +23,7 @@ router = APIRouter()
 # 全局工具单例（避免每次请求重建）
 _major_tool = MajorTool()
 _download_tool = DownloadTool()
+_job_tool = JobTool()
 _contact_tool = ContactTool()
 _service_link_tool = ServiceLinkTool()
 _academic_search_tool = AcademicSearchTool()
@@ -77,9 +79,29 @@ class DownloadResourceItem(BaseModel):
     department: str | None = None
 
 
+class JobItem(BaseModel):
+    id: str
+    kind: Literal["posting", "fair"]
+    title: str
+    company: str | None = None
+    published: str | None = None
+    time: str | None = None
+    salary: str | None = None
+    education: str | None = None
+    industry: str | None = None
+    location: str | None = None
+    url: str
+
+
+class JobListResponse(BaseModel):
+    total: int
+    items: list[JobItem]
+
+
 class ListResponse(BaseModel):
     total: int
     items: list
+    facets: dict[str, list[str]] | None = None
     llm_query_optimization: dict | None = Field(
         default=None, description="LLM 关键词优化结果（学术搜索专用）"
     )
@@ -225,29 +247,54 @@ async def list_service_links(
 @router.get("/downloads", response_model=ListResponse)
 async def list_downloads(
     keyword: str | None = Query(default=None, description="资料关键词"),
-    category: str | None = Query(default=None, description="分类：学生下载/学籍学位/考务/教材/培养方案/研究生培养"),
-    audience: str | None = Query(default=None, description="适用对象：学生/教师/教务人员"),
+    category: str | None = Query(default=None, description="真实 metadata 分类，使用响应 facets 中的值"),
+    audience: str | None = Query(default=None, description="真实 metadata 适用对象，使用响应 facets 中的值"),
     top_k: int = Query(default=20, ge=1, le=100),
 ) -> ListResponse:
     """资料下载查询。"""
-    query = keyword or category or ""
-    result = await _download_tool.run(query, top_k=top_k)
+    result = await _download_tool.run(
+        keyword or "",
+        category=category,
+        audience=audience,
+        top_k=top_k,
+    )
     items: list[dict[str, Any]] = []
     for item in result.get("items", []):
         file_url = item.get("file_url", "")
         items.append(
             {
                 "title": item.get("title", ""),
-                "category": category,
-                "audience": audience or "学生",
-                "file_type": _detect_file_type(file_url),
+                "category": item.get("category") or None,
+                "audience": item.get("audience") or None,
+                "file_type": item.get("file_type") or _detect_file_type(file_url),
                 "source_page_url": item.get("source_page_url", ""),
-                "file_url": file_url,
-                "publish_date": item.get("publish_date"),
-                "department": item.get("department"),
+                "file_url": file_url or None,
+                "publish_date": item.get("publish_date") or None,
+                "department": item.get("department") or None,
             }
         )
-    return ListResponse(total=len(items), items=items)
+    return ListResponse(
+        total=int(result.get("total", len(items))),
+        items=items,
+        facets=result.get("facets"),
+    )
+
+
+@router.get("/jobs", response_model=JobListResponse)
+async def list_jobs(
+    kind: Literal["posting", "fair"] = Query(default="posting"),
+    keyword: str | None = Query(default=None),
+    company: str | None = Query(default=None),
+    top_k: int = Query(default=50, ge=1, le=100),
+) -> JobListResponse:
+    """查询公开职位或校园招聘活动。"""
+    try:
+        result = await _job_tool.run(
+            keyword or "", kind=kind, company=company, top_k=top_k
+        )
+    except JobDataError as error:
+        raise HTTPException(status_code=503, detail="就业数据暂不可用") from error
+    return JobListResponse(total=result["total"], items=result["items"])
 
 
 @router.get("/academic", response_model=ListResponse)

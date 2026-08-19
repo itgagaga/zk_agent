@@ -11,6 +11,8 @@ import re
 from dataclasses import dataclass
 from typing import Any
 
+CHUNKING_VERSION = "parent-child-v2"
+
 # 章节标题行（整行匹配）
 _SECTION_LINE = re.compile(
     r"^(?:"
@@ -346,6 +348,10 @@ def records_to_store_payload(
         scoped_parent = f"{id_prefix}_{rec.parent_id}" if rec.parent_id else ""
         meta = {
             **base_metadata,
+            "kb_schema_version": base_metadata.get("kb_schema_version", "rag-evidence-v2"),
+            "chunking_version": base_metadata.get("chunking_version", CHUNKING_VERSION),
+            "doc_id": base_metadata.get("doc_id") or id_prefix,
+            "chunk_id": f"{id_prefix}_{i}",
             "section_title": rec.section_title or "",
             "section_path": rec.section_path or "",
             "parent_id": scoped_parent,

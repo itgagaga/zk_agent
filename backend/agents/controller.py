@@ -1,22 +1,19 @@
 """Agent 主控模块。
 
-自适应多 Agent 编排：
-- Router：选择参与取证的子 Agent
-- 子 Agent 并行取证
-- Supervisor：裁决证据优先级（API / 资料 / 办事融合）
-- AnswerGenerator：按 Supervisor 过滤后的证据生成回答
+轻量检索编排：
+- QueryPlanner：声明需要尝试的检索器
+- RetrievalManager：并行取证、补检索与证据门控
+- AnswerGenerator：基于融合后的证据生成回答
 """
 from __future__ import annotations
 
-import asyncio
-import re
 from typing import Any
 
 from backend.agents.answer_generator import AnswerGenerator
 from backend.agents.fallback import FallbackHandler
-from backend.agents.router import QuestionRouter, RoutePlan
-from backend.agents.supervisor import EvidenceSupervisor
 from backend.rag.retriever import RAGRetriever
+from backend.rag.query_planner import QueryPlanner, RetrievalPlan
+from backend.rag.retrieval_manager import RetrievalManager
 from backend.tools.contact_tool import ContactTool
 from backend.tools.download_tool import DownloadTool
 from backend.tools.major_tool import MajorTool
@@ -30,8 +27,6 @@ class AgentController:
     """Agent 主控。"""
 
     def __init__(self) -> None:
-        self.router = QuestionRouter()
-        self.supervisor = EvidenceSupervisor()
         self.retriever = RAGRetriever()
         self.answer_generator = AnswerGenerator()
         self.fallback = FallbackHandler()
@@ -44,118 +39,38 @@ class AgentController:
             "academic_search": AcademicSearchTool(),
             "map_route": MapTool(),
         }
+        self.planner = QueryPlanner()
+        self.retrieval_manager = RetrievalManager(
+            retriever=self.retriever,
+            tools=self.tools,
+        )
 
-    @staticmethod
-    def _clean_query(question: str) -> str:
-        """清洗查询文本，提高 RAG 检索准确率。"""
-        q = re.sub(r"[？?]+$", "", question)
-        patterns = [
-            r"主要讲了什么内容$", r"主要讲了什么$", r"主要讲了哪些$",
-            r"讲了什么$", r"说了什么$", r"主要介绍什么$", r"介绍.{0,2}$",
-            r"是什么$", r"有哪些$", r"有什么$", r"是哪些$",
-            r"在哪里$", r"在哪$", r"怎么申请$", r"怎么办理$", r"怎么填报$",
-            r"怎么.{0,4}$", r"多少个$", r"多少$", r"哪些$",
-            r"名单$", r"清单$", r"内容$", r"情况$", r"信息$",
-        ]
-        for p in patterns:
-            q = re.sub(p, "", q)
-        return q.strip() or question
-
-    async def _run_tool(
-        self,
-        tool_name: str,
-        question: str,
-        tool_args: dict[str, Any],
-        *,
-        history: list[dict[str, str]] | None = None,
-    ) -> dict[str, Any] | None:
-        tool = self.tools.get(tool_name)
-        if tool is None:
-            return None
-        if tool_name == "map_route" and history:
-            return await tool.run(question, history=history, **tool_args)
-        return await tool.run(question, **tool_args)
-
-    async def _gather_evidence(
+    async def _gather_planned_evidence(
         self,
         question: str,
-        plan: RoutePlan,
-        rag_query: str,
+        plan: RetrievalPlan,
         *,
         history: list[dict[str, str]] | None = None,
         user_id: int | None = None,
     ) -> dict[str, Any]:
-        """子 Agent 取证 + Supervisor 裁决优先级并过滤证据。"""
-        primary = plan.primary
-        evidence: dict[str, Any] = {
-            "question": question,
-            "route_mode": plan.mode,
-            "collab_reason": plan.collab_reason,
-            "intent": primary.model_dump(),
-            "intents": [i.model_dump() for i in plan.intents],
-        }
-
-        tool_intents = [i for i in plan.intents if i.path in ("tool", "hybrid") and i.tool]
-
-        print(
-            f"[Agent] 模式={plan.mode} 原因={plan.collab_reason or '-'} "
-            f"子Agent={[i.tool for i in tool_intents]}"
+        """新编排路径：并行取证后统一映射为过渡期 evidence 字典。"""
+        bundle = await self.retrieval_manager.retrieve(
+            plan,
+            user_id=user_id,
+            history=history,
         )
-
-        # --- 阶段1：工具类子 Agent 取证 ---
-        if tool_intents:
-            if plan.mode == "collab":
-                tasks = [
-                    self._run_tool(i.tool, question, i.tool_args, history=history)
-                    for i in tool_intents
-                    if i.tool
-                ]
-                results = await asyncio.gather(*tasks)
-                tool_results = [r for r in results if r is not None]
-            else:
-                intent = tool_intents[0]
-                assert intent.tool
-                tool_result = await self._run_tool(
-                    intent.tool, question, intent.tool_args, history=history
-                )
-                tool_results = [tool_result] if tool_result else []
-                if intent.tool == "academic_search" and tool_result:
-                    query_used = tool_result.get("query_used", {})
-                    if query_used:
-                        evidence["llm_query_optimization"] = query_used
-
-            evidence["tool_results"] = tool_results
-            if tool_results:
-                evidence["tool_result"] = tool_results[0]
-            for tr in tool_results:
-                print(f"[Agent] 子Agent {tr.get('tool')} 返回: {len(tr.get('items', []))} 条")
-
-        # --- 阶段2：Supervisor 决定是否调用 RAG / 文档 Agent ---
-        fetch_rag = self.supervisor.should_fetch_rag(evidence, plan)
-        fetch_doc = self.supervisor.should_fetch_doc(
-            evidence, plan, user_id=user_id
+        evidence = self.retrieval_manager.to_legacy(bundle)
+        evidence.update(
+            {
+                "question": question,
+                "route_mode": "planned",
+                "evidence_priority": "composite",
+                "supervisor_reason": "兼容字段：证据由 RetrievalManager 并行检索后融合",
+                "supervisor_agents": bundle.retrievers,
+                "retrieval_bundle": bundle,
+            }
         )
-        print(f"[Supervisor] 是否调用RAG={fetch_rag} 文档库={fetch_doc}")
-
-        if fetch_rag:
-            evidence["rag_hits"] = await self.retriever.search(rag_query)
-            print(f"[Agent] RAG Agent 命中: {len(evidence.get('rag_hits', []))} 条")
-
-        if fetch_doc:
-            evidence["doc_hits"] = await self.retriever.search_documents(
-                rag_query, user_id=user_id
-            )
-            if evidence.get("doc_hits"):
-                print(f"[Agent] 文档 Agent 命中: {len(evidence['doc_hits'])} 条")
-
-        # --- 阶段3：Supervisor 裁决优先级并过滤证据 ---
-        decision = self.supervisor.decide(evidence, plan)
-        filtered = self.supervisor.apply(evidence, decision)
-        print(
-            f"[Supervisor] 优先级={decision.priority} 原因={decision.reason} "
-            f"用RAG={decision.use_rag} 用文档={decision.use_doc}"
-        )
-        return filtered
+        return evidence
 
     async def handle(
         self,
@@ -166,32 +81,31 @@ class AgentController:
         history: list[dict[str, str]] | None = None,
         user_id: int | None = None,
     ) -> dict[str, Any]:
-        plan = await self.router.route(question)
-        rag_query = self._clean_query(question)
+        plan = self.planner.plan(question, user_id=user_id)
         print(
-            f"[Agent] 路由={plan.router_source} 模式={plan.mode} "
-            f"RAG查询='{rag_query}' (原始: '{question}')"
+            f"[Agent] Planner 检索器={plan.retrievers} "
+            f"查询='{plan.normalized_query}' (原始: '{question}')"
         )
-
-        if plan.primary.path == "fallback":
-            return self.fallback.no_evidence(question)
-
-        evidence = await self._gather_evidence(
-            question, plan, rag_query, history=history, user_id=user_id
+        evidence = await self._gather_planned_evidence(
+            question, plan, history=history, user_id=user_id
         )
+        assessment = (evidence.get("retrieval_summary") or {}).get("evidence_assessment") or {}
+        if assessment.get("status") == "unsupported":
+            fallback = self.fallback.no_evidence(question)
+            fallback["retrieval_summary"] = evidence.get("retrieval_summary")
+            return fallback
         result = await self.answer_generator.generate(question, evidence, history=history)
 
         if not result.get("sources") and self.fallback.enabled:
             return self.fallback.no_evidence(question)
 
-        result["route_mode"] = plan.mode
-        result["router_source"] = plan.router_source
+        result["route_mode"] = "planned"
+        result["router_source"] = "planner"
         result["evidence_priority"] = evidence.get("evidence_priority")
         result["supervisor_reason"] = evidence.get("supervisor_reason")
-        if plan.mode == "collab":
-            result["agents_used"] = evidence.get("supervisor_agents") or [
-                i.intent_label for i in plan.intents if i.intent_label
-            ]
+        if evidence.get("retrieval_summary"):
+            result["retrieval_summary"] = evidence["retrieval_summary"]
+        result["agents_used"] = evidence.get("supervisor_agents", [])
         return result
 
     async def handle_stream(
@@ -205,14 +119,28 @@ class AgentController:
     ):
         import json
 
-        plan = await self.router.route(question)
-        rag_query = self._clean_query(question)
+        plan = self.planner.plan(question, user_id=user_id)
         print(
-            f"[Agent] 路由={plan.router_source} 模式={plan.mode} "
-            f"RAG查询='{rag_query}' (原始: '{question}')"
+            f"[Agent] Planner 检索器={plan.retrievers} "
+            f"查询='{plan.normalized_query}' (原始: '{question}')"
+        )
+        router_evt = {
+            "type": "router",
+            "source": "planner",
+            "mode": "parallel",
+            "intents": plan.retrievers,
+            "collab_reason": "并行检索后证据融合",
+        }
+        yield f"data: {json.dumps(router_evt, ensure_ascii=False)}\n\n"
+
+        evidence = await self._gather_planned_evidence(
+            question, plan, history=history, user_id=user_id
         )
 
-        if plan.primary.path == "fallback":
+        yield f"data: {json.dumps({'type': 'retrieval', **evidence.get('retrieval_summary', {})}, ensure_ascii=False)}\n\n"
+
+        assessment = (evidence.get("retrieval_summary") or {}).get("evidence_assessment") or {}
+        if assessment.get("status") == "unsupported":
             fb = self.fallback.no_evidence(question)
             meta = {
                 "type": "meta",
@@ -221,42 +149,12 @@ class AgentController:
                 "attachments": [],
                 "tools_used": [],
                 "fallback": True,
+                "retrieval_summary": evidence.get("retrieval_summary"),
             }
             yield f"data: {json.dumps(meta, ensure_ascii=False)}\n\n"
             yield f'data: {json.dumps({"type": "token", "content": fb.get("answer", "")}, ensure_ascii=False)}\n\n'
             yield f'data: {json.dumps({"type": "done"}, ensure_ascii=False)}\n\n'
             return
-
-        router_evt = {
-            "type": "router",
-            "source": plan.router_source,
-            "mode": plan.mode,
-            "intents": [i.intent_label for i in plan.intents if i.intent_label],
-            "collab_reason": plan.collab_reason,
-        }
-        yield f"data: {json.dumps(router_evt, ensure_ascii=False)}\n\n"
-
-        evidence = await self._gather_evidence(
-            question, plan, rag_query, history=history, user_id=user_id
-        )
-
-        # Supervisor 裁决事件
-        supervisor_evt = {
-            "type": "supervisor",
-            "priority": evidence.get("evidence_priority"),
-            "reason": evidence.get("supervisor_reason"),
-            "agents": evidence.get("supervisor_agents", []),
-        }
-        yield f"data: {json.dumps(supervisor_evt, ensure_ascii=False)}\n\n"
-
-        if plan.mode == "collab":
-            progress = {
-                "type": "agents",
-                "mode": "collab",
-                "reason": plan.collab_reason,
-                "agents": [i.intent_label for i in plan.intents if i.intent_label],
-            }
-            yield f"data: {json.dumps(progress, ensure_ascii=False)}\n\n"
 
         async for chunk in self.answer_generator.generate_stream(question, evidence, history=history):
             yield chunk

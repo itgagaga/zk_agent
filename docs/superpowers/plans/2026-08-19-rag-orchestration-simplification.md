@@ -6,6 +6,16 @@
 
 **Architecture:** 保留 `AgentController` 作为入口，新增 Query Planner、Retrieval Manager 和 Evidence Fusion。普通校园问题默认执行官网 RAG，结构化工具和实时 API 作为并行证据源；按子问题融合证据，不再按来源类型全局裁决。
 
+## 当前实施状态（2026-08-19）
+
+核心代码、回归测试、前端迁移和在线黄金集验收已完成；新增的 Evidence Gate 与一次性补检索也已接入，
+已覆盖“2026 年本科招生章程”这类近邻文档混淆场景。当前仅保留发布前的提交动作：
+
+- 计划中的独立 commit 步骤暂不执行，因为当前工作区含有用户已有的并行修改，不能擅自混合提交。
+
+在线黄金集的 Recall@5 为 0.90，门控状态 20/20 为 `sufficient`；离线后端、分析核心与前端测试均通过。
+因此，本计划的代码实施和验收已完成，仅未执行隔离提交。
+
 **Tech Stack:** Python 3.12+/FastAPI/Pydantic/Chroma/sentence-transformers/pytest；不新增外部 Agent 框架或向量数据库。
 
 **Spec:** `docs/superpowers/specs/2026-08-19-rag-orchestration-simplification-design.md`
@@ -52,7 +62,7 @@
 - `EvidenceBundle(evidences: list[Evidence], coverage: dict[str, float], conflicts: list[dict[str, Any]], independent_source_count: int, fallback_reason: str | None = None)`
 - Each model exposes `model_dump()` and `to_source_dict()` so existing `AnswerGenerator` can receive plain dictionaries during migration.
 
-- [ ] **Step 1: Write failing contract tests**
+- [x] **Step 1: Write failing contract tests**
 
 ```python
 def test_evidence_to_source_dict_preserves_score_and_identity():
@@ -86,11 +96,11 @@ Run: `python -m pytest backend/tests/test_evidence_contract.py -q -p no:cachepro
 
 Expected: FAIL because `backend.rag.contracts` and conversion methods do not exist.
 
-- [ ] **Step 3: Implement the models and conversion helpers**
+- [x] **Step 3: Implement the models and conversion helpers**
 
 Use Pydantic v2 models with `Field(default_factory=...)`; never use mutable list/dict defaults. `from_tool_item()` must derive URL from `file_url`, `source_page_url`, or `url`, and must never fabricate a URL.
 
-- [ ] **Step 4: Add the regression fixture for the known failure**
+- [x] **Step 4: Add the regression fixture for the known failure**
 
 The fixture represents 20 download candidates where the relevant item is rank 19, plus a RAG candidate containing the answer. It is a stable input fixture consumed by the orchestration tests in Task 5.
 
@@ -132,7 +142,7 @@ Commit: `git add backend/rag/contracts.py backend/tests/test_evidence_contract.p
 - Keep each tool's public `run(question, **kwargs)` return shape during migration, adding `relevance_score`, `matched_fields`, and `evidence_id` to each item.
 - Use `normalize_query()` to remove punctuation and stop words without generating all 2-grams as independent OR conditions.
 
-- [ ] **Step 1: Write failing ranking tests**
+- [x] **Step 1: Write failing ranking tests**
 
 ```python
 @pytest.mark.asyncio
@@ -165,7 +175,7 @@ Run: `python -m pytest backend/tests/test_structured_retrieval.py -q -p no:cache
 
 Expected: FAIL because current tools use arbitrary 2-gram OR matching and preserve input order.
 
-- [ ] **Step 3: Implement deterministic field scoring**
+- [x] **Step 3: Implement deterministic field scoring**
 
 Implement these score rules in `BaseTool.score_item()`:
 
@@ -184,11 +194,11 @@ score += 0.05 if body_matches else 0.0
 
 Clamp scores to `[0.0, 1.0]`. Ignore generic tokens (`下载`, `哪里`, `学校`, `申请`, `电话`) unless accompanied by a domain token. Sort by score descending, then exact title match, then stable title/URL order. Return only after sorting and deduplication.
 
-- [ ] **Step 4: Normalize all structured tool outputs**
+- [x] **Step 4: Normalize all structured tool outputs**
 
 Each item gets a stable ID based on tool name plus normalized URL/title. `total` remains the count before Top-K truncation. Empty/low-score results return `items=[]` so the manager can invoke RAG fallback.
 
-- [ ] **Step 5: Run tests and the known queries**
+- [x] **Step 5: Run tests and the known queries**
 
 Run: `python -m pytest backend/tests/test_structured_retrieval.py backend/tests/test_job_tool.py -q -p no:cacheprovider`
 
@@ -213,7 +223,7 @@ Commit: `git add backend/tools backend/tests/test_structured_retrieval.py; git c
 - Add `RAGRetriever.search(..., candidate_k: int | None = None, distinct_docs: int | None = None) -> list[dict[str, Any]]`.
 - Add private helpers `_dedupe_by_document()`, `_expand_parent_hits_with_refill()`, and `_stable_hit_key()`.
 
-- [ ] **Step 1: Write failing retrieval tests**
+- [x] **Step 1: Write failing retrieval tests**
 
 ```python
 @pytest.mark.asyncio
@@ -248,23 +258,23 @@ Run: `python -m pytest backend/tests/test_rag_retrieval.py -q -p no:cacheprovide
 
 Expected: FAIL because current search queries only requested Top-K and slices after Parent expansion without refill.
 
-- [ ] **Step 3: Over-fetch before filtering**
+- [x] **Step 3: Over-fetch before filtering**
 
 For campus RAG use `candidate_k = max(top_k * 4, 30)` unless an explicit caller value is provided. Apply score thresholds to the over-fetched list, not the final list.
 
-- [ ] **Step 3a: Add deterministic keyword candidates**
+- [x] **Step 3a: Add deterministic keyword candidates**
 
 Implement `keyword_search()` without a new dependency: normalize the query and each stored document, score exact title/section matches above body token overlap, and return the top 30 with `metadata["retrieval_method"] = "keyword"`. The existing vector query sets `retrieval_method = "dense"`.
 
-- [ ] **Step 4: Deduplicate and refill**
+- [x] **Step 4: Deduplicate and refill**
 
 Merge keyword and dense candidates by stable chunk ID before grouping child hits by `doc_id + parent_id`; retain the highest scoring child as the representative, then expand only selected parents. Continue consuming ranked candidates until the requested number of independent documents or parents is reached.
 
-- [ ] **Step 5: Preserve user document isolation**
+- [x] **Step 5: Preserve user document isolation**
 
 Extend `get_chunks_by_parent_id()` and `get_chunks_by_doc_id()` to accept `user_id`; use a combined Chroma `where` clause for every follow-up fetch. Add a test proving a same-named `doc_id` from another user is never included.
 
-- [ ] **Step 6: Run tests and current RAG cases**
+- [x] **Step 6: Run tests and current RAG cases**
 
 Run: `python -m pytest backend/tests/test_rag_retrieval.py backend/tests/test_chunking.py -q -p no:cacheprovider`
 
@@ -290,7 +300,7 @@ Commit: `git add backend/rag/vector_store.py backend/rag/retriever.py backend/te
 - `RetrievalManager.retrieve(plan: RetrievalPlan, *, user_id: int | None = None, history: list[dict[str, str]] | None = None) -> list[Evidence]`.
 - `EvidenceFusion.fuse(question: str, plan: RetrievalPlan, candidates: list[Evidence]) -> EvidenceBundle`.
 
-- [ ] **Step 1: Write planner tests**
+- [x] **Step 1: Write planner tests**
 
 ```python
 def test_planner_keeps_rag_for_download_policy_question():
@@ -312,7 +322,7 @@ def test_planner_uses_only_live_tool_for_pure_route_question():
     assert plan.retrievers == ["map_route"]
 ```
 
-- [ ] **Step 2: Write fusion tests**
+- [x] **Step 2: Write fusion tests**
 
 ```python
 def test_fusion_keeps_rag_when_structured_result_is_irrelevant():
@@ -359,15 +369,15 @@ Run: `python -m pytest backend/tests/test_query_planner.py backend/tests/test_ev
 
 Expected: FAIL because the new modules and interfaces do not exist.
 
-- [ ] **Step 4: Implement deterministic Query Planner**
+- [x] **Step 4: Implement deterministic Query Planner**
 
 Use explicit categories for campus RAG, structured lookup, live API, and academic search. Extract years with `r"20\\d{2}"`, preserve named entities from the last six user/assistant turns, and split clauses on `，`, `,`, `并且`, `以及`, `同时`. Unknown questions default to `campus_rag`.
 
-- [ ] **Step 5: Implement Retrieval Manager**
+- [x] **Step 5: Implement Retrieval Manager**
 
 Call independent retrievers with `asyncio.gather(..., return_exceptions=True)`. Convert every result through `Evidence.from_rag_hit()`, `Evidence.from_document_hit()`, or `Evidence.from_tool_item()`. Record exceptions as diagnostic metadata while retaining successful candidates.
 
-- [ ] **Step 6: Implement Evidence Fusion**
+- [x] **Step 6: Implement Evidence Fusion**
 
 Use RRF score `1 / (60 + rank)` within each source, then add only bounded authority/freshness bonuses. Never compare raw Chroma distance directly with structured scores. Deduplicate by stable evidence ID, URL, or `doc_id + parent_id`; assign each selected evidence to the subquestion it supports.
 
@@ -394,7 +404,7 @@ Commit: `git add backend/rag/query_planner.py backend/rag/retrieval_manager.py b
 - Controller internal flow becomes `plan -> retrieve -> fuse -> generate`.
 - `AnswerGenerator.generate()` and `generate_stream()` consume `EvidenceBundle` converted to source dictionaries; no code reads `evidence_priority` to decide which source block exists.
 
-- [ ] **Step 1: Add failing orchestration tests**
+- [x] **Step 1: Add failing orchestration tests**
 
 ```python
 @pytest.mark.asyncio
@@ -417,19 +427,19 @@ Run: `python -m pytest backend/tests/test_orchestrator_retrieval.py backend/test
 
 Expected: the new test fails because Controller still invokes Router and Supervisor.
 
-- [ ] **Step 3: Replace Controller internals**
+- [x] **Step 3: Replace Controller internals**
 
 Instantiate `QueryPlanner`, `RetrievalManager`, and `EvidenceFusion` in `AgentController`. Keep the old `self.router` and `self.supervisor` only behind a temporary compatibility flag if existing callers require them; the default path must use the new pipeline.
 
-- [ ] **Step 4: Update answer context and confidence**
+- [x] **Step 4: Update answer context and confidence**
 
 Pass only selected evidence to the prompt, grouped by subquestion. Deduplicate source display by `evidence_id`/document ID. Compute confidence from coverage, best relevance, authority, and conflict count. Trigger fallback on `EvidenceBundle.fallback_reason`, not only on an empty source list.
 
-- [ ] **Step 5: Preserve SSE compatibility during migration**
+- [x] **Step 5: Preserve SSE compatibility during migration**
 
 Generate a request-scoped `trace_id`, emit the existing `router` event from the planner summary and the existing `supervisor` event from fusion summary, and include only `trace_id`, retriever names, counts, coverage, and fallback reason in the optional `meta.retrieval_summary`. Keep `meta`, `token`, and `done` unchanged. Do not expose user document content in diagnostics.
 
-- [ ] **Step 6: Run API and stream tests**
+- [x] **Step 6: Run API and stream tests**
 
 Run: `python -m pytest backend/tests/test_chat_stream.py backend/tests/test_orchestrator_retrieval.py backend/tests/test_evidence_contract.py -q -p no:cacheprovider`
 
@@ -476,19 +486,19 @@ def test_evaluation_case_uses_stable_doc_id():
 
 Run: `python -m pytest backend/tests/test_kb_alignment.py -q -p no:cacheprovider`
 
-- [ ] **Step 3: Add stable IDs and metadata/version checks**
+- [x] **Step 3: Add stable IDs and metadata/version checks**
 
 Derive `doc_id` from source directory plus normalized metadata/source URL, not from a mutable display title. Preserve stable chunk IDs across rebuilds when the source content/version is unchanged.
 
-- [ ] **Step 4: Add per-type chunk configuration**
+- [x] **Step 4: Add per-type chunk configuration**
 
 Keep short-document handling and Parent-Child structure. Add explicit configuration keys for notice, admission, training-plan, and download-list documents; default to the current safe ranges in the design spec.
 
-- [ ] **Step 5: Validate before rebuilding**
+- [x] **Step 5: Validate before rebuilding**
 
 `build_kb.main()` must fail before deleting collections if any cleaned document lacks matching metadata or if metadata has no source identity. The validation output must list the first 20 mismatches and total count.
 
-- [ ] **Step 6: Update evaluation and run alignment tests**
+- [x] **Step 6: Update evaluation and run alignment tests**
 
 Run: `python -m pytest backend/tests/test_kb_alignment.py backend/tests/test_chunking.py -q -p no:cacheprovider`
 
@@ -520,7 +530,7 @@ Commit: `git add crawler/chunking.py crawler/build_kb.py backend/rag/vector_stor
 - New optional `meta.retrieval_summary` may show selected retriever names and coverage; it must not contain document text.
 - During the transition old `router/supervisor` event handlers remain harmless; after frontend migration they are removed together with backend emitters.
 
-- [ ] **Step 1: Add frontend state tests for the new summary**
+- [x] **Step 1: Add frontend state tests for the new summary**
 
 ```javascript
 import test from 'node:test';
@@ -539,21 +549,21 @@ test('keeps source and attachment metadata when retrieval summary arrives', () =
 
 `retrievalSummary.js` exports `mergeRetrievalMeta(previous, incoming)`, implemented as a shallow metadata merge that preserves existing `sources`, `attachments`, `tools_used`, and `confidence` when the incoming event contains only `retrieval_summary`. Add this test file to the existing `frontend/package.json` test script.
 
-- [ ] **Step 2: Run existing frontend tests before edits**
+- [x] **Step 2: Run existing frontend tests before edits**
 
 Run: `npm test -- --run`
 
 Record the current result; do not treat unrelated pre-existing failures as caused by this task.
 
-- [ ] **Step 3: Update stores and components**
+- [x] **Step 3: Update stores and components**
 
 Map the new `retrieval_summary` from `meta`, keep old event handlers during the migration, and remove UI labels that imply a global Supervisor priority.
 
-- [ ] **Step 4: Remove old backend imports and compatibility fields**
+- [x] **Step 4: Remove old backend imports and compatibility fields**
 
 Use `rg -n "EvidenceSupervisor|QuestionRouter|LLMRouter|evidence_priority|supervisor_reason|route_mode" backend frontend/src` and remove only references proven unused by tests. Keep response fields temporarily if external clients may use them; mark them deprecated in code comments.
 
-- [ ] **Step 5: Run full backend and frontend verification**
+- [x] **Step 5: Run full backend and frontend verification**
 
 Run: `python -m pytest backend/tests -q -p no:cacheprovider`
 
@@ -580,11 +590,11 @@ Commit: `git add backend frontend; git commit -m "refactor: retire exclusive age
 - Evaluation output includes Recall@1/3/5/10, MRR, independent source count, coverage, citation correctness, fallback correctness, and latency.
 - Update `RAGCase` to `RAGCase(query: str, expected_doc_ids: set[str], category: str, expected_titles: set[str] = field(default_factory=set))`; import `field` from `dataclasses`; stable IDs are canonical and titles are migration-only.
 
-- [ ] **Step 1: Add the golden cases**
+- [x] **Step 1: Add the golden cases**
 
 Include at least the following: 缓考申请表、学生证补办、学籍异动、网络报障电话、招生章程、专业目录、研究生调剂、校医院医保、多轮“那申请条件呢”、路线+天气复合问题。
 
-- [ ] **Step 2: Add end-to-end assertions**
+- [x] **Step 2: Add end-to-end assertions**
 
 ```python
 import asyncio
@@ -603,7 +613,7 @@ calls. The fixture returns the controller's normalized result object so the
 same assertions exercise planner, retrieval manager, fusion, and citation
 mapping together.
 
-- [ ] **Step 3: Run the full verification matrix**
+- [x] **Step 3: Run the full verification matrix**
 
 Run:
 
@@ -616,13 +626,54 @@ npm run build
 
 Expected acceptance: official RAG Recall@5 >= 90%, key download/contact Top-3 >= 95%, no regression in SSE completion, and no user-document cross-tenant leakage.
 
-- [ ] **Step 4: Inspect traces and document residual failures**
+- [x] **Step 4: Inspect traces and document residual failures**
 
 For every failed golden case, inspect planner output, raw candidates, filtered candidates, fused evidence, and citation mapping. Do not fix by adding a single query-specific keyword; fix the relevant contract or ranking stage.
 
 - [ ] **Step 5: Commit final evaluation and documentation**
 
 Commit: `git add analytics backend/tests docs/ZHKU_Campus_Agent_开发.md; git commit -m "test: add end-to-end retrieval acceptance suite"`
+
+---
+
+### Task 9: 证据充分性门控与检索补救（追加根因修复）
+
+**Files:**
+- Create: `backend/rag/evidence_gate.py`
+- Modify: `backend/rag/contracts.py`
+- Modify: `backend/rag/retrieval_manager.py`
+- Modify: `backend/agents/controller.py`
+- Create: `backend/tests/test_evidence_gate.py`
+- Modify: `backend/tests/test_retrieval_manager.py`
+
+**Goal:** 不把“有候选”误判成“可以回答”，也不因一次 Top-K 截断就直接返回未找到。检索后必须经过可回答性评估；证据不足时执行一次扩大召回/查询变体补救，仍不足才允许 fallback。
+
+**Contract:**
+- `EvidenceAssessment.status` 为 `sufficient | needs_more | unsupported`；
+- `coverage` 表示问题核心概念组被证据覆盖的比例；
+- `matched_concepts`、`missing_concepts`、`reason` 写入 `EvidenceBundle.diagnostics`；
+- 评估只使用查询概念、标题、摘要和正文片段，不依赖某个工具的全局优先级；
+- `needs_more` 最多触发一次补检索，避免循环调用和延迟失控。
+
+- [x] **Step 1: Add failing gate tests**
+
+Cover exact-title evidence, near-duplicate document-type confusion, and an evidence set that has generic 2026 documents but misses the undergraduate charter.
+
+- [x] **Step 2: Implement concept coverage assessment**
+
+Normalize question frames, expand stable domain aliases (for example 本科/普通高考 and 章程/招生章程), and calculate coverage over concept groups. Do not add one-off query keywords.
+
+- [x] **Step 3: Add one-shot rescue retrieval**
+
+When status is `needs_more`, request a larger campus/document candidate set and fuse it with the first pass. Re-assess once and record both attempts in diagnostics.
+
+- [x] **Step 4: Gate fallback and answer generation**
+
+Only `unsupported` after rescue may enter fallback. `needs_more` must be surfaced as uncertainty with the retrieval summary rather than claiming the document does not exist.
+
+- [x] **Step 5: Verify and add acceptance metrics**
+
+Run the golden case for `2026年本科招生章程主要讲了什么`, all backend tests, and the frontend test/build matrix. Record gate status and rescue count in trace metadata.
 
 ## Execution Notes
 

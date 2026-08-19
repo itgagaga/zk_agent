@@ -16,7 +16,13 @@ from analytics.core import (
     chunk_length_summary,
 )
 from analytics.data_access import load_chroma_records
-from analytics.evaluation import RAG_CASES, ROUTE_CASES, ROUTE_LABELS
+from analytics.evaluation import (
+    RAG_CASES,
+    ROUTE_CASES,
+    ROUTE_LABELS,
+    normalize_title,
+    title_matches,
+)
 
 
 def latency_annotation_y(values: list[float]) -> float:
@@ -124,11 +130,14 @@ def evaluate_rag(api_base: str) -> dict[str, Any]:
     import requests
 
     ranked_titles: list[list[str]] = []
+    ranked_keys: list[list[str]] = []
     expected_titles: list[set[str]] = []
     top1_scores_correct: list[float] = []
     top1_scores_incorrect: list[float] = []
     category_totals: Counter[str] = Counter()
     category_hits: Counter[str] = Counter()
+    gate_statuses: Counter[str] = Counter()
+    gate_coverages: list[float] = []
     case_results: list[dict[str, Any]] = []
 
     for case in RAG_CASES:
@@ -138,13 +147,28 @@ def evaluate_rag(api_base: str) -> dict[str, Any]:
             timeout=90,
         )
         response.raise_for_status()
-        hits = response.json().get("hits", [])
+        payload = response.json()
+        hits = payload.get("hits", [])
+        summary = payload.get("retrieval_summary") or {}
+        assessment = summary.get("evidence_assessment") or {}
+        if assessment.get("status"):
+            gate_statuses[assessment["status"]] += 1
+        if assessment.get("coverage") is not None:
+            gate_coverages.append(float(assessment["coverage"]))
         titles = [str(hit.get("title") or "") for hit in hits]
+        ids = [str(hit.get("chunk_id") or (hit.get("metadata") or {}).get("doc_id") or "") for hit in hits]
         scores = [float(hit.get("score") or 0.0) for hit in hits]
         ranked_titles.append(titles)
-        expected_titles.append(case.expected_titles)
+        expected_keys = case.expected_doc_ids or {
+            normalize_title(title) for title in case.expected_titles
+        }
+        ranked_keys.append(ids if case.expected_doc_ids else [normalize_title(title) for title in titles])
+        expected_titles.append(expected_keys)
 
-        top1_correct = bool(titles and titles[0] in case.expected_titles)
+        top1_correct = bool(
+            (ids and ids[0] in expected_keys)
+            or (titles and title_matches(titles[0], case.expected_titles))
+        )
         top1_score = scores[0] if scores else 0.0
         if top1_correct:
             top1_scores_correct.append(top1_score)
@@ -152,7 +176,10 @@ def evaluate_rag(api_base: str) -> dict[str, Any]:
             top1_scores_incorrect.append(top1_score)
 
         category_totals[case.category] += 1
-        top3_correct = bool(set(titles[:3]) & case.expected_titles)
+        top3_correct = bool(
+            set(ids[:3]) & expected_keys
+            or any(title_matches(title, case.expected_titles) for title in titles[:3])
+        )
         if top3_correct:
             category_hits[case.category] += 1
 
@@ -161,15 +188,19 @@ def evaluate_rag(api_base: str) -> dict[str, Any]:
                 "query": case.query,
                 "category": case.category,
                 "expected_titles": sorted(case.expected_titles),
+                "expected_doc_ids": sorted(case.expected_doc_ids),
                 "titles": titles,
+                "ids": ids,
                 "scores": scores,
                 "top1_correct": top1_correct,
                 "top3_correct": top3_correct,
+                "gate_status": assessment.get("status"),
+                "gate_coverage": assessment.get("coverage"),
             }
         )
 
     recall_at_k = calculate_recall_at_k(
-        ranked_titles,
+        ranked_keys,
         expected_titles,
         [1, 3, 5, 10],
     )
@@ -181,6 +212,8 @@ def evaluate_rag(api_base: str) -> dict[str, Any]:
         "total": len(RAG_CASES),
         "recall_at_k": recall_at_k,
         "category_accuracy": category_accuracy,
+        "gate_status_counts": dict(gate_statuses),
+        "mean_gate_coverage": fmean(gate_coverages) if gate_coverages else 0.0,
         "top1_scores_correct": top1_scores_correct,
         "top1_scores_incorrect": top1_scores_incorrect,
         "cases": case_results,

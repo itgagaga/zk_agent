@@ -525,13 +525,6 @@ button {
   font-weight: 600;
 }
 
-.tool-chip-supervisor,
-.emb-tool-chip-supervisor {
-  background: rgba(37, 99, 235, 0.12);
-  color: #1d4ed8;
-  font-weight: 600;
-}
-
 /* 聊天消息框 */
 .chat-bubble {
   background: var(--color-canvas-lifted);
@@ -5218,6 +5211,54 @@ a.as-paper-title:hover {
   color: var(--color-clay-brown);
   font-size: 12px;
   font-weight: 600;
+}
+
+.employment-browser {
+  display: grid;
+  gap: 20px;
+}
+
+.employment-search-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(180px, 0.45fr) auto;
+  gap: 12px;
+  align-items: center;
+}
+
+.employment-search-input,
+.employment-company-input {
+  min-height: 50px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 20px;
+  color: var(--color-slate);
+  background: var(--color-canvas);
+  border: 1.5px solid var(--color-dust-taupe);
+  border-radius: var(--radius-pill);
+}
+
+.employment-search-input:focus-within,
+.employment-company-input:focus {
+  border-color: var(--color-signal-orange);
+  outline: 0;
+}
+
+.employment-search-input input,
+.employment-company-input {
+  min-width: 0;
+  width: 100%;
+  border: 0;
+  outline: 0;
+  color: var(--color-ink);
+  background: transparent;
+  font: inherit;
+}
+
+@media (max-width: 768px) {
+  .employment-search-row {
+    grid-template-columns: 1fr;
+  }
 }
 
 .resource-link-preview {

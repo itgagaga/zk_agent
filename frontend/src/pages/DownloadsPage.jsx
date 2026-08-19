@@ -19,7 +19,9 @@ import {
   Wrench,
 } from 'lucide-react'
 import EmbeddedChat from '../components/EmbeddedChat'
+import EmploymentBrowser from '../components/EmploymentBrowser'
 import { askAndOpen } from '../embeddedChatStore'
+import { downloadCategories } from '../resourceViewModel'
 
 const STORE_KEY = '资料智库'
 
@@ -56,8 +58,6 @@ const QUICK_TASKS = [
     prompt: '请帮我查找相关的公开联系方式',
   },
 ]
-
-const DOWNLOAD_CATEGORIES = ['学生下载', '学籍学位', '考务', '培养方案', '研究生培养', '研究生招生']
 
 const SERVICE_CATEGORIES = ['教务', '科研', '行政', '后勤', '网络', '医疗', '招采', '就业']
 
@@ -168,6 +168,7 @@ export default function DownloadsPage() {
 
   const [keyword, setKeyword] = useState('')
   const [downloadCategory, setDownloadCategory] = useState('')
+  const [downloadCategoriesState, setDownloadCategoriesState] = useState([])
   const [downloadItems, setDownloadItems] = useState([])
   const [downloadTotal, setDownloadTotal] = useState(0)
   const [downloadLoading, setDownloadLoading] = useState(false)
@@ -194,11 +195,14 @@ export default function DownloadsPage() {
       const resp = await axios.get('/api/resources/downloads', {
         params: { keyword: nextKeyword, category: nextCategory, top_k: 50 },
       })
-      setDownloadItems(resp.data.items || [])
-      setDownloadTotal(resp.data.total || 0)
+      const data = resp.data || {}
+      setDownloadItems(data.items || [])
+      setDownloadTotal(data.total || 0)
+      setDownloadCategoriesState(downloadCategories(data))
     } catch {
       setDownloadItems([])
       setDownloadTotal(0)
+      setDownloadCategoriesState([])
       setDownloadError('暂时无法连接资料库，请稍后再试。')
     } finally {
       setDownloadLoading(false)
@@ -302,7 +306,7 @@ export default function DownloadsPage() {
       </section>
 
       <section className="agent-subsection" ref={browseRef}>
-        <div className="agent-browse-tabs" role="tablist" aria-label="资料与服务">
+        <div className="agent-browse-tabs" role="tablist" aria-label="资料、服务与就业">
           <button
             role="tab"
             aria-selected={activeTab === 'downloads'}
@@ -318,6 +322,14 @@ export default function DownloadsPage() {
             onClick={() => setActiveTab('services')}
           >
             <MapPinned size={16} /> 服务入口
+          </button>
+          <button
+            role="tab"
+            aria-selected={activeTab === 'employment'}
+            className={activeTab === 'employment' ? 'active' : ''}
+            onClick={() => setActiveTab('employment')}
+          >
+            <BriefcaseBusiness size={16} /> 就业信息
           </button>
         </div>
 
@@ -352,7 +364,7 @@ export default function DownloadsPage() {
                 >
                   全部
                 </button>
-                {DOWNLOAD_CATEGORIES.map((item) => (
+                {downloadCategoriesState.map((item) => (
                   <button
                     key={item}
                     className={downloadCategory === item ? 'active' : ''}
@@ -401,7 +413,7 @@ export default function DownloadsPage() {
               )}
             </div>
           </>
-        ) : (
+        ) : activeTab === 'services' ? (
           <>
             <div className="agent-section-title" style={{ marginBottom: 20 }}>
               <div>
@@ -532,6 +544,8 @@ export default function DownloadsPage() {
               </div>
             )}
           </>
+        ) : (
+          <EmploymentBrowser />
         )}
       </section>
 

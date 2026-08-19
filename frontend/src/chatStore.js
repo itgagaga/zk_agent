@@ -7,6 +7,7 @@ import {
   getAuthSnapshot,
   subscribeAuth,
 } from './authStore.js'
+import { mergeRetrievalMeta } from './retrievalSummary.js'
 
 const STORAGE_KEY = 'zhku_chat_messages'
 const SESSION_KEY = 'zhku_session_id'
@@ -332,21 +333,16 @@ export async function ask(question, autoStick) {
             setMessages((prev) => {
               if (idx < 0 || idx >= prev.length) return prev
               const next = [...prev]
-              next[idx] = { ...next[idx], data: { ...next[idx].data, ...data } }
+              next[idx] = { ...next[idx], data: mergeRetrievalMeta(next[idx].data, data) }
               return next
             })
-          } else if (data.type === 'supervisor') {
+          } else if (data.type === 'retrieval') {
             setMessages((prev) => {
               if (idx < 0 || idx >= prev.length) return prev
               const next = [...prev]
               next[idx] = {
                 ...next[idx],
-                data: {
-                  ...next[idx].data,
-                  evidence_priority: data.priority,
-                  supervisor_reason: data.reason,
-                  supervisor_agents: data.agents,
-                },
+                data: mergeRetrievalMeta(next[idx].data, { retrieval_summary: data }),
               }
               return next
             })

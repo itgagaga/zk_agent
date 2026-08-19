@@ -3,7 +3,7 @@ import unittest
 from pathlib import Path
 
 from analytics.data_access import load_chroma_records
-from analytics.evaluation import RAG_CASES, ROUTE_CASES, ROUTE_LABELS
+from analytics.evaluation import RAG_CASES, ROUTE_CASES, ROUTE_LABELS, title_matches
 from analytics.plotting import format_chart_value, save_horizontal_bar_chart
 
 
@@ -20,7 +20,7 @@ class DataAccessTests(unittest.TestCase):
             PROJECT_ROOT / "data" / "vector_store" / "chroma.sqlite3"
         )
 
-        self.assertEqual(len(records), 100)
+        self.assertGreater(len(records), 100)
         self.assertEqual(
             {record["collection"] for record in records},
             {"zhku_campus", "zhku_user_docs"},
@@ -36,7 +36,10 @@ class DataAccessTests(unittest.TestCase):
 
         self.assertGreaterEqual(len(RAG_CASES), 15)
         for case in RAG_CASES:
-            self.assertTrue(case.expected_titles & current_titles, case.query)
+            self.assertTrue(
+                any(title_matches(title, case.expected_titles) for title in current_titles),
+                case.query,
+            )
 
     def test_route_cases_use_declared_labels(self):
         self.assertGreaterEqual(len(ROUTE_CASES), 24)

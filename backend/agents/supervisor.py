@@ -1,4 +1,7 @@
-"""证据优先级 Supervisor Agent。
+"""兼容性 Supervisor 模块。
+
+新请求路径由 ``RetrievalManager`` 和 ``EvidenceGate`` 统一融合、门控证据，
+本模块仅保留给旧调用方和历史数据兼容，不参与 ``AgentController`` 的运行时编排。
 
 在子 Agent 取证完成后，决定本次回答应优先基于：
 - api：实时第三方 API（地图、天气）

@@ -5,6 +5,7 @@
 // 请求在后台继续消费，回来即可看到进行中或已完成的回复。
 
 import { getAuthHeader, getAuthSnapshot } from './authStore.js'
+import { mergeRetrievalMeta } from './retrievalSummary.js'
 
 const STORAGE_PREFIX = 'zhku_emb_chat_'
 const OPEN_PREFIX = 'zhku_emb_open_'
@@ -155,21 +156,16 @@ export async function ask(key, question) {
             setMessages(key, inst, prev => {
               if (idx < 0 || idx >= prev.length) return prev
               const next = [...prev]
-              next[idx] = { ...next[idx], data: { ...next[idx].data, ...data } }
+              next[idx] = { ...next[idx], data: mergeRetrievalMeta(next[idx].data, data) }
               return next
             })
-          } else if (data.type === 'supervisor') {
+          } else if (data.type === 'retrieval') {
             setMessages(key, inst, prev => {
               if (idx < 0 || idx >= prev.length) return prev
               const next = [...prev]
               next[idx] = {
                 ...next[idx],
-                data: {
-                  ...next[idx].data,
-                  evidence_priority: data.priority,
-                  supervisor_reason: data.reason,
-                  supervisor_agents: data.agents,
-                },
+                data: mergeRetrievalMeta(next[idx].data, { retrieval_summary: data }),
               }
               return next
             })

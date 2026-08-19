@@ -24,8 +24,6 @@ class DownloadTool(BaseTool):
         top_k = int(kwargs.get("top_k", 10))
         category = kwargs.get("category") or None
         audience = kwargs.get("audience") or None
-        keywords = self._extract_keywords(question)
-
         candidates: list[dict[str, Any]] = []
         for meta in self._load_all_metadata():
             for item in meta.get("download_items", []) or []:
@@ -57,9 +55,6 @@ class DownloadTool(BaseTool):
                     "document_type": item.get("document_type") or meta.get("document_type") or "",
                     "file_type": item.get("file_type") or "",
                 }
-                match_text = f"{title} {self._metadata_search_text(meta)}"
-                if keywords and not self._keyword_match(match_text, keywords):
-                    continue
                 candidates.append(normalized)
 
         facets = {
@@ -86,9 +81,15 @@ class DownloadTool(BaseTool):
             seen.add(key)
             unique.append(item)
 
+        ranked = self._rank_items(
+            question,
+            unique,
+            title_fields=("title",),
+            text_fields=("department", "category", "subcategory", "audience", "document_type"),
+        )
         return {
             "tool": self.name,
-            "items": unique[:top_k],
-            "total": len(unique),
+            "items": ranked[:top_k],
+            "total": len(ranked),
             "facets": facets,
         }

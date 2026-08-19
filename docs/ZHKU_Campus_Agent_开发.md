@@ -183,10 +183,15 @@ backend: FastAPI
 
 agent layer
   ├── Agent Controller
-  ├── Intent Router
-  ├── Tool Selector
+  ├── Query Planner（声明可并行检索器）
+  ├── Retrieval Manager（并行取证与一次性补检索）
+  ├── Evidence Fusion（去重与多源融合）
+  ├── Evidence Gate（可回答性门控）
   ├── Answer Generator
   └── Fallback Checker
+
+说明：旧 `QuestionRouter`、`EvidenceSupervisor` 和 `LLMRouter` 仅作为兼容模块保留，
+不参与默认请求链路，也不再决定某一种证据的全局优先级。
 
 knowledge layer
   ├── RAG Retriever
@@ -212,30 +217,25 @@ crawler layer
 ```text
 用户问题
   ↓
-问题预处理
+问题规范化与概念提取
   ↓
-意图识别
+Query Planner 声明检索计划
   ↓
-选择处理路径
-  ├── 学校概况 RAG
-  ├── 机构/专业/联系方式结构化工具
-  ├── 资料下载工具
-  ├── 智能文档问答
-  ├── 新闻公告检索
-  └── 无依据兜底
+Retrieval Manager 并行尝试 RAG、用户文档和结构化工具
   ↓
-检索网页、附件、文档片段或结构化数据
+Evidence Fusion 去重并保留多来源证据
   ↓
-整合证据
+Evidence Gate 评估概念覆盖；不足时最多补检索一次
   ↓
-调用 DeepSeek 生成回答
+有依据 → 调用 DeepSeek 生成回答
+无依据 → Fallback Checker 兜底
   ↓
-引用检查与事实约束
+引用检查、事实约束与 retrieval_summary
   ↓
 返回答案、来源、附件、入口和置信度
 ```
 
-### 6.2 意图路由示例
+### 6.2 检索计划示例
 
 | 用户问题 | 意图 | 处理方式 |
 |---|---|---|
@@ -306,6 +306,11 @@ crawler layer
 支持文档问答、摘要、抽取、对比
 ```
 
+知识库构建采用 Parent-Child 切分：父片段保留章节上下文，子片段用于召回，
+并为每份文档和片段写入稳定的 `doc_id`、`chunk_id`、`kb_schema_version` 与
+`chunking_version`。重建前先校验清洗数据与元数据的一一对应关系，校验失败时不清空旧集合。
+检索结果进入回答前还要经过概念覆盖门控；“有候选”不等于“足以回答”，最多执行一次扩大召回补救。
+
 ---
 
 ## 8. 数据采集与清洗
@@ -325,14 +330,23 @@ crawler layer
   ↓
 按模块分类
   ↓
-保存 cleaned Markdown / JSON
+保存 cleaned Markdown / JSON 与同名 metadata
   ↓
-人工抽查关键页面
+生成 `metadata_by_function.json` 功能索引并抽查关键页面
   ↓
 切分文本并生成 Embedding
   ↓
 写入向量库和结构化数据库
 ```
+
+就业职位和招聘活动保留 `job_postings.json` / `job_fairs.json` 聚合列表，同时为每条已下载详情生成同名 metadata：
+
+```text
+data/cleaned/job/job_<id>.txt   ↔   data/metadata/job/job_<id>.json
+data/cleaned/job/event_<id>.txt ↔   data/metadata/job/event_<id>.json
+```
+
+`run_all` 完成采集后会刷新功能索引；`build_kb` 清空旧向量集合前会再次刷新索引并检查上述就业正文/metadata 对齐，检查失败时不删除旧集合。
 
 ### 8.2 采集原则
 
@@ -531,9 +545,62 @@ document_qa_log
 
 ### 10.2 资源检索接口
 
-`GET /api/resources/search?keyword=缓考&category=教务`
+`GET /api/resources/downloads?keyword=缓考&category=教学与教务&audience=本科生&top_k=20`
 
-返回资料下载、附件入口、来源页面和发布时间。
+`keyword` 执行文本匹配，`category` 和 `audience` 对真实 metadata 做精确过滤，多个条件取交集。响应中的 `category`、`audience`、`source_page_url` 来自资源条目或父级 metadata，不由请求参数伪造；`total` 是截断前总数。
+
+响应示例：
+
+```json
+{
+  "total": 12,
+  "items": [
+    {
+      "title": "学生证申请表.docx",
+      "category": "教学与教务",
+      "audience": "本科生",
+      "source_page_url": "https://jwc.zhku.edu.cn/...",
+      "file_url": "https://jwc.zhku.edu.cn/.../form.docx"
+    }
+  ],
+  "facets": {
+    "categories": ["教学与教务", "研究生教育与招生"],
+    "audiences": ["本科生", "研究生"]
+  }
+}
+```
+
+前端资料分类选项直接使用响应 `facets.categories`，不再维护旧分类常量。
+
+### 10.2.1 就业信息接口
+
+```text
+GET /api/resources/jobs?kind=posting&keyword=Python&company=广州&top_k=50
+GET /api/resources/jobs?kind=fair&keyword=宣讲会&top_k=50
+```
+
+`kind` 只能是 `posting`（公开职位）或 `fair`（招聘活动），其他值返回 422。接口读取就业聚合 JSON，过滤失败条目，并返回统一字段：
+
+```json
+{
+  "total": 100,
+  "items": [
+    {
+      "id": "133257",
+      "kind": "posting",
+      "title": "管培生薪酬5K起",
+      "company": "深圳市乐有家控股集团有限公司",
+      "published": "07/18 发布",
+      "salary": "5K-8K",
+      "education": "本科",
+      "location": "广州",
+      "url": "https://job.zhku.edu.cn/web/index/job-detail?id=133257"
+    }
+  ]
+}
+```
+
+就业聚合数据损坏或缺失时返回 503“就业数据暂不可用”，不能把服务错误伪装成空列表。
 
 ### 10.3 专业查询接口
 

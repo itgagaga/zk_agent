@@ -37,15 +37,6 @@ const CONFIDENCE_LABELS = {
   low: { text: '低可信', color: '#dc2626' },
 }
 
-const PRIORITY_LABELS = {
-  api: 'API 优先',
-  tool: '结构化查询',
-  rag: '资料优先',
-  document: '文档优先',
-  affairs: '办事协作',
-  composite: '综合融合',
-}
-
 function generateFollowUps(question) {
   if (!question) return []
   if (/电话|联系/.test(question))
@@ -336,13 +327,8 @@ function MessageBubble({ message, index, onDelete, onAsk, loading, prevQuestion 
               <AnswerDetails data={data} />
             )}
 
-            {data && streaming && (data.tools_used?.length > 0 || data.agents_used?.length > 0 || data.evidence_priority) && (
+            {data && streaming && (data.tools_used?.length > 0 || data.agents_used?.length > 0) && (
               <div className="msg-tools-inline">
-                {data.evidence_priority && (
-                  <span className="tool-chip tool-chip-supervisor">
-                    {PRIORITY_LABELS[data.evidence_priority] || data.evidence_priority}
-                  </span>
-                )}
                 {data.route_mode === 'collab' && (
                   <span className="tool-chip tool-chip-collab">多 Agent 协作</span>
                 )}
@@ -403,20 +389,14 @@ function AnswerDetails({ data }) {
   const hasSources = data.sources?.length > 0
   const hasAttachments = data.attachments?.length > 0
   const hasTools = data.tools_used?.length > 0 || data.agents_used?.length > 0
-  const hasPriority = !!data.evidence_priority
   const agentLabels = data.agents_used || data.tools_used || []
 
-  if (!hasSources && !hasAttachments && !hasTools && !hasPriority) return null
+  if (!hasSources && !hasAttachments && !hasTools) return null
 
   return (
     <div className="answer-details">
-      {(hasTools || hasPriority) && (
+      {hasTools && (
         <div className="detail-tools">
-          {data.evidence_priority && (
-            <span className="tool-chip tool-chip-supervisor">
-              ⚖ {PRIORITY_LABELS[data.evidence_priority] || data.evidence_priority}
-            </span>
-          )}
           {hasTools && data.route_mode === 'collab' && (
             <span className="tool-chip tool-chip-collab">🤝 多 Agent 协作</span>
           )}

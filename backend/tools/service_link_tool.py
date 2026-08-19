@@ -43,4 +43,10 @@ class ServiceLinkTool(BaseTool):
                         }
                     )
 
-        return {"tool": self.name, "items": items[:top_k], "total": len(items)}
+        ranked = self._rank_items(
+            question,
+            items,
+            title_fields=("title",),
+            text_fields=("department", "category", "subcategory"),
+        )
+        return {"tool": self.name, "items": ranked[:top_k], "total": len(ranked)}

@@ -10,6 +10,20 @@
 from __future__ import annotations
 
 import argparse
+from typing import Any
+
+from backend.config import DATA_DIR
+from crawler.classification import build_functional_index
+from crawler.common import DATA_METADATA_DIR
+
+DATA_INDEX_DIR = DATA_DIR / "indexes"
+
+
+def refresh_functional_index() -> dict[str, Any]:
+    """基于本次采集落盘的 metadata 重建功能索引。"""
+    result = build_functional_index(DATA_METADATA_DIR, DATA_INDEX_DIR)
+    print(f"[run_all] 功能索引已更新: {result['total']} 条 metadata")
+    return result
 
 
 def run_all(skip_job: bool = False) -> None:
@@ -54,6 +68,12 @@ def run_all(skip_job: bool = False) -> None:
         run_extra()
     except Exception as error:
         print(f"[run_all] 新增模块阶段失败: {error}")
+
+    print("\n[7/7] 刷新功能索引")
+    try:
+        refresh_functional_index()
+    except Exception as error:
+        print(f"[run_all] 功能索引刷新失败: {error}")
 
     print("\n" + "=" * 60)
     print("采集完成，可执行 python -m crawler.build_kb 构建知识库")

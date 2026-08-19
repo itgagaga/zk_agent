@@ -8,6 +8,7 @@ from crawler.chunking import (
     recursive_split,
     split_document,
     split_into_sections,
+    records_to_store_payload,
 )
 
 
@@ -86,6 +87,13 @@ class ChunkingTests(unittest.TestCase):
     def test_normalize_strips_front_matter(self):
         raw = "---\ntitle: x\n---\n\n正文内容"
         self.assertEqual(normalize_text(raw), "正文内容")
+
+    def test_store_payload_has_stable_document_and_chunk_ids(self):
+        records = split_document("一、联系方式\n电话：020-39332025", short_doc_max=800)
+        ids, _, metadatas = records_to_store_payload(records, "jwc_contact", {"title": "联系方式"})
+        self.assertEqual(ids[0], "jwc_contact_0")
+        self.assertEqual(metadatas[0]["doc_id"], "jwc_contact")
+        self.assertEqual(metadatas[0]["chunk_id"], "jwc_contact_0")
 
 
 if __name__ == "__main__":

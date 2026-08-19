@@ -57,15 +57,20 @@ class AnswerGenerator:
         tool_results = self._get_tool_results(evidence)
 
         def _classify(hit: dict[str, Any], from_doc_library: bool = False) -> None:
+            meta = hit.get("metadata", {}) or {}
             entry = {
                 "title": hit.get("title", ""),
                 "department": hit.get("department"),
                 "url": hit.get("url", ""),
                 "publish_date": hit.get("publish_date"),
                 "snippet": hit.get("snippet", ""),
+                "evidence_id": hit.get("evidence_id") or hit.get("chunk_id"),
+                "retriever": hit.get("retriever"),
+                "score": hit.get("score"),
+                "chunk_id": hit.get("chunk_id"),
+                "doc_id": hit.get("doc_id") or meta.get("doc_id"),
             }
-            meta = hit.get("metadata", {}) or {}
-            if from_doc_library or meta.get("doc_id"):
+            if from_doc_library or meta.get("user_id") is not None:
                 user_sources.append(entry)
             else:
                 sources.append(entry)
@@ -102,6 +107,9 @@ class AnswerGenerator:
                             or item.get("service_scope")
                             or item.get("description", "")
                         ),
+                        "evidence_id": item.get("evidence_id"),
+                        "retriever": tool_name,
+                        "score": item.get("match_score") or item.get("score"),
                     }
                 )
 
@@ -145,6 +153,8 @@ class AnswerGenerator:
         llm_query_opt = evidence.get("llm_query_optimization")
         if llm_query_opt:
             result["llm_query_optimization"] = llm_query_opt
+        if evidence.get("retrieval_summary"):
+            result["retrieval_summary"] = evidence["retrieval_summary"]
         return result
 
     async def generate_stream(self, question: str, evidence: dict[str, Any], history: list[dict[str, str]] | None = None) -> AsyncGenerator[str, None]:
@@ -163,6 +173,8 @@ class AnswerGenerator:
             "evidence_priority": evidence.get("evidence_priority", "rag"),
             "supervisor_reason": evidence.get("supervisor_reason"),
         }
+        if evidence.get("retrieval_summary"):
+            meta["retrieval_summary"] = evidence["retrieval_summary"]
         llm_query_opt = evidence.get("llm_query_optimization")
         if llm_query_opt:
             meta["llm_query_optimization"] = llm_query_opt

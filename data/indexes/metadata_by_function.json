@@ -1,11 +1,11 @@
 {
   "version": 1,
-  "total": 53,
+  "total": 163,
   "facets": {
     "category": {
       "财务与报销": 4,
       "后勤服务": 2,
-      "就业与招聘": 3,
+      "就业与招聘": 113,
       "教学与教务": 6,
       "网络与信息化": 2,
       "学生事务": 7,
@@ -17,8 +17,8 @@
     "subcategory": {
       "财务资料": 4,
       "后勤联系与办事": 2,
-      "校园招聘活动": 1,
-      "公开职位": 2,
+      "校园招聘活动": 11,
+      "公开职位": 102,
       "专业目录": 2,
       "培养方案": 2,
       "学生事务": 2,
@@ -34,7 +34,7 @@
     },
     "audience": {
       "全校师生": 14,
-      "毕业生/求职者": 3,
+      "毕业生/求职者": 113,
       "本科生": 3,
       "学生": 2,
       "在校学生": 7,
@@ -46,7 +46,8 @@
       "网页资料": 18,
       "办事指南": 5,
       "联系方式": 13,
-      "招聘活动": 1,
+      "招聘活动": 11,
+      "职位详情": 100,
       "职位列表": 2,
       "专业目录": 4,
       "资料下载": 1,
@@ -241,6 +242,2096 @@
         "后勤服务",
         "后勤联系与办事",
         "全校师生"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/event_5267.json",
+      "title": "广西扬翔集团股份有限公司宣讲会",
+      "source_url": "https://job.zhku.edu.cn/web/index/preach-detail?id=5267",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "校园招聘活动",
+      "audience": "毕业生/求职者",
+      "document_type": "招聘活动",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "校园招聘活动",
+        "毕业生/求职者",
+        "招聘活动"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/event_5274.json",
+      "title": "广东好太太科技集团股份有限公司宣讲会",
+      "source_url": "https://job.zhku.edu.cn/web/index/preach-detail?id=5274",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "校园招聘活动",
+      "audience": "毕业生/求职者",
+      "document_type": "招聘活动",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "校园招聘活动",
+        "毕业生/求职者",
+        "招聘活动"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/event_5276.json",
+      "title": "中国石油化工股份有限公司茂名分公司宣讲会",
+      "source_url": "https://job.zhku.edu.cn/web/index/preach-detail?id=5276",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "校园招聘活动",
+      "audience": "毕业生/求职者",
+      "document_type": "招聘活动",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "校园招聘活动",
+        "毕业生/求职者",
+        "招聘活动"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/event_5278.json",
+      "title": "佛冈建滔实业有限公司宣讲会",
+      "source_url": "https://job.zhku.edu.cn/web/index/preach-detail?id=5278",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "校园招聘活动",
+      "audience": "毕业生/求职者",
+      "document_type": "招聘活动",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "校园招聘活动",
+        "毕业生/求职者",
+        "招聘活动"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/event_5279.json",
+      "title": "广州市邦普电脑技术开发有限公司宣讲会",
+      "source_url": "https://job.zhku.edu.cn/web/index/preach-detail?id=5279",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "校园招聘活动",
+      "audience": "毕业生/求职者",
+      "document_type": "招聘活动",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "校园招聘活动",
+        "毕业生/求职者",
+        "招聘活动"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/event_5282.json",
+      "title": "华南区新东方管培专场空宣",
+      "source_url": "https://job.zhku.edu.cn/web/index/preach-detail?id=5282",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "校园招聘活动",
+      "audience": "毕业生/求职者",
+      "document_type": "招聘活动",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "校园招聘活动",
+        "毕业生/求职者",
+        "招聘活动"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/event_5283.json",
+      "title": "北京巨量引擎科技有限公司宣讲会",
+      "source_url": "https://job.zhku.edu.cn/web/index/preach-detail?id=5283",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "校园招聘活动",
+      "audience": "毕业生/求职者",
+      "document_type": "招聘活动",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "校园招聘活动",
+        "毕业生/求职者",
+        "招聘活动"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/event_5284.json",
+      "title": "中国电器科学研究院股份有限公司宣讲会",
+      "source_url": "https://job.zhku.edu.cn/web/index/preach-detail?id=5284",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "校园招聘活动",
+      "audience": "毕业生/求职者",
+      "document_type": "招聘活动",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "校园招聘活动",
+        "毕业生/求职者",
+        "招聘活动"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/event_5293.json",
+      "title": "广东优凯科技有限公司宣讲会",
+      "source_url": "https://job.zhku.edu.cn/web/index/preach-detail?id=5293",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "校园招聘活动",
+      "audience": "毕业生/求职者",
+      "document_type": "招聘活动",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "校园招聘活动",
+        "毕业生/求职者",
+        "招聘活动"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/event_5301.json",
+      "title": "前锦网络信息技术（上海）有限公司广州分公司宣讲会",
+      "source_url": "https://job.zhku.edu.cn/web/index/preach-detail?id=5301",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "校园招聘活动",
+      "audience": "毕业生/求职者",
+      "document_type": "招聘活动",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "校园招聘活动",
+        "毕业生/求职者",
+        "招聘活动"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_122489.json",
+      "title": "营销代表",
+      "source_url": "https://job.zhku.edu.cn/web/index/job-detail?id=122489",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_128858.json",
+      "title": "工艺工程师（英德）",
+      "source_url": "https://job.zhku.edu.cn/index.php/web/index/job-detail?id=128858",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_128859.json",
+      "title": "国内外销售员（...",
+      "source_url": "https://job.zhku.edu.cn/index.php/web/index/job-detail?id=128859",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_133257.json",
+      "title": "管培生薪酬5K起",
+      "source_url": "https://job.zhku.edu.cn/web/index/job-detail?id=133257",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_138604.json",
+      "title": "有机合成中级研究人员",
+      "source_url": "https://job.zhku.edu.cn/index.php/web/index/job-detail?id=138604",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_139256.json",
+      "title": "活动执行实习生",
+      "source_url": "https://job.zhku.edu.cn/web/index/job-detail?id=139256",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_139257.json",
+      "title": "新媒体运营实习生",
+      "source_url": "https://job.zhku.edu.cn/web/index/job-detail?id=139257",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_139259.json",
+      "title": "行政实习生",
+      "source_url": "https://job.zhku.edu.cn/web/index/job-detail?id=139259",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_139261.json",
+      "title": "财务实习生",
+      "source_url": "https://job.zhku.edu.cn/index.php/web/index/job-detail?id=139261",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_139362.json",
+      "title": "业务员",
+      "source_url": "https://job.zhku.edu.cn/index.php/web/index/job-detail?id=139362",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_141380.json",
+      "title": "无土玫瑰种植研发",
+      "source_url": "https://job.zhku.edu.cn/web/index/job-detail?id=141380",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_141665.json",
+      "title": "技服员",
+      "source_url": "https://job.zhku.edu.cn/web/index/job-detail?id=141665",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_142083.json",
+      "title": "业务员（实习生）",
+      "source_url": "https://job.zhku.edu.cn/index.php/web/index/job-detail?id=142083",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_142212.json",
+      "title": "管培生（质量管理）",
+      "source_url": "https://job.zhku.edu.cn/index.php/web/index/job-detail?id=142212",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_142916.json",
+      "title": "平面设计实习生",
+      "source_url": "https://job.zhku.edu.cn/index.php/web/index/job-detail?id=142916",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_142917.json",
+      "title": "招聘顾问实习生",
+      "source_url": "https://job.zhku.edu.cn/index.php/web/index/job-detail?id=142917",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_142918.json",
+      "title": "物流运营实习生",
+      "source_url": "https://job.zhku.edu.cn/index.php/web/index/job-detail?id=142918",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_143136.json",
+      "title": "优才管培生",
+      "source_url": "https://job.zhku.edu.cn/index.php/web/index/job-detail?id=143136",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_143345.json",
+      "title": "总经理助理",
+      "source_url": "https://job.zhku.edu.cn/index.php/web/index/job-detail?id=143345",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_143379.json",
+      "title": "销售工程师",
+      "source_url": "https://job.zhku.edu.cn/index.php/web/index/job-detail?id=143379",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_143380.json",
+      "title": "研发实习岗",
+      "source_url": "https://job.zhku.edu.cn/index.php/web/index/job-detail?id=143380",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_143381.json",
+      "title": "配方工程师",
+      "source_url": "https://job.zhku.edu.cn/index.php/web/index/job-detail?id=143381",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_143382.json",
+      "title": "大客户经理（外...",
+      "source_url": "https://job.zhku.edu.cn/index.php/web/index/job-detail?id=143382",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_143420.json",
+      "title": "配方师储备干部",
+      "source_url": "https://job.zhku.edu.cn/index.php/web/index/job-detail?id=143420",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_143421.json",
+      "title": "品控储备干部",
+      "source_url": "https://job.zhku.edu.cn/index.php/web/index/job-detail?id=143421",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_143596.json",
+      "title": "实习生",
+      "source_url": "https://job.zhku.edu.cn/index.php/web/index/job-detail?id=143596",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_143597.json",
+      "title": "研发工程师",
+      "source_url": "https://job.zhku.edu.cn/index.php/web/index/job-detail?id=143597",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_143599.json",
+      "title": "实习生",
+      "source_url": "https://job.zhku.edu.cn/index.php/web/index/job-detail?id=143599",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_143601.json",
+      "title": "软件工程师",
+      "source_url": "https://job.zhku.edu.cn/index.php/web/index/job-detail?id=143601",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_143602.json",
+      "title": "业务精英培养岗",
+      "source_url": "https://job.zhku.edu.cn/index.php/web/index/job-detail?id=143602",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_143603.json",
+      "title": "运营管培生",
+      "source_url": "https://job.zhku.edu.cn/index.php/web/index/job-detail?id=143603",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_143604.json",
+      "title": "销售管培生",
+      "source_url": "https://job.zhku.edu.cn/index.php/web/index/job-detail?id=143604",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_143605.json",
+      "title": "新媒体内容策划",
+      "source_url": "https://job.zhku.edu.cn/index.php/web/index/job-detail?id=143605",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_143606.json",
+      "title": "采购专员",
+      "source_url": "https://job.zhku.edu.cn/index.php/web/index/job-detail?id=143606",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_143607.json",
+      "title": "pie工程师",
+      "source_url": "https://job.zhku.edu.cn/index.php/web/index/job-detail?id=143607",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_143608.json",
+      "title": "业务员",
+      "source_url": "https://job.zhku.edu.cn/index.php/web/index/job-detail?id=143608",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_143609.json",
+      "title": "分析检验员",
+      "source_url": "https://job.zhku.edu.cn/index.php/web/index/job-detail?id=143609",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_143610.json",
+      "title": "分析检验员",
+      "source_url": "https://job.zhku.edu.cn/index.php/web/index/job-detail?id=143610",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_143611.json",
+      "title": "招标代理助理",
+      "source_url": "https://job.zhku.edu.cn/index.php/web/index/job-detail?id=143611",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_143612.json",
+      "title": "财务管理专员",
+      "source_url": "https://job.zhku.edu.cn/index.php/web/index/job-detail?id=143612",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_143615.json",
+      "title": "软件开发工程师...",
+      "source_url": "https://job.zhku.edu.cn/index.php/web/index/job-detail?id=143615",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_143616.json",
+      "title": "资产管理师",
+      "source_url": "https://job.zhku.edu.cn/index.php/web/index/job-detail?id=143616",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_143617.json",
+      "title": "前端开发工程师",
+      "source_url": "https://job.zhku.edu.cn/index.php/web/index/job-detail?id=143617",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_143618.json",
+      "title": "储备项目经理",
+      "source_url": "https://job.zhku.edu.cn/index.php/web/index/job-detail?id=143618",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_143619.json",
+      "title": "市场策划员",
+      "source_url": "https://job.zhku.edu.cn/index.php/web/index/job-detail?id=143619",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_143620.json",
+      "title": "机电工程师",
+      "source_url": "https://job.zhku.edu.cn/index.php/web/index/job-detail?id=143620",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_143624.json",
+      "title": "工艺管培生",
+      "source_url": "https://job.zhku.edu.cn/index.php/web/index/job-detail?id=143624",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_143625.json",
+      "title": "品质管培生",
+      "source_url": "https://job.zhku.edu.cn/index.php/web/index/job-detail?id=143625",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_143626.json",
+      "title": "项目管理管培生",
+      "source_url": "https://job.zhku.edu.cn/index.php/web/index/job-detail?id=143626",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_143627.json",
+      "title": "研发管培生",
+      "source_url": "https://job.zhku.edu.cn/index.php/web/index/job-detail?id=143627",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_143628.json",
+      "title": "销售管培生",
+      "source_url": "https://job.zhku.edu.cn/index.php/web/index/job-detail?id=143628",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_143629.json",
+      "title": "供应链采购专员",
+      "source_url": "https://job.zhku.edu.cn/index.php/web/index/job-detail?id=143629",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_143630.json",
+      "title": "综合行政专员",
+      "source_url": "https://job.zhku.edu.cn/index.php/web/index/job-detail?id=143630",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_143631.json",
+      "title": "海内外业务协同助理",
+      "source_url": "https://job.zhku.edu.cn/index.php/web/index/job-detail?id=143631",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_143632.json",
+      "title": "市场专员",
+      "source_url": "https://job.zhku.edu.cn/index.php/web/index/job-detail?id=143632",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_143642.json",
+      "title": "资料员",
+      "source_url": "https://job.zhku.edu.cn/index.php/web/index/job-detail?id=143642",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_143643.json",
+      "title": "品控员",
+      "source_url": "https://job.zhku.edu.cn/index.php/web/index/job-detail?id=143643",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_143644.json",
+      "title": "材料物检",
+      "source_url": "https://job.zhku.edu.cn/index.php/web/index/job-detail?id=143644",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_143645.json",
+      "title": "商业管培生",
+      "source_url": "https://job.zhku.edu.cn/index.php/web/index/job-detail?id=143645",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_143648.json",
+      "title": "见习农艺师",
+      "source_url": "https://job.zhku.edu.cn/index.php/web/index/job-detail?id=143648",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_143649.json",
+      "title": "推广员",
+      "source_url": "https://job.zhku.edu.cn/index.php/web/index/job-detail?id=143649",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_143650.json",
+      "title": "机械设备管理储干",
+      "source_url": "https://job.zhku.edu.cn/index.php/web/index/job-detail?id=143650",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_143651.json",
+      "title": "给排水 储干",
+      "source_url": "https://job.zhku.edu.cn/index.php/web/index/job-detail?id=143651",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_143652.json",
+      "title": "管培生（生产管理）",
+      "source_url": "https://job.zhku.edu.cn/index.php/web/index/job-detail?id=143652",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_143653.json",
+      "title": "市场营销储干",
+      "source_url": "https://job.zhku.edu.cn/index.php/web/index/job-detail?id=143653",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_143654.json",
+      "title": "设备设施工程师",
+      "source_url": "https://job.zhku.edu.cn/index.php/web/index/job-detail?id=143654",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_143655.json",
+      "title": "AI...",
+      "source_url": "https://job.zhku.edu.cn/index.php/web/index/job-detail?id=143655",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_143657.json",
+      "title": "国内市场客户经...",
+      "source_url": "https://job.zhku.edu.cn/index.php/web/index/job-detail?id=143657",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_143658.json",
+      "title": "培训生-供应链方向",
+      "source_url": "https://job.zhku.edu.cn/index.php/web/index/job-detail?id=143658",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_143659.json",
+      "title": "销售管培生",
+      "source_url": "https://job.zhku.edu.cn/index.php/web/index/job-detail?id=143659",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_143660.json",
+      "title": "2026年“供...",
+      "source_url": "https://job.zhku.edu.cn/index.php/web/index/job-detail?id=143660",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_143661.json",
+      "title": "大客户经理（畜...",
+      "source_url": "https://job.zhku.edu.cn/index.php/web/index/job-detail?id=143661",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_143662.json",
+      "title": "大客户经理（水...",
+      "source_url": "https://job.zhku.edu.cn/index.php/web/index/job-detail?id=143662",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_143663.json",
+      "title": "外贸业务员",
+      "source_url": "https://job.zhku.edu.cn/index.php/web/index/job-detail?id=143663",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_143664.json",
+      "title": "外贸业务员",
+      "source_url": "https://job.zhku.edu.cn/index.php/web/index/job-detail?id=143664",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_143665.json",
+      "title": "外贸业务员",
+      "source_url": "https://job.zhku.edu.cn/index.php/web/index/job-detail?id=143665",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_143666.json",
+      "title": "英语老师",
+      "source_url": "https://job.zhku.edu.cn/index.php/web/index/job-detail?id=143666",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_143667.json",
+      "title": "室内装修设计员",
+      "source_url": "https://job.zhku.edu.cn/index.php/web/index/job-detail?id=143667",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_143668.json",
+      "title": "内容编辑实习生",
+      "source_url": "https://job.zhku.edu.cn/index.php/web/index/job-detail?id=143668",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_143669.json",
+      "title": "海外销售管培生",
+      "source_url": "https://job.zhku.edu.cn/index.php/web/index/job-detail?id=143669",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_143670.json",
+      "title": "跨境用户运营专员",
+      "source_url": "https://job.zhku.edu.cn/index.php/web/index/job-detail?id=143670",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_143671.json",
+      "title": "新鹰实习生",
+      "source_url": "https://job.zhku.edu.cn/index.php/web/index/job-detail?id=143671",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_143673.json",
+      "title": "基恩士2027...",
+      "source_url": "https://job.zhku.edu.cn/index.php/web/index/job-detail?id=143673",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_143674.json",
+      "title": "销售管培生",
+      "source_url": "https://job.zhku.edu.cn/web/index/job-detail?id=143674",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_143676.json",
+      "title": "食材供应事业部...",
+      "source_url": "https://job.zhku.edu.cn/web/index/job-detail?id=143676",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_143677.json",
+      "title": "林业技术员（实习生）",
+      "source_url": "https://job.zhku.edu.cn/web/index/job-detail?id=143677",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_143679.json",
+      "title": "直驱卧式五轴机...",
+      "source_url": "https://job.zhku.edu.cn/web/index/job-detail?id=143679",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_143680.json",
+      "title": "自动化研发工程师",
+      "source_url": "https://job.zhku.edu.cn/web/index/job-detail?id=143680",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_143682.json",
+      "title": "机器视觉（人工...",
+      "source_url": "https://job.zhku.edu.cn/web/index/job-detail?id=143682",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_143683.json",
+      "title": "机器听觉（人工...",
+      "source_url": "https://job.zhku.edu.cn/web/index/job-detail?id=143683",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_143684.json",
+      "title": "校园兼职销售",
+      "source_url": "https://job.zhku.edu.cn/web/index/job-detail?id=143684",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_143685.json",
+      "title": "结构技术员",
+      "source_url": "https://job.zhku.edu.cn/web/index/job-detail?id=143685",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_143686.json",
+      "title": "机修工",
+      "source_url": "https://job.zhku.edu.cn/web/index/job-detail?id=143686",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_143687.json",
+      "title": "实验室化验员",
+      "source_url": "https://job.zhku.edu.cn/web/index/job-detail?id=143687",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_143688.json",
+      "title": "区域主任管培",
+      "source_url": "https://job.zhku.edu.cn/web/index/job-detail?id=143688",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_52008.json",
+      "title": "监理员",
+      "source_url": "https://job.zhku.edu.cn/index.php/web/index/job-detail?id=52008",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_58957.json",
+      "title": "销售经理",
+      "source_url": "https://job.zhku.edu.cn/index.php/web/index/job-detail?id=58957",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_58964.json",
+      "title": "技术推广人员",
+      "source_url": "https://job.zhku.edu.cn/index.php/web/index/job-detail?id=58964",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_86176.json",
+      "title": "有机合成初级研究人员",
+      "source_url": "https://job.zhku.edu.cn/index.php/web/index/job-detail?id=86176",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
+      ],
+      "resources": []
+    },
+    {
+      "metadata_path": "metadata/job/job_90145.json",
+      "title": "营销储干...",
+      "source_url": "https://job.zhku.edu.cn/web/index/job-detail?id=90145",
+      "department": "",
+      "source_key": "job",
+      "category": "就业与招聘",
+      "subcategory": "公开职位",
+      "audience": "毕业生/求职者",
+      "document_type": "职位详情",
+      "tags": [
+        "job",
+        "就业与招聘",
+        "公开职位",
+        "毕业生/求职者",
+        "职位详情"
       ],
       "resources": []
     },

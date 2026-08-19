@@ -128,6 +128,13 @@ class Settings(BaseSettings):
     chunk_min_size: int = Field(default=80, alias="CHUNK_MIN_SIZE")
     parent_max_size: int = Field(default=1500, alias="PARENT_MAX_SIZE")
     short_doc_max_size: int = Field(default=800, alias="SHORT_DOC_MAX_SIZE")
+    campus_chunk_size: int = Field(default=600, alias="CAMPUS_CHUNK_SIZE")
+    campus_chunk_overlap: int = Field(default=80, alias="CAMPUS_CHUNK_OVERLAP")
+    campus_parent_max_size: int = Field(default=1500, alias="CAMPUS_PARENT_MAX_SIZE")
+    document_chunk_size: int = Field(default=600, alias="DOCUMENT_CHUNK_SIZE")
+    document_chunk_overlap: int = Field(default=80, alias="DOCUMENT_CHUNK_OVERLAP")
+    document_parent_max_size: int = Field(default=1500, alias="DOCUMENT_PARENT_MAX_SIZE")
+    kb_schema_version: str = Field(default="rag-evidence-v2", alias="KB_SCHEMA_VERSION")
     rag_top_k: int = Field(default=5, alias="RAG_TOP_K")
     rag_score_threshold: float = Field(default=0.5, alias="RAG_SCORE_THRESHOLD")
     # 用户上传文档检索：阈值更低、召回更多，培养方案类 PDF 常分散在多个片段

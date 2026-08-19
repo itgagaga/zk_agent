@@ -65,6 +65,9 @@ class ChatResponse(BaseModel):
     llm_query_optimization: dict | None = Field(
         default=None, description="LLM 关键词优化结果（学术搜索专用）"
     )
+    retrieval_summary: dict[str, Any] | None = Field(
+        default=None, description="检索器覆盖与来源数量摘要，不包含文档正文"
+    )
 
 
 class SessionCreate(BaseModel):
@@ -144,14 +147,22 @@ async def chat_stream(
     user_id = current_user.id if current_user else None
 
     async def event_generator():
-        async for chunk in controller.handle_stream(
-            req.question,
-            session_id=req.session_id,
-            user_role=role,
-            history=req.history,
-            user_id=user_id,
-        ):
-            yield chunk
+        try:
+            async for chunk in controller.handle_stream(
+                req.question,
+                session_id=req.session_id,
+                user_role=role,
+                history=req.history,
+                user_id=user_id,
+            ):
+                yield chunk
+        except Exception as exc:
+            # 流式响应一旦在 Agent/LLM 阶段异常，必须发送终止事件，
+            # 否则浏览器只能一直保持 loading 状态。
+            print(f"[ChatStream] 生成失败: {exc}")
+            # 复用前端已有 token 处理逻辑，确保错误也能显示在消息气泡中。
+            yield f'data: {json.dumps({"type": "token", "content": "回答生成失败，请稍后重试"}, ensure_ascii=False)}\n\n'
+            yield f'data: {json.dumps({"type": "done"}, ensure_ascii=False)}\n\n'
 
     return StreamingResponse(
         event_generator(),

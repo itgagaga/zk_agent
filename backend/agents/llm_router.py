@@ -1,4 +1,7 @@
-"""LLM 意图路由模块。
+"""兼容性 LLM 意图路由模块。
+
+新请求路径使用声明式 ``QueryPlanner``，本模块仅供旧路由调用方兼容使用，
+不参与 ``AgentController`` 的运行时编排。
 
 使用 LangChain Structured Output，让大模型根据用户问题选择
 RAG 路径或结构化工具，替代纯关键词匹配的局限。

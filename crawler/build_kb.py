@@ -12,8 +12,8 @@ from typing import Any, Iterable
 from backend.config import settings
 from backend.rag.vector_store import get_vector_store
 from crawler.common import DATA_CLEANED_DIR, DATA_METADATA_DIR
-from crawler.chunking import records_to_store_payload, split_document
-from crawler.classification import classify_metadata
+from crawler.chunking import CHUNKING_VERSION, records_to_store_payload, split_document
+from crawler.classification import build_functional_index, classify_metadata
 
 
 def build_campus_kb() -> int:
@@ -43,14 +43,15 @@ def build_campus_kb() -> int:
             meta = _load_metadata(sub_dir.name, text_file.stem)
             meta = classify_metadata(meta, sub_dir.name, text_file.name)
             doc_title = meta.get("title") or text_file.stem
+            profile = chunk_profile("campus")
             records = split_document(
                 text,
                 doc_title=doc_title,
                 department=department,
                 short_doc_max=settings.short_doc_max_size,
-                parent_max_size=settings.parent_max_size,
-                child_target_size=settings.chunk_size,
-                chunk_overlap=settings.chunk_overlap,
+                parent_max_size=profile["parent_max_size"],
+                child_target_size=profile["chunk_size"],
+                chunk_overlap=profile["chunk_overlap"],
                 min_chunk_size=settings.chunk_min_size,
             )
             if not records:
@@ -61,6 +62,9 @@ def build_campus_kb() -> int:
                 id_prefix,
                 {
                     "title": doc_title,
+                    "doc_id": id_prefix,
+                    "kb_schema_version": settings.kb_schema_version,
+                    "chunking_version": CHUNKING_VERSION,
                     "department": department,
                     "source_url": meta.get("source_url") or "",
                     "publish_date": meta.get("publish_date") or "",
@@ -100,14 +104,15 @@ def build_document_kb() -> int:
         if not text.strip():
             continue
         doc_title = txt_file.stem
+        profile = chunk_profile("document")
         records = split_document(
             text,
             doc_title=doc_title,
             department="智能文档",
             short_doc_max=settings.short_doc_max_size,
-            parent_max_size=settings.parent_max_size,
-            child_target_size=settings.chunk_size,
-            chunk_overlap=settings.chunk_overlap,
+            parent_max_size=profile["parent_max_size"],
+            child_target_size=profile["chunk_size"],
+            chunk_overlap=profile["chunk_overlap"],
             min_chunk_size=settings.chunk_min_size,
         )
         if not records:
@@ -121,6 +126,8 @@ def build_document_kb() -> int:
                 "department": "智能文档",
                 "source_url": "",
                 "doc_id": txt_file.stem,
+                "kb_schema_version": settings.kb_schema_version,
+                "chunking_version": CHUNKING_VERSION,
             },
         )
         store.add_documents(
@@ -146,6 +153,23 @@ def _department_from_subdir(subdir: str) -> str:
         "cwc": "财务部",
     }
     return mapping.get(subdir, subdir)
+
+
+def chunk_profile(kind: str) -> dict[str, int]:
+    """返回不同知识库类型的可审计切分参数。"""
+    if kind == "campus":
+        return {
+            "chunk_size": settings.campus_chunk_size,
+            "chunk_overlap": settings.campus_chunk_overlap,
+            "parent_max_size": settings.campus_parent_max_size,
+        }
+    if kind == "document":
+        return {
+            "chunk_size": settings.document_chunk_size,
+            "chunk_overlap": settings.document_chunk_overlap,
+            "parent_max_size": settings.document_parent_max_size,
+        }
+    raise ValueError(f"unknown chunk profile: {kind}")
 
 
 def _iter_text_files(directory: Path) -> Iterable[Path]:
@@ -199,6 +223,45 @@ def _lookup_publish_date(subdir: str, stem: str) -> str:
     return _load_metadata(subdir, stem).get("publish_date", "")
 
 
+def refresh_metadata_index() -> dict[str, Any]:
+    """在建库前刷新分类 metadata 与功能索引。"""
+    return build_functional_index(DATA_METADATA_DIR, DATA_METADATA_DIR.parent / "indexes")
+
+
+def validate_job_metadata_alignment(
+    cleaned_dir: Path, metadata_dir: Path
+) -> list[str]:
+    """返回就业正文缺少同名 metadata 的文件名。"""
+    if not cleaned_dir.exists():
+        return []
+    missing: list[str] = []
+    for pattern in ("job_*.txt", "event_*.txt"):
+        for text_file in sorted(cleaned_dir.glob(pattern)):
+            expected = metadata_dir / f"{text_file.stem}.json"
+            if not expected.exists():
+                missing.append(expected.name)
+    return sorted(missing)
+
+
+def validate_kb_inputs(
+    cleaned_dir: Path = DATA_CLEANED_DIR,
+    metadata_dir: Path = DATA_METADATA_DIR,
+) -> list[str]:
+    """重建前校验正文与 metadata 的同名关系，避免生成不可追溯 chunks。"""
+    if not cleaned_dir.exists():
+        return []
+    missing: list[str] = []
+    for sub_dir in sorted(path for path in cleaned_dir.iterdir() if path.is_dir() and path.name != "documents"):
+        for text_file in _iter_text_files(sub_dir):
+            candidates = (
+                metadata_dir / sub_dir.name / f"{text_file.stem}.json",
+                metadata_dir / f"{sub_dir.name}_{text_file.stem}.json",
+            )
+            if not any(candidate.exists() for candidate in candidates):
+                missing.append((Path(sub_dir.name) / f"{text_file.stem}.json").as_posix())
+    return missing
+
+
 def reset_collections() -> None:
     """重建前清空旧集合，避免残留过期 chunks。"""
     store = get_vector_store()
@@ -216,6 +279,19 @@ def reset_collections() -> None:
 
 def main() -> None:
     """主入口：构建知识库。"""
+    print("[build_kb] 刷新 metadata 功能索引 ...")
+    refresh_metadata_index()
+    missing = validate_job_metadata_alignment(
+        DATA_CLEANED_DIR / "job", DATA_METADATA_DIR / "job"
+    )
+    if missing:
+        preview = ", ".join(missing[:10])
+        raise RuntimeError(f"就业正文缺少同名 metadata: {preview}")
+    all_missing = validate_kb_inputs()
+    if all_missing:
+        preview = ", ".join(all_missing[:10])
+        raise RuntimeError(f"知识库正文缺少 metadata: {preview}")
+
     print("[build_kb] 开始构建向量知识库 ...")
     print("[build_kb] 清空旧集合 ...")
     reset_collections()

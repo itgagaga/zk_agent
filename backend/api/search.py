@@ -10,6 +10,8 @@ from pydantic import BaseModel, Field
 from backend.auth.deps import get_current_user_optional
 from backend.database.models import User
 from backend.rag.retriever import RAGRetriever
+from backend.rag.contracts import Evidence, EvidenceBundle
+from backend.rag.evidence_gate import EvidenceGate
 
 router = APIRouter()
 
@@ -25,6 +27,7 @@ class SearchHit(BaseModel):
     publish_date: str | None = None
     snippet: str
     score: float | None = None
+    chunk_id: str | None = None
 
 
 class SearchResponse(BaseModel):
@@ -33,6 +36,7 @@ class SearchResponse(BaseModel):
     query: str
     hits: list[SearchHit] = Field(default_factory=list)
     total: int = 0
+    retrieval_summary: dict | None = None
 
 
 @router.get("/rag", response_model=SearchResponse)
@@ -42,6 +46,15 @@ async def rag_search(
 ) -> SearchResponse:
     """官网 RAG 检索。"""
     hits = await _retriever.search(q, top_k=top_k)
+    bundle = EvidenceBundle(
+        query=q,
+        evidences=[Evidence.from_rag_hit(hit) for hit in hits],
+        retrievers=["campus_rag"],
+    )
+    gate = EvidenceGate()
+    bundle.evidences = gate.rank(q, bundle.evidences)
+    assessment = gate.assess(bundle)
+    ordered_hits = [evidence.raw for evidence in bundle.evidences]
     return SearchResponse(
         query=q,
         hits=[
@@ -52,10 +65,15 @@ async def rag_search(
                 publish_date=h.get("publish_date"),
                 snippet=h.get("snippet", ""),
                 score=h.get("score"),
+                chunk_id=h.get("chunk_id"),
             )
-            for h in hits
+            for h in ordered_hits
         ],
-        total=len(hits),
+        total=len(ordered_hits),
+        retrieval_summary={
+            "retrievers": ["campus_rag"],
+            "evidence_assessment": assessment.model_dump(),
+        },
     )
 
 
@@ -103,6 +121,7 @@ async def document_search(
                 publish_date=h.get("publish_date"),
                 snippet=h.get("snippet", ""),
                 score=h.get("score"),
+                chunk_id=h.get("chunk_id"),
             )
             for h in unique[:top_k]
         ],
