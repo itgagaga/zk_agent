@@ -102,8 +102,8 @@ def _format_tool_result(context_parts: list[str], tool_result: dict[str, Any]) -
     context_parts.append("")
 
 
-# 按 Supervisor 裁决的优先级，使用不同系统角色（结构性分流，非 Prompt 补丁）
-_PRIORITY_SYSTEM: dict[str, str] = {
+# 按证据模式选择系统角色；模式描述如何组织已融合证据，不负责裁决或过滤证据。
+_EVIDENCE_MODE_SYSTEM: dict[str, str] = {
     "api": """你是一个校园出行与天气信息 Agent，专门基于第三方实时 API 数据回答。
 
 你的职责：
@@ -169,12 +169,12 @@ def _build_context(
     sources: list[dict[str, Any]] | None,
     user_sources: list[dict[str, Any]] | None,
     tool_results: list[dict[str, Any]] | None,
-    evidence_priority: str,
+    evidence_mode: str,
 ) -> str:
-    """按优先级构建可用资料块（Supervisor 已过滤，此处只做格式化）。"""
+    """按证据模式格式化已融合资料，不执行来源优先级裁决。"""
     context_parts: list[str] = []
 
-    if evidence_priority in ("document", "affairs", "composite") and user_sources:
+    if evidence_mode in ("document", "affairs", "composite") and user_sources:
         context_parts.append("【知识库文档 · 文档 Agent】")
         for i, src in enumerate(user_sources, 1):
             context_parts.append(
@@ -182,8 +182,8 @@ def _build_context(
             )
         context_parts.append("")
 
-    if evidence_priority in ("rag", "document", "affairs", "composite") and sources:
-        label = "【官网资料 · 政策 Agent】" if evidence_priority in ("affairs", "composite") else "【检索到的官网资料】"
+    if evidence_mode in ("rag", "document", "affairs", "composite") and sources:
+        label = "【官网资料 · 政策 Agent】" if evidence_mode in ("affairs", "composite") else "【检索到的官网资料】"
         context_parts.append(label)
         for i, src in enumerate(sources, 1):
             context_parts.append(
@@ -193,12 +193,12 @@ def _build_context(
                 f"   片段：{src.get('snippet', '')}"
             )
 
-    if tool_results and evidence_priority in ("api", "tool", "affairs", "composite"):
-        if evidence_priority == "composite":
+    if tool_results and evidence_mode in ("api", "tool", "affairs", "composite"):
+        if evidence_mode == "composite":
             label = "\n【多 Agent 协作取证 · 按领域分区使用】"
-        elif evidence_priority == "api":
+        elif evidence_mode == "api":
             label = "\n【实时 API 取证】"
-        elif evidence_priority == "affairs":
+        elif evidence_mode == "affairs":
             label = "\n【多 Agent 协作取证】"
         else:
             label = "\n【结构化 Agent 取证】"
@@ -216,19 +216,26 @@ def build_qa_prompt(
     tool_results: list[dict[str, Any]] | None = None,
     history: list[dict[str, str]] | None = None,
     user_sources: list[dict[str, Any]] | None = None,
-    evidence_priority: str = "rag",
+    evidence_priority: str | None = None,
+    evidence_mode: str | None = None,
 ) -> str:
-    """构建问答 Prompt。按 Supervisor 裁决的 evidence_priority 选择系统角色与资料结构。"""
+    """构建问答 Prompt。
+
+    ``evidence_mode`` 是新编排路径使用的上下文格式模式；
+    ``evidence_priority`` 仅作为旧调用方的兼容参数。当两者同时存在时，
+    新模式优先，避免旧字段重新成为证据裁决入口。
+    """
     all_tool_results = tool_results or []
     if not all_tool_results and tool_result:
         all_tool_results = [tool_result]
 
-    system = _PRIORITY_SYSTEM.get(evidence_priority, _PRIORITY_SYSTEM["rag"])
+    mode = evidence_mode or evidence_priority or "rag"
+    system = _EVIDENCE_MODE_SYSTEM.get(mode, _EVIDENCE_MODE_SYSTEM["rag"])
     context = _build_context(
         sources=sources,
         user_sources=user_sources,
         tool_results=all_tool_results,
-        evidence_priority=evidence_priority,
+        evidence_mode=mode,
     )
 
     history_block = ""

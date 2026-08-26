@@ -51,4 +51,5 @@ def test_controller_uses_planner_pipeline_without_exclusive_supervisor_filter():
 
     assert result["sources"][0]["title"] == "缓考政策"
     assert result["router_source"] == "planner"
+    assert result["evidence_mode"] == "composite"
     assert result["retrieval_summary"]["coverage"] == 1.0

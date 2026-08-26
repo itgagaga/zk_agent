@@ -64,8 +64,11 @@ class AgentController:
             {
                 "question": question,
                 "route_mode": "planned",
+                "evidence_mode": "composite",
+                # Deprecated compatibility fields for older API consumers.
+                # The active pipeline never reads these fields for selection.
                 "evidence_priority": "composite",
-                "supervisor_reason": "兼容字段：证据由 RetrievalManager 并行检索后融合",
+                "supervisor_reason": "Deprecated: evidence is fused and gated by RetrievalManager",
                 "supervisor_agents": bundle.retrievers,
                 "retrieval_bundle": bundle,
             }
@@ -101,6 +104,8 @@ class AgentController:
 
         result["route_mode"] = "planned"
         result["router_source"] = "planner"
+        result["evidence_mode"] = evidence.get("evidence_mode", "composite")
+        # Deprecated compatibility fields; no longer used for evidence selection.
         result["evidence_priority"] = evidence.get("evidence_priority")
         result["supervisor_reason"] = evidence.get("supervisor_reason")
         if evidence.get("retrieval_summary"):

@@ -124,16 +124,18 @@ class AnswerGenerator:
         return "high"
 
     async def generate(self, question: str, evidence: dict[str, Any], history: list[dict[str, str]] | None = None) -> dict[str, Any]:
-        """根据 Supervisor 过滤后的证据生成回答。"""
+        """根据已融合、已门控的证据生成回答。"""
         sources, attachments, tools_used, tool_results, user_sources = self._prepare_evidence(evidence)
-        priority = evidence.get("evidence_priority", "rag")
+        mode = evidence.get("evidence_mode") or evidence.get("evidence_priority") or "rag"
+        legacy_priority = evidence.get("evidence_priority", mode)
         prompt = build_qa_prompt(
             question,
             sources=sources,
             tool_results=tool_results,
             history=history,
             user_sources=user_sources,
-            evidence_priority=priority,
+            evidence_mode=mode,
+            evidence_priority=legacy_priority,
         )
         answer_text = await self._call_llm(prompt)
         confidence = self._confidence(sources + user_sources)
@@ -147,7 +149,9 @@ class AnswerGenerator:
             "fallback": False,
             "session_id": None,
             "route_mode": evidence.get("route_mode", "fast"),
-            "evidence_priority": priority,
+            "evidence_mode": mode,
+            # Deprecated compatibility field; never used to select evidence.
+            "evidence_priority": legacy_priority,
             "supervisor_reason": evidence.get("supervisor_reason"),
         }
         llm_query_opt = evidence.get("llm_query_optimization")
@@ -170,6 +174,8 @@ class AnswerGenerator:
             "tools_used": tools_used,
             "fallback": False,
             "route_mode": evidence.get("route_mode", "fast"),
+            "evidence_mode": evidence.get("evidence_mode") or evidence.get("evidence_priority") or "rag",
+            # Deprecated compatibility field for older clients.
             "evidence_priority": evidence.get("evidence_priority", "rag"),
             "supervisor_reason": evidence.get("supervisor_reason"),
         }
@@ -186,7 +192,8 @@ class AnswerGenerator:
             tool_results=tool_results,
             history=history,
             user_sources=user_sources,
-            evidence_priority=evidence.get("evidence_priority", "rag"),
+            evidence_mode=evidence.get("evidence_mode") or evidence.get("evidence_priority") or "rag",
+            evidence_priority=evidence.get("evidence_priority"),
         )
         if self.llm is None:
             yield f'data: {json.dumps({"type": "token", "content": "(LLM 未初始化，请检查 DEEPSEEK_API_KEY 配置)"}, ensure_ascii=False)}\n\n'
