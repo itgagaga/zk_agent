@@ -143,11 +143,33 @@ class Settings(BaseSettings):
     rag_doc_full_fetch_max_chunks: int = Field(
         default=20, alias="RAG_DOC_FULL_FETCH_MAX_CHUNKS"
     )
+    rag_lexical_mode: Literal["legacy", "bm25"] = Field(
+        default="bm25", alias="RAG_LEXICAL_MODE"
+    )
+    rag_fusion_mode: Literal["legacy", "rrf"] = Field(
+        default="rrf", alias="RAG_FUSION_MODE"
+    )
+    rag_reranker_enabled: bool = Field(default=False, alias="RAG_RERANKER_ENABLED")
+    rag_reranker_model: str = Field(
+        default="BAAI/bge-reranker-base", alias="RAG_RERANKER_MODEL"
+    )
+    rag_reranker_top_n: int = Field(default=20, alias="RAG_RERANKER_TOP_N", ge=1)
+    rag_evidence_judge_enabled: bool = Field(
+        default=False, alias="RAG_EVIDENCE_JUDGE_ENABLED"
+    )
+    rag_evidence_judge_model: str = Field(
+        default="deepseek-chat", alias="RAG_EVIDENCE_JUDGE_MODEL"
+    )
 
     # Agent
-    agent_router_mode: Literal["rule", "llm", "hybrid"] = Field(
-        default="hybrid", alias="AGENT_ROUTER_MODE"
+    query_planner_mode: Literal["rule_fallback", "hybrid", "llm"] = Field(
+        default="hybrid", alias="QUERY_PLANNER_MODE"
     )
+    query_planner_model: str = Field(
+        default="deepseek-chat", alias="QUERY_PLANNER_MODEL"
+    )
+    rag_max_subquestions: int = Field(default=5, alias="RAG_MAX_SUBQUESTIONS", ge=1, le=5)
+    rag_max_retry: int = Field(default=1, alias="RAG_MAX_RETRY", ge=0, le=1)
     enable_fallback: bool = Field(default=True, alias="ENABLE_FALLBACK")
 
     # 服务

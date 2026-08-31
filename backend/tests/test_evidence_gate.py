@@ -21,7 +21,7 @@ def test_gate_accepts_undergraduate_charter_evidence_for_semantic_title_variant(
 
     assessment = EvidenceGate().assess(bundle)
 
-    assert assessment.status == "sufficient"
+    assert assessment.status == "supported"
     assert assessment.coverage >= 0.8
     assert "章程" in assessment.matched_concepts
 
@@ -39,5 +39,5 @@ def test_gate_rejects_generic_year_documents_that_do_not_cover_question():
 
     assessment = EvidenceGate().assess(bundle)
 
-    assert assessment.status in {"needs_more", "unsupported"}
+    assert assessment.status in {"partial", "unsupported"}
     assert "本科" in assessment.missing_concepts or "普通高考" in assessment.missing_concepts

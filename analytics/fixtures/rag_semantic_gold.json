@@ -1,0 +1,3353 @@
+[
+  {
+    "id": "weather-001",
+    "question": "今天要不要带伞",
+    "category": "direct",
+    "history": [],
+    "expected_retrievers": [
+      "weather_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {
+      "date": "today"
+    },
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "weather-002",
+    "question": "今天出门需要雨具吗",
+    "category": "direct",
+    "history": [],
+    "expected_retrievers": [
+      "weather_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {
+      "date": "today"
+    },
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "weather-003",
+    "question": "广州明早会下雨吗",
+    "category": "direct",
+    "history": [],
+    "expected_retrievers": [
+      "weather_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {
+      "date": "tomorrow"
+    },
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "weather-004",
+    "question": "现在气温是多少",
+    "category": "direct",
+    "history": [],
+    "expected_retrievers": [
+      "weather_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {
+      "date": "today"
+    },
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "weather-005",
+    "question": "明天适合外出吗",
+    "category": "direct",
+    "history": [],
+    "expected_retrievers": [
+      "weather_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {
+      "date": "tomorrow"
+    },
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "weather-006",
+    "question": "今天的天气怎么样",
+    "category": "direct",
+    "history": [],
+    "expected_retrievers": [
+      "weather_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {
+      "date": "today"
+    },
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "weather-007",
+    "question": "出门前帮我查一下天气",
+    "category": "direct",
+    "history": [],
+    "expected_retrievers": [
+      "weather_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {
+      "date": "today"
+    },
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "weather-008",
+    "question": "今天会不会下雨",
+    "category": "direct",
+    "history": [],
+    "expected_retrievers": [
+      "weather_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {
+      "date": "today"
+    },
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "weather-009",
+    "question": "广州今天冷不冷",
+    "category": "direct",
+    "history": [],
+    "expected_retrievers": [
+      "weather_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {
+      "date": "today"
+    },
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "weather-010",
+    "question": "明天早上要穿厚一点吗",
+    "category": "direct",
+    "history": [],
+    "expected_retrievers": [
+      "weather_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {
+      "date": "tomorrow"
+    },
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "weather-011",
+    "question": "有雷阵雨预警吗",
+    "category": "direct",
+    "history": [],
+    "expected_retrievers": [
+      "weather_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {
+      "date": "today"
+    },
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "weather-012",
+    "question": "今天风大不大",
+    "category": "direct",
+    "history": [],
+    "expected_retrievers": [
+      "weather_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {
+      "date": "today"
+    },
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "weather-013",
+    "question": "我想知道下午天气",
+    "category": "direct",
+    "history": [],
+    "expected_retrievers": [
+      "weather_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {
+      "date": "today"
+    },
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "weather-014",
+    "question": "周末广州天气如何",
+    "category": "direct",
+    "history": [],
+    "expected_retrievers": [
+      "weather_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {
+      "date": "today"
+    },
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "weather-015",
+    "question": "今天适合在校园里走走吗",
+    "category": "direct",
+    "history": [],
+    "expected_retrievers": [
+      "weather_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {
+      "date": "today"
+    },
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "weather-016",
+    "question": "能查一下今晚气温吗",
+    "category": "direct",
+    "history": [],
+    "expected_retrievers": [
+      "weather_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {
+      "date": "today"
+    },
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "weather-017",
+    "question": "明天降雨概率高吗",
+    "category": "direct",
+    "history": [],
+    "expected_retrievers": [
+      "weather_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {
+      "date": "tomorrow"
+    },
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "weather-018",
+    "question": "今天空气和天气情况怎样",
+    "category": "direct",
+    "history": [],
+    "expected_retrievers": [
+      "weather_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {
+      "date": "today"
+    },
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "weather-019",
+    "question": "出门需要准备雨具不",
+    "category": "direct",
+    "history": [],
+    "expected_retrievers": [
+      "weather_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {
+      "date": "today"
+    },
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "weather-020",
+    "question": "帮我看看广州天气",
+    "category": "direct",
+    "history": [],
+    "expected_retrievers": [
+      "weather_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {
+      "date": "today"
+    },
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "map_route-021",
+    "question": "广州南站坐地铁去白云校区",
+    "category": "direct",
+    "history": [],
+    "expected_retrievers": [
+      "map_route"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "map_route-022",
+    "question": "从海珠校区到白云校区怎么走",
+    "category": "direct",
+    "history": [],
+    "expected_retrievers": [
+      "map_route"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "map_route-023",
+    "question": "去学校本部有哪些交通方式",
+    "category": "direct",
+    "history": [],
+    "expected_retrievers": [
+      "map_route"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "map_route-024",
+    "question": "白云校区离广州南站多远",
+    "category": "direct",
+    "history": [],
+    "expected_retrievers": [
+      "map_route"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "map_route-025",
+    "question": "导航到海珠校区",
+    "category": "direct",
+    "history": [],
+    "expected_retrievers": [
+      "map_route"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "map_route-026",
+    "question": "从广州东站前往仲恺白云校区",
+    "category": "direct",
+    "history": [],
+    "expected_retrievers": [
+      "map_route"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "map_route-027",
+    "question": "校区之间怎么换乘",
+    "category": "direct",
+    "history": [],
+    "expected_retrievers": [
+      "map_route"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "map_route-028",
+    "question": "到白云校区乘什么车方便",
+    "category": "direct",
+    "history": [],
+    "expected_retrievers": [
+      "map_route"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "map_route-029",
+    "question": "从火车站去学校怎么走",
+    "category": "direct",
+    "history": [],
+    "expected_retrievers": [
+      "map_route"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "map_route-030",
+    "question": "海珠校区到白云校区需要多久",
+    "category": "direct",
+    "history": [],
+    "expected_retrievers": [
+      "map_route"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "map_route-031",
+    "question": "我想查去白云校区的路线",
+    "category": "direct",
+    "history": [],
+    "expected_retrievers": [
+      "map_route"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "map_route-032",
+    "question": "学校两个校区怎么到达",
+    "category": "direct",
+    "history": [],
+    "expected_retrievers": [
+      "map_route"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "map_route-033",
+    "question": "从广州南站到海珠校区怎么走",
+    "category": "direct",
+    "history": [],
+    "expected_retrievers": [
+      "map_route"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "map_route-034",
+    "question": "到仲恺校园的公交路线",
+    "category": "direct",
+    "history": [],
+    "expected_retrievers": [
+      "map_route"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "map_route-035",
+    "question": "去学校打车大概多远",
+    "category": "direct",
+    "history": [],
+    "expected_retrievers": [
+      "map_route"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "map_route-036",
+    "question": "白云校区的导航地址在哪里",
+    "category": "direct",
+    "history": [],
+    "expected_retrievers": [
+      "map_route"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "map_route-037",
+    "question": "访客从地铁站如何到校",
+    "category": "direct",
+    "history": [],
+    "expected_retrievers": [
+      "map_route"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "map_route-038",
+    "question": "从白云去海珠怎么走",
+    "category": "direct",
+    "history": [],
+    "expected_retrievers": [
+      "map_route"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "map_route-039",
+    "question": "帮我规划到学校的交通",
+    "category": "direct",
+    "history": [],
+    "expected_retrievers": [
+      "map_route"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "map_route-040",
+    "question": "校园外到校区怎么坐车",
+    "category": "direct",
+    "history": [],
+    "expected_retrievers": [
+      "map_route"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "job-041",
+    "question": "最近有什么招聘会",
+    "category": "direct",
+    "history": [],
+    "expected_retrievers": [
+      "job_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "job-042",
+    "question": "近期校园双选会安排",
+    "category": "direct",
+    "history": [],
+    "expected_retrievers": [
+      "job_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "job-043",
+    "question": "有没有企业来学校宣讲",
+    "category": "direct",
+    "history": [],
+    "expected_retrievers": [
+      "job_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "job-044",
+    "question": "最近有哪些就业机会",
+    "category": "direct",
+    "history": [],
+    "expected_retrievers": [
+      "job_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "job-045",
+    "question": "我想找工作有什么岗位",
+    "category": "direct",
+    "history": [],
+    "expected_retrievers": [
+      "job_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "job-046",
+    "question": "看看学校近期的招聘动态",
+    "category": "direct",
+    "history": [],
+    "expected_retrievers": [
+      "job_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "job-047",
+    "question": "就业市场最近有哪些活动",
+    "category": "direct",
+    "history": [],
+    "expected_retrievers": [
+      "job_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "job-048",
+    "question": "学校什么时候举办双选会",
+    "category": "direct",
+    "history": [],
+    "expected_retrievers": [
+      "job_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "job-049",
+    "question": "近期有没有专场招聘",
+    "category": "direct",
+    "history": [],
+    "expected_retrievers": [
+      "job_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "job-050",
+    "question": "企业进校招聘信息在哪里",
+    "category": "direct",
+    "history": [],
+    "expected_retrievers": [
+      "job_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "job-051",
+    "question": "毕业生招聘会怎么报名",
+    "category": "direct",
+    "history": [],
+    "expected_retrievers": [
+      "job_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "job-052",
+    "question": "本周有宣讲会吗",
+    "category": "direct",
+    "history": [],
+    "expected_retrievers": [
+      "job_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "job-053",
+    "question": "校园招聘岗位如何查询",
+    "category": "direct",
+    "history": [],
+    "expected_retrievers": [
+      "job_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "job-054",
+    "question": "就业指导中心发布了哪些岗位",
+    "category": "direct",
+    "history": [],
+    "expected_retrievers": [
+      "job_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "job-055",
+    "question": "最近适合毕业生的招聘活动",
+    "category": "direct",
+    "history": [],
+    "expected_retrievers": [
+      "job_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "job-056",
+    "question": "学校有应届生招聘通知吗",
+    "category": "direct",
+    "history": [],
+    "expected_retrievers": [
+      "job_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "job-057",
+    "question": "帮我找近期招聘安排",
+    "category": "direct",
+    "history": [],
+    "expected_retrievers": [
+      "job_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "job-058",
+    "question": "有哪些单位到校招聘",
+    "category": "direct",
+    "history": [],
+    "expected_retrievers": [
+      "job_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "job-059",
+    "question": "今年双选会时间是什么",
+    "category": "direct",
+    "history": [],
+    "expected_retrievers": [
+      "job_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "job-060",
+    "question": "求职活动信息在哪里看",
+    "category": "direct",
+    "history": [],
+    "expected_retrievers": [
+      "job_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "news-061",
+    "question": "学校最近发了什么通知",
+    "category": "paraphrase",
+    "history": [],
+    "expected_retrievers": [
+      "news_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "news-062",
+    "question": "最近有哪些公告",
+    "category": "paraphrase",
+    "history": [],
+    "expected_retrievers": [
+      "news_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "news-063",
+    "question": "校园新闻更新了吗",
+    "category": "paraphrase",
+    "history": [],
+    "expected_retrievers": [
+      "news_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "news-064",
+    "question": "帮我找学校最新动态",
+    "category": "paraphrase",
+    "history": [],
+    "expected_retrievers": [
+      "news_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "news-065",
+    "question": "有没有新的校园资讯",
+    "category": "paraphrase",
+    "history": [],
+    "expected_retrievers": [
+      "news_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "news-066",
+    "question": "这几天学校公布了哪些消息",
+    "category": "paraphrase",
+    "history": [],
+    "expected_retrievers": [
+      "news_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "news-067",
+    "question": "官网近期有什么通知",
+    "category": "paraphrase",
+    "history": [],
+    "expected_retrievers": [
+      "news_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "news-068",
+    "question": "最近学校有什么新闻",
+    "category": "paraphrase",
+    "history": [],
+    "expected_retrievers": [
+      "news_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "news-069",
+    "question": "学校刚发布的公告有哪些",
+    "category": "paraphrase",
+    "history": [],
+    "expected_retrievers": [
+      "news_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "news-070",
+    "question": "想看校园最新消息",
+    "category": "paraphrase",
+    "history": [],
+    "expected_retrievers": [
+      "news_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "news-071",
+    "question": "学校近期的通知在哪里查",
+    "category": "paraphrase",
+    "history": [],
+    "expected_retrievers": [
+      "news_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "news-072",
+    "question": "最近有没有重要通告",
+    "category": "paraphrase",
+    "history": [],
+    "expected_retrievers": [
+      "news_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "news-073",
+    "question": "帮我搜索最新校园新闻",
+    "category": "paraphrase",
+    "history": [],
+    "expected_retrievers": [
+      "news_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "news-074",
+    "question": "学校官网最近更新了什么",
+    "category": "paraphrase",
+    "history": [],
+    "expected_retrievers": [
+      "news_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "news-075",
+    "question": "近来的学校动态有哪些",
+    "category": "paraphrase",
+    "history": [],
+    "expected_retrievers": [
+      "news_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "news-076",
+    "question": "能列出最近发布的公告吗",
+    "category": "paraphrase",
+    "history": [],
+    "expected_retrievers": [
+      "news_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "news-077",
+    "question": "学校最近有什么值得关注的消息",
+    "category": "paraphrase",
+    "history": [],
+    "expected_retrievers": [
+      "news_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "news-078",
+    "question": "查一下学校最新资讯",
+    "category": "paraphrase",
+    "history": [],
+    "expected_retrievers": [
+      "news_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "news-079",
+    "question": "近期学校公示了什么",
+    "category": "paraphrase",
+    "history": [],
+    "expected_retrievers": [
+      "news_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "news-080",
+    "question": "帮我看看校园新闻",
+    "category": "paraphrase",
+    "history": [],
+    "expected_retrievers": [
+      "news_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "contact-081",
+    "question": "网络坏了找谁",
+    "category": "paraphrase",
+    "history": [],
+    "expected_retrievers": [
+      "contact_search",
+      "campus_rag"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "contact-082",
+    "question": "宿舍网络故障怎么联系",
+    "category": "paraphrase",
+    "history": [],
+    "expected_retrievers": [
+      "contact_search",
+      "campus_rag"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "contact-083",
+    "question": "校医院电话是多少",
+    "category": "paraphrase",
+    "history": [],
+    "expected_retrievers": [
+      "contact_search",
+      "campus_rag"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "contact-084",
+    "question": "后勤维修找哪个部门",
+    "category": "paraphrase",
+    "history": [],
+    "expected_retrievers": [
+      "contact_search",
+      "campus_rag"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "contact-085",
+    "question": "哪里能查到招生办联系方式",
+    "category": "paraphrase",
+    "history": [],
+    "expected_retrievers": [
+      "contact_search",
+      "campus_rag"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "contact-086",
+    "question": "网络报障入口和电话在哪里",
+    "category": "paraphrase",
+    "history": [],
+    "expected_retrievers": [
+      "contact_search",
+      "campus_rag"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "contact-087",
+    "question": "维修问题应该联系谁",
+    "category": "paraphrase",
+    "history": [],
+    "expected_retrievers": [
+      "contact_search",
+      "campus_rag"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "contact-088",
+    "question": "学校保卫部门电话怎么查",
+    "category": "paraphrase",
+    "history": [],
+    "expected_retrievers": [
+      "contact_search",
+      "campus_rag"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "contact-089",
+    "question": "想咨询招生应该打哪个电话",
+    "category": "paraphrase",
+    "history": [],
+    "expected_retrievers": [
+      "contact_search",
+      "campus_rag"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "contact-090",
+    "question": "后勤服务电话有哪些",
+    "category": "paraphrase",
+    "history": [],
+    "expected_retrievers": [
+      "contact_search",
+      "campus_rag"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "contact-091",
+    "question": "教务问题找谁咨询",
+    "category": "paraphrase",
+    "history": [],
+    "expected_retrievers": [
+      "contact_search",
+      "campus_rag"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "contact-092",
+    "question": "校医院怎么联系",
+    "category": "paraphrase",
+    "history": [],
+    "expected_retrievers": [
+      "contact_search",
+      "campus_rag"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "contact-093",
+    "question": "校园网络报修电话是多少",
+    "category": "paraphrase",
+    "history": [],
+    "expected_retrievers": [
+      "contact_search",
+      "campus_rag"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "contact-094",
+    "question": "食堂问题联系哪个科室",
+    "category": "paraphrase",
+    "history": [],
+    "expected_retrievers": [
+      "contact_search",
+      "campus_rag"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "contact-095",
+    "question": "各部门联系电话在哪里看",
+    "category": "paraphrase",
+    "history": [],
+    "expected_retrievers": [
+      "contact_search",
+      "campus_rag"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "contact-096",
+    "question": "遇到宿舍故障找哪个部门",
+    "category": "paraphrase",
+    "history": [],
+    "expected_retrievers": [
+      "contact_search",
+      "campus_rag"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "contact-097",
+    "question": "招生办公室联系方式是什么",
+    "category": "paraphrase",
+    "history": [],
+    "expected_retrievers": [
+      "contact_search",
+      "campus_rag"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "contact-098",
+    "question": "怎么联系学校后勤",
+    "category": "paraphrase",
+    "history": [],
+    "expected_retrievers": [
+      "contact_search",
+      "campus_rag"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "contact-099",
+    "question": "校园服务的电话清单",
+    "category": "paraphrase",
+    "history": [],
+    "expected_retrievers": [
+      "contact_search",
+      "campus_rag"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "contact-100",
+    "question": "帮我找负责网络的联系人",
+    "category": "paraphrase",
+    "history": [],
+    "expected_retrievers": [
+      "contact_search",
+      "campus_rag"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "service_link-101",
+    "question": "教务系统从哪里登录",
+    "category": "paraphrase",
+    "history": [],
+    "expected_retrievers": [
+      "service_link_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "service_link-102",
+    "question": "学校邮箱入口在哪里",
+    "category": "paraphrase",
+    "history": [],
+    "expected_retrievers": [
+      "service_link_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "service_link-103",
+    "question": "VPN怎么进",
+    "category": "paraphrase",
+    "history": [],
+    "expected_retrievers": [
+      "service_link_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "service_link-104",
+    "question": "融合门户的网址是什么",
+    "category": "paraphrase",
+    "history": [],
+    "expected_retrievers": [
+      "service_link_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "service_link-105",
+    "question": "我想打开网上办事大厅",
+    "category": "paraphrase",
+    "history": [],
+    "expected_retrievers": [
+      "service_link_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "service_link-106",
+    "question": "学生事务在线办理入口",
+    "category": "paraphrase",
+    "history": [],
+    "expected_retrievers": [
+      "service_link_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "service_link-107",
+    "question": "学校OA登录地址在哪里",
+    "category": "paraphrase",
+    "history": [],
+    "expected_retrievers": [
+      "service_link_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "service_link-108",
+    "question": "校园网认证入口怎么找",
+    "category": "paraphrase",
+    "history": [],
+    "expected_retrievers": [
+      "service_link_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "service_link-109",
+    "question": "人事系统的入口是什么",
+    "category": "paraphrase",
+    "history": [],
+    "expected_retrievers": [
+      "service_link_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "service_link-110",
+    "question": "资产管理系统网址",
+    "category": "paraphrase",
+    "history": [],
+    "expected_retrievers": [
+      "service_link_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "service_link-111",
+    "question": "教务管理平台链接在哪",
+    "category": "paraphrase",
+    "history": [],
+    "expected_retrievers": [
+      "service_link_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "service_link-112",
+    "question": "学校统一门户如何进入",
+    "category": "paraphrase",
+    "history": [],
+    "expected_retrievers": [
+      "service_link_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "service_link-113",
+    "question": "哪里可以登录邮箱",
+    "category": "paraphrase",
+    "history": [],
+    "expected_retrievers": [
+      "service_link_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "service_link-114",
+    "question": "网络报障在线入口在哪",
+    "category": "paraphrase",
+    "history": [],
+    "expected_retrievers": [
+      "service_link_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "service_link-115",
+    "question": "办事大厅的网址是什么",
+    "category": "paraphrase",
+    "history": [],
+    "expected_retrievers": [
+      "service_link_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "service_link-116",
+    "question": "学校常用系统入口有哪些",
+    "category": "paraphrase",
+    "history": [],
+    "expected_retrievers": [
+      "service_link_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "service_link-117",
+    "question": "我需要访问OA平台",
+    "category": "paraphrase",
+    "history": [],
+    "expected_retrievers": [
+      "service_link_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "service_link-118",
+    "question": "学生系统登录入口在哪里",
+    "category": "paraphrase",
+    "history": [],
+    "expected_retrievers": [
+      "service_link_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "service_link-119",
+    "question": "校园网服务页面怎么打开",
+    "category": "paraphrase",
+    "history": [],
+    "expected_retrievers": [
+      "service_link_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "service_link-120",
+    "question": "帮我找教务系统链接",
+    "category": "paraphrase",
+    "history": [],
+    "expected_retrievers": [
+      "service_link_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "download-121",
+    "question": "那怎么下载",
+    "category": "followup",
+    "history": [
+      {
+        "role": "user",
+        "content": "缓考申请表在哪里下载"
+      }
+    ],
+    "expected_retrievers": [
+      "download_search",
+      "campus_rag"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [
+      "jwc_xsxz_0"
+    ],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "download-122",
+    "question": "那怎么下载",
+    "category": "followup",
+    "history": [
+      {
+        "role": "user",
+        "content": "缓考申请表在哪里下载"
+      }
+    ],
+    "expected_retrievers": [
+      "download_search",
+      "campus_rag"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [
+      "jwc_xsxz_0"
+    ],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "download-123",
+    "question": "那怎么下载",
+    "category": "followup",
+    "history": [
+      {
+        "role": "user",
+        "content": "缓考申请表在哪里下载"
+      }
+    ],
+    "expected_retrievers": [
+      "download_search",
+      "campus_rag"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [
+      "jwc_xsxz_0"
+    ],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "download-124",
+    "question": "那怎么下载",
+    "category": "followup",
+    "history": [
+      {
+        "role": "user",
+        "content": "缓考申请表在哪里下载"
+      }
+    ],
+    "expected_retrievers": [
+      "download_search",
+      "campus_rag"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [
+      "jwc_xsxz_0"
+    ],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "download-125",
+    "question": "那怎么下载",
+    "category": "followup",
+    "history": [
+      {
+        "role": "user",
+        "content": "缓考申请表在哪里下载"
+      }
+    ],
+    "expected_retrievers": [
+      "download_search",
+      "campus_rag"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [
+      "jwc_xsxz_0"
+    ],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "download-126",
+    "question": "那怎么下载",
+    "category": "followup",
+    "history": [
+      {
+        "role": "user",
+        "content": "缓考申请表在哪里下载"
+      }
+    ],
+    "expected_retrievers": [
+      "download_search",
+      "campus_rag"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [
+      "jwc_xsxz_0"
+    ],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "download-127",
+    "question": "那怎么下载",
+    "category": "followup",
+    "history": [
+      {
+        "role": "user",
+        "content": "缓考申请表在哪里下载"
+      }
+    ],
+    "expected_retrievers": [
+      "download_search",
+      "campus_rag"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [
+      "jwc_xsxz_0"
+    ],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "download-128",
+    "question": "那怎么下载",
+    "category": "followup",
+    "history": [
+      {
+        "role": "user",
+        "content": "缓考申请表在哪里下载"
+      }
+    ],
+    "expected_retrievers": [
+      "download_search",
+      "campus_rag"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [
+      "jwc_xsxz_0"
+    ],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "download-129",
+    "question": "那怎么下载",
+    "category": "followup",
+    "history": [
+      {
+        "role": "user",
+        "content": "缓考申请表在哪里下载"
+      }
+    ],
+    "expected_retrievers": [
+      "download_search",
+      "campus_rag"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [
+      "jwc_xsxz_0"
+    ],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "download-130",
+    "question": "那怎么下载",
+    "category": "followup",
+    "history": [
+      {
+        "role": "user",
+        "content": "缓考申请表在哪里下载"
+      }
+    ],
+    "expected_retrievers": [
+      "download_search",
+      "campus_rag"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [
+      "jwc_xsxz_0"
+    ],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "download-131",
+    "question": "那怎么下载",
+    "category": "followup",
+    "history": [
+      {
+        "role": "user",
+        "content": "缓考申请表在哪里下载"
+      }
+    ],
+    "expected_retrievers": [
+      "download_search",
+      "campus_rag"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [
+      "jwc_xsxz_0"
+    ],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "download-132",
+    "question": "那怎么下载",
+    "category": "followup",
+    "history": [
+      {
+        "role": "user",
+        "content": "缓考申请表在哪里下载"
+      }
+    ],
+    "expected_retrievers": [
+      "download_search",
+      "campus_rag"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [
+      "jwc_xsxz_0"
+    ],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "download-133",
+    "question": "那怎么下载",
+    "category": "followup",
+    "history": [
+      {
+        "role": "user",
+        "content": "缓考申请表在哪里下载"
+      }
+    ],
+    "expected_retrievers": [
+      "download_search",
+      "campus_rag"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [
+      "jwc_xsxz_0"
+    ],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "download-134",
+    "question": "那怎么下载",
+    "category": "followup",
+    "history": [
+      {
+        "role": "user",
+        "content": "缓考申请表在哪里下载"
+      }
+    ],
+    "expected_retrievers": [
+      "download_search",
+      "campus_rag"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [
+      "jwc_xsxz_0"
+    ],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "download-135",
+    "question": "那怎么下载",
+    "category": "followup",
+    "history": [
+      {
+        "role": "user",
+        "content": "缓考申请表在哪里下载"
+      }
+    ],
+    "expected_retrievers": [
+      "download_search",
+      "campus_rag"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [
+      "jwc_xsxz_0"
+    ],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "download-136",
+    "question": "那怎么下载",
+    "category": "followup",
+    "history": [
+      {
+        "role": "user",
+        "content": "缓考申请表在哪里下载"
+      }
+    ],
+    "expected_retrievers": [
+      "download_search",
+      "campus_rag"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [
+      "jwc_xsxz_0"
+    ],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "download-137",
+    "question": "那怎么下载",
+    "category": "followup",
+    "history": [
+      {
+        "role": "user",
+        "content": "缓考申请表在哪里下载"
+      }
+    ],
+    "expected_retrievers": [
+      "download_search",
+      "campus_rag"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [
+      "jwc_xsxz_0"
+    ],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "download-138",
+    "question": "那怎么下载",
+    "category": "followup",
+    "history": [
+      {
+        "role": "user",
+        "content": "缓考申请表在哪里下载"
+      }
+    ],
+    "expected_retrievers": [
+      "download_search",
+      "campus_rag"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [
+      "jwc_xsxz_0"
+    ],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "download-139",
+    "question": "那怎么下载",
+    "category": "followup",
+    "history": [
+      {
+        "role": "user",
+        "content": "缓考申请表在哪里下载"
+      }
+    ],
+    "expected_retrievers": [
+      "download_search",
+      "campus_rag"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [
+      "jwc_xsxz_0"
+    ],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "download-140",
+    "question": "那怎么下载",
+    "category": "followup",
+    "history": [
+      {
+        "role": "user",
+        "content": "缓考申请表在哪里下载"
+      }
+    ],
+    "expected_retrievers": [
+      "download_search",
+      "campus_rag"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [
+      "jwc_xsxz_0"
+    ],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "major-141",
+    "question": "那对应哪个学院",
+    "category": "followup",
+    "history": [
+      {
+        "role": "user",
+        "content": "信息与计算科学属于哪个学院"
+      }
+    ],
+    "expected_retrievers": [
+      "major_search",
+      "campus_rag"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [
+      "jwc_major_and_pyfa_0"
+    ],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "major-142",
+    "question": "那对应哪个学院",
+    "category": "followup",
+    "history": [
+      {
+        "role": "user",
+        "content": "信息与计算科学属于哪个学院"
+      }
+    ],
+    "expected_retrievers": [
+      "major_search",
+      "campus_rag"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [
+      "jwc_major_and_pyfa_0"
+    ],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "major-143",
+    "question": "那对应哪个学院",
+    "category": "followup",
+    "history": [
+      {
+        "role": "user",
+        "content": "信息与计算科学属于哪个学院"
+      }
+    ],
+    "expected_retrievers": [
+      "major_search",
+      "campus_rag"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [
+      "jwc_major_and_pyfa_0"
+    ],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "major-144",
+    "question": "那对应哪个学院",
+    "category": "followup",
+    "history": [
+      {
+        "role": "user",
+        "content": "信息与计算科学属于哪个学院"
+      }
+    ],
+    "expected_retrievers": [
+      "major_search",
+      "campus_rag"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [
+      "jwc_major_and_pyfa_0"
+    ],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "major-145",
+    "question": "那对应哪个学院",
+    "category": "followup",
+    "history": [
+      {
+        "role": "user",
+        "content": "信息与计算科学属于哪个学院"
+      }
+    ],
+    "expected_retrievers": [
+      "major_search",
+      "campus_rag"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [
+      "jwc_major_and_pyfa_0"
+    ],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "major-146",
+    "question": "那对应哪个学院",
+    "category": "followup",
+    "history": [
+      {
+        "role": "user",
+        "content": "信息与计算科学属于哪个学院"
+      }
+    ],
+    "expected_retrievers": [
+      "major_search",
+      "campus_rag"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [
+      "jwc_major_and_pyfa_0"
+    ],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "major-147",
+    "question": "那对应哪个学院",
+    "category": "followup",
+    "history": [
+      {
+        "role": "user",
+        "content": "信息与计算科学属于哪个学院"
+      }
+    ],
+    "expected_retrievers": [
+      "major_search",
+      "campus_rag"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [
+      "jwc_major_and_pyfa_0"
+    ],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "major-148",
+    "question": "那对应哪个学院",
+    "category": "followup",
+    "history": [
+      {
+        "role": "user",
+        "content": "信息与计算科学属于哪个学院"
+      }
+    ],
+    "expected_retrievers": [
+      "major_search",
+      "campus_rag"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [
+      "jwc_major_and_pyfa_0"
+    ],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "major-149",
+    "question": "那对应哪个学院",
+    "category": "followup",
+    "history": [
+      {
+        "role": "user",
+        "content": "信息与计算科学属于哪个学院"
+      }
+    ],
+    "expected_retrievers": [
+      "major_search",
+      "campus_rag"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [
+      "jwc_major_and_pyfa_0"
+    ],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "major-150",
+    "question": "那对应哪个学院",
+    "category": "followup",
+    "history": [
+      {
+        "role": "user",
+        "content": "信息与计算科学属于哪个学院"
+      }
+    ],
+    "expected_retrievers": [
+      "major_search",
+      "campus_rag"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [
+      "jwc_major_and_pyfa_0"
+    ],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "major-151",
+    "question": "某个专业属于哪个学院，培养方案在哪里下载",
+    "category": "multi_intent",
+    "history": [],
+    "expected_retrievers": [
+      "major_search",
+      "campus_rag",
+      "download_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [
+      "jwc_major_and_pyfa_0"
+    ],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "major-152",
+    "question": "本科专业有哪些方向，培养方案在哪里下载",
+    "category": "multi_intent",
+    "history": [],
+    "expected_retrievers": [
+      "major_search",
+      "campus_rag",
+      "download_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [
+      "jwc_major_and_pyfa_0"
+    ],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "major-153",
+    "question": "学院和专业对应关系是什么，培养方案在哪里下载",
+    "category": "multi_intent",
+    "history": [],
+    "expected_retrievers": [
+      "major_search",
+      "campus_rag",
+      "download_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [
+      "jwc_major_and_pyfa_0"
+    ],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "major-154",
+    "question": "培养方案按专业怎么找，培养方案在哪里下载",
+    "category": "multi_intent",
+    "history": [],
+    "expected_retrievers": [
+      "major_search",
+      "campus_rag",
+      "download_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [
+      "jwc_major_and_pyfa_0"
+    ],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "major-155",
+    "question": "学校的教学机构有哪些，培养方案在哪里下载",
+    "category": "multi_intent",
+    "history": [],
+    "expected_retrievers": [
+      "major_search",
+      "campus_rag",
+      "download_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [
+      "jwc_major_and_pyfa_0"
+    ],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "major-156",
+    "question": "能查一下信计专业吗，培养方案在哪里下载",
+    "category": "multi_intent",
+    "history": [],
+    "expected_retrievers": [
+      "major_search",
+      "campus_rag",
+      "download_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [
+      "jwc_major_and_pyfa_0"
+    ],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "major-157",
+    "question": "学校有哪些农业类专业，培养方案在哪里下载",
+    "category": "multi_intent",
+    "history": [],
+    "expected_retrievers": [
+      "major_search",
+      "campus_rag",
+      "download_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [
+      "jwc_major_and_pyfa_0"
+    ],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "major-158",
+    "question": "专业目录和培养方案入口在哪，培养方案在哪里下载",
+    "category": "multi_intent",
+    "history": [],
+    "expected_retrievers": [
+      "major_search",
+      "campus_rag",
+      "download_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [
+      "jwc_major_and_pyfa_0"
+    ],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "major-159",
+    "question": "我想选择一个本科专业，培养方案在哪里下载",
+    "category": "multi_intent",
+    "history": [],
+    "expected_retrievers": [
+      "major_search",
+      "campus_rag",
+      "download_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [
+      "jwc_major_and_pyfa_0"
+    ],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "major-160",
+    "question": "仲恺的学院设置如何，培养方案在哪里下载",
+    "category": "multi_intent",
+    "history": [],
+    "expected_retrievers": [
+      "major_search",
+      "campus_rag",
+      "download_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [
+      "jwc_major_and_pyfa_0"
+    ],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "academic-161",
+    "question": "搜索人工智能相关论文，学校最近有没有相关通知",
+    "category": "multi_intent",
+    "history": [],
+    "expected_retrievers": [
+      "academic_search",
+      "news_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "academic-162",
+    "question": "推荐RAG参考文献，学校最近有没有相关通知",
+    "category": "multi_intent",
+    "history": [],
+    "expected_retrievers": [
+      "academic_search",
+      "news_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "academic-163",
+    "question": "学术搜索多智能体研究，学校最近有没有相关通知",
+    "category": "multi_intent",
+    "history": [],
+    "expected_retrievers": [
+      "academic_search",
+      "news_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "academic-164",
+    "question": "最近有哪些校园智能体论文，学校最近有没有相关通知",
+    "category": "multi_intent",
+    "history": [],
+    "expected_retrievers": [
+      "academic_search",
+      "news_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "academic-165",
+    "question": "帮我找信息检索方面的文献，学校最近有没有相关通知",
+    "category": "multi_intent",
+    "history": [],
+    "expected_retrievers": [
+      "academic_search",
+      "news_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "academic-166",
+    "question": "想看人工智能前沿研究，学校最近有没有相关通知",
+    "category": "multi_intent",
+    "history": [],
+    "expected_retrievers": [
+      "academic_search",
+      "news_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "academic-167",
+    "question": "如何查找机器学习论文，学校最近有没有相关通知",
+    "category": "multi_intent",
+    "history": [],
+    "expected_retrievers": [
+      "academic_search",
+      "news_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "academic-168",
+    "question": "有没有关于知识库问答的论文，学校最近有没有相关通知",
+    "category": "multi_intent",
+    "history": [],
+    "expected_retrievers": [
+      "academic_search",
+      "news_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "academic-169",
+    "question": "帮我检索相关学术资料，学校最近有没有相关通知",
+    "category": "multi_intent",
+    "history": [],
+    "expected_retrievers": [
+      "academic_search",
+      "news_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "academic-170",
+    "question": "研究生论文参考文献怎么找，学校最近有没有相关通知",
+    "category": "multi_intent",
+    "history": [],
+    "expected_retrievers": [
+      "academic_search",
+      "news_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "academic-171",
+    "question": "推荐几篇自然语言处理论文，学校最近有没有相关通知",
+    "category": "multi_intent",
+    "history": [],
+    "expected_retrievers": [
+      "academic_search",
+      "news_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "academic-172",
+    "question": "学术数据库里怎么搜索RAG，学校最近有没有相关通知",
+    "category": "multi_intent",
+    "history": [],
+    "expected_retrievers": [
+      "academic_search",
+      "news_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "academic-173",
+    "question": "我想了解多模态研究进展，学校最近有没有相关通知",
+    "category": "multi_intent",
+    "history": [],
+    "expected_retrievers": [
+      "academic_search",
+      "news_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "academic-174",
+    "question": "查一下智能校园研究文献，学校最近有没有相关通知",
+    "category": "multi_intent",
+    "history": [],
+    "expected_retrievers": [
+      "academic_search",
+      "news_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "academic-175",
+    "question": "有哪些值得阅读的AI论文，学校最近有没有相关通知",
+    "category": "multi_intent",
+    "history": [],
+    "expected_retrievers": [
+      "academic_search",
+      "news_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "academic-176",
+    "question": "帮我找语义检索论文，学校最近有没有相关通知",
+    "category": "multi_intent",
+    "history": [],
+    "expected_retrievers": [
+      "academic_search",
+      "news_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "academic-177",
+    "question": "论文检索入口在哪里，学校最近有没有相关通知",
+    "category": "multi_intent",
+    "history": [],
+    "expected_retrievers": [
+      "academic_search",
+      "news_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "academic-178",
+    "question": "最近的Agent研究有哪些，学校最近有没有相关通知",
+    "category": "multi_intent",
+    "history": [],
+    "expected_retrievers": [
+      "academic_search",
+      "news_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "academic-179",
+    "question": "学术搜索系统怎么用，学校最近有没有相关通知",
+    "category": "multi_intent",
+    "history": [],
+    "expected_retrievers": [
+      "academic_search",
+      "news_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "academic-180",
+    "question": "给我一些检索增强生成文献，学校最近有没有相关通知",
+    "category": "multi_intent",
+    "history": [],
+    "expected_retrievers": [
+      "academic_search",
+      "news_search"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "supported"
+  },
+  {
+    "id": "negative-01",
+    "question": "今天天气很好",
+    "category": "negative",
+    "history": [],
+    "expected_retrievers": [
+      "campus_rag"
+    ],
+    "forbidden_retrievers": [
+      "weather_search"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "unsupported"
+  },
+  {
+    "id": "negative-02",
+    "question": "下载速度慢怎么办",
+    "category": "negative",
+    "history": [],
+    "expected_retrievers": [
+      "campus_rag"
+    ],
+    "forbidden_retrievers": [
+      "download_search"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "unsupported"
+  },
+  {
+    "id": "negative-03",
+    "question": "我的专业是什么",
+    "category": "negative",
+    "history": [],
+    "expected_retrievers": [
+      "major_search",
+      "campus_rag"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "unsupported"
+  },
+  {
+    "id": "negative-04",
+    "question": "校园里有很多树",
+    "category": "negative",
+    "history": [],
+    "expected_retrievers": [
+      "campus_rag"
+    ],
+    "forbidden_retrievers": [
+      "weather_search",
+      "map_route"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "unsupported"
+  },
+  {
+    "id": "negative-05",
+    "question": "我喜欢晴天",
+    "category": "negative",
+    "history": [],
+    "expected_retrievers": [
+      "campus_rag"
+    ],
+    "forbidden_retrievers": [
+      "weather_search"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "unsupported"
+  },
+  {
+    "id": "negative-06",
+    "question": "文件下载速度太慢了",
+    "category": "negative",
+    "history": [],
+    "expected_retrievers": [
+      "campus_rag"
+    ],
+    "forbidden_retrievers": [
+      "download_search"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "unsupported"
+  },
+  {
+    "id": "negative-07",
+    "question": "我的文档格式是什么",
+    "category": "negative",
+    "history": [],
+    "expected_retrievers": [],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "unsupported"
+  },
+  {
+    "id": "negative-08",
+    "question": "我上传的资料有几页",
+    "category": "negative",
+    "history": [],
+    "expected_retrievers": [],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "unsupported"
+  },
+  {
+    "id": "negative-09",
+    "question": "今天心情不错",
+    "category": "negative",
+    "history": [],
+    "expected_retrievers": [
+      "campus_rag"
+    ],
+    "forbidden_retrievers": [
+      "weather_search"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "unsupported"
+  },
+  {
+    "id": "negative-10",
+    "question": "专业这个词是什么意思",
+    "category": "negative",
+    "history": [],
+    "expected_retrievers": [
+      "major_search",
+      "campus_rag"
+    ],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "unsupported"
+  },
+  {
+    "id": "negative-11",
+    "question": "学校附近风景很好",
+    "category": "negative",
+    "history": [],
+    "expected_retrievers": [
+      "campus_rag"
+    ],
+    "forbidden_retrievers": [
+      "weather_search"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "unsupported"
+  },
+  {
+    "id": "negative-12",
+    "question": "下载一个软件很慢",
+    "category": "negative",
+    "history": [],
+    "expected_retrievers": [
+      "campus_rag"
+    ],
+    "forbidden_retrievers": [
+      "download_search"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "unsupported"
+  },
+  {
+    "id": "negative-13",
+    "question": "我上传的培养方案在哪里",
+    "category": "negative",
+    "history": [],
+    "expected_retrievers": [],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "unsupported"
+  },
+  {
+    "id": "negative-14",
+    "question": "我的文件需要备份吗",
+    "category": "negative",
+    "history": [],
+    "expected_retrievers": [],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "unsupported"
+  },
+  {
+    "id": "negative-15",
+    "question": "校园生活丰富多彩",
+    "category": "negative",
+    "history": [],
+    "expected_retrievers": [
+      "campus_rag"
+    ],
+    "forbidden_retrievers": [
+      "weather_search"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "unsupported"
+  },
+  {
+    "id": "negative-16",
+    "question": "网络速度太慢了",
+    "category": "negative",
+    "history": [],
+    "expected_retrievers": [
+      "campus_rag"
+    ],
+    "forbidden_retrievers": [
+      "download_search"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "unsupported"
+  },
+  {
+    "id": "negative-17",
+    "question": "我的文档讲了什么",
+    "category": "negative",
+    "history": [],
+    "expected_retrievers": [],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "unsupported"
+  },
+  {
+    "id": "negative-18",
+    "question": "我上传的文件能否删除",
+    "category": "negative",
+    "history": [],
+    "expected_retrievers": [],
+    "forbidden_retrievers": [
+      "user_docs"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "unsupported"
+  },
+  {
+    "id": "negative-19",
+    "question": "学校的树木很多吗",
+    "category": "negative",
+    "history": [],
+    "expected_retrievers": [
+      "campus_rag"
+    ],
+    "forbidden_retrievers": [
+      "weather_search"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "unsupported"
+  },
+  {
+    "id": "negative-20",
+    "question": "下载页面打开很慢",
+    "category": "negative",
+    "history": [],
+    "expected_retrievers": [
+      "campus_rag"
+    ],
+    "forbidden_retrievers": [
+      "download_search"
+    ],
+    "expected_entities": {},
+    "expected_doc_ids": [],
+    "expected_gate": "unsupported"
+  }
+]

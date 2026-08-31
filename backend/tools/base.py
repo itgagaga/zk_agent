@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any
 
 from backend.config import DATA_DIR
+from backend.rag.lexical_index import tokenize
 from crawler.resource_download import normalize_download_items
 
 
@@ -74,34 +75,21 @@ class BaseTool:
 
     @staticmethod
     def _extract_keywords(question: str) -> list[str]:
-        """从中文问题中提取关键词（2-gram 滑动窗口）。
-
-        中文没有空格分词，用 2 字连续子串作为关键词。
-        过滤掉包含标点符号的 2-gram。
-        """
-        import re
-
-        # 去掉标点和空格
-        clean = re.sub(r"[^\u4e00-\u9fffA-Za-z0-9]", "", question)
-        if len(clean) < 2:
-            return [clean] if clean else []
-        # 取所有 2-gram
-        return [clean[i : i + 2] for i in range(len(clean) - 1)]
+        """使用中文分词提取关键词，不生成字符滑窗。"""
+        return tokenize(question)
 
     @staticmethod
     def _query_terms(question: str) -> list[str]:
         """提取用于结构化候选排序的短语，过滤问句模板词。"""
-        clean = re.sub(r"[^\u4e00-\u9fffA-Za-z0-9]", "", question).lower()
+        clean = re.sub(r"[^\u4e00-\u9fffA-Za-z0-9\s_-]", "", question).lower()
         stop = {
             "哪里", "在哪", "怎么", "如何", "查询", "查找", "有没有", "帮我",
             "下载", "一下", "请问", "什么", "哪个", "哪些", "可以", "吗", "呢",
         }
-        terms: set[str] = set()
-        for size in (4, 3, 2):
-            for index in range(len(clean) - size + 1):
-                term = clean[index : index + size]
-                if term not in stop:
-                    terms.add(term)
+        terms = {
+            term for term in tokenize(clean)
+            if term not in stop and not term.isdigit()
+        }
         return sorted(terms, key=lambda value: (-len(value), value))
 
     @classmethod

@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "test": "node --test src/resourceViewModel.test.js src/retrievalSummary.test.js",
+    "test": "node --test src/resourceViewModel.test.js src/retrievalSummary.test.js src/utils/llmText.test.js",
     "build": "vite build",
     "preview": "vite preview"
   },

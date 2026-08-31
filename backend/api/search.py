@@ -95,11 +95,11 @@ async def document_search(
     current_user: User | None = Depends(get_current_user_optional),
 ) -> SearchResponse:
     """智能文档检索（登录用户检索私有文档；未登录仅查共享文档库）。"""
-    hits = await _retriever.search(q, top_k=top_k)
-    doc_hits = await _retriever.search_documents(
-        q,
-        top_k=top_k,
-        user_id=current_user.id if current_user else None,
+    hits = await _retriever.search_shared_documents(q, top_k=top_k)
+    doc_hits = (
+        await _retriever.search_user_documents(q, top_k=top_k, user_id=current_user.id)
+        if current_user
+        else []
     )
     all_hits = hits + doc_hits
     if department:

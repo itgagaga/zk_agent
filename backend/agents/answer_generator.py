@@ -10,6 +10,7 @@ from typing import Any, AsyncGenerator
 from backend.config import settings
 from backend.rag.prompt_templates import build_qa_prompt
 from backend.rag.retriever import RAGRetriever
+from backend.utils.llm_content import extract_text_content
 
 
 class AnswerGenerator:
@@ -195,16 +196,25 @@ class AnswerGenerator:
             evidence_mode=evidence.get("evidence_mode") or evidence.get("evidence_priority") or "rag",
             evidence_priority=evidence.get("evidence_priority"),
         )
+        emitted_text = False
         if self.llm is None:
+            emitted_text = True
             yield f'data: {json.dumps({"type": "token", "content": "(LLM 未初始化，请检查 DEEPSEEK_API_KEY 配置)"}, ensure_ascii=False)}\n\n'
         else:
             try:
                 async for chunk in self.llm.astream(prompt):
-                    token = chunk.content
+                    token = extract_text_content(chunk)
                     if token:
+                        emitted_text = True
                         yield f'data: {json.dumps({"type": "token", "content": token}, ensure_ascii=False)}\n\n'
             except Exception as e:
+                emitted_text = True
                 yield f'data: {json.dumps({"type": "token", "content": f"(LLM 调用失败: {e})"}, ensure_ascii=False)}\n\n'
+
+        # 某些兼容接口会正常结束，但整个流只有空 content/reasoning 块。
+        # 不能只发 done，否则前端会留下“仅有来源引用”的空回答。
+        if not emitted_text:
+            yield f'data: {json.dumps({"type": "token", "content": "模型未返回有效回答，请重试。"}, ensure_ascii=False)}\n\n'
 
         # 3. 发 done
         yield f'data: {json.dumps({"type": "done"}, ensure_ascii=False)}\n\n'
@@ -215,6 +225,7 @@ class AnswerGenerator:
             return "(LLM 未初始化，请检查 DEEPSEEK_API_KEY 配置)"
         try:
             response = await self.llm.ainvoke(prompt)
-            return response.content
+            text = extract_text_content(response)
+            return text or "模型未返回有效回答，请重试。"
         except Exception as e:
             return f"(LLM 调用失败: {e})"

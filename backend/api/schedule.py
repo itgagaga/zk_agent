@@ -37,6 +37,7 @@ from backend.services.campus_cache import (
     save_advice_cache,
     save_weather_cache,
 )
+from backend.utils.llm_content import extract_text_content
 from backend.services.schedule_store import (
     delete_schedule_data,
     load_schedule_data,
@@ -197,7 +198,7 @@ async def _generate_advice(prompt: str) -> str:
         )
     try:
         response = await llm.ainvoke(prompt)
-        return (response.content or "").strip()
+        return extract_text_content(response).strip()
     except Exception as e:
         print(f"[ScheduleAPI] LLM 建议生成失败: {e}")
         return "暂时无法生成 AI 建议，请稍后刷新重试。"

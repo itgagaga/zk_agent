@@ -34,7 +34,7 @@ class _GoldenRetriever:
 
     async def search(self, query, top_k=None, where=None):
         if "本科招生章程" in query:
-            if top_k and top_k >= 20:
+            if "补充检索约束" in query:
                 return [{
                     "chunk_id": "zsb_bkzs_zc_2026_001",
                     "doc_id": "zsb_bkzs_zc_2026",
@@ -138,7 +138,7 @@ def test_golden_cases_reach_controller_answer_without_exclusive_routing(query, e
 
     assert result["fallback"] is False
     assert any(source.get("title") == expected_title for source in result["sources"])
-    assert result["retrieval_summary"]["evidence_assessment"]["status"] == "sufficient"
+    assert result["retrieval_summary"]["evidence_assessment"]["status"] == "supported"
 
 
 def test_stream_no_longer_emits_supervisor_priority_event():

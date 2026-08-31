@@ -27,21 +27,31 @@ class RAGRetriever:
         """官网通用 RAG 检索。"""
         effective_top_k = top_k or self.top_k
         query_top_k = max(effective_top_k * 4, effective_top_k + 8)
-        hits = self.store.query(
+        hits = self._annotate_ranks(
+            self.store.query(
             text=query,
             top_k=query_top_k,
             where=where,
             collection="zhku",
+            ),
+            source="dense",
         )
-        keyword_search = getattr(self.store, "keyword_search", None)
+        keyword_search = (
+            getattr(self.store, "keyword_search", None)
+            if settings.rag_lexical_mode == "bm25"
+            else None
+        )
         if keyword_search is not None:
             hits = self._merge_hits(
                 hits,
-                keyword_search(
-                    text=query,
-                    top_k=query_top_k,
-                    where=where,
-                    collection="zhku",
+                self._annotate_ranks(
+                    keyword_search(
+                        text=query,
+                        top_k=query_top_k,
+                        where=where,
+                        collection="zhku",
+                    ),
+                    source="lexical",
                 ),
             )
         hits = [h for h in hits if h.get("score", 0) >= self.score_threshold]
@@ -63,8 +73,49 @@ class RAGRetriever:
 
         命中 Child 片段时会扩展为完整 Parent 节；小文档仍会拉取全部片段。
         """
+        if user_id is None:
+            return await self.search_shared_documents(
+                query, top_k=top_k, where=where
+            )
+        return await self.search_user_documents(
+            query, user_id=user_id, top_k=top_k, where=where
+        )
+
+    async def search_shared_documents(
+        self,
+        query: str,
+        top_k: int | None = None,
+        where: dict[str, Any] | None = None,
+    ) -> list[dict[str, Any]]:
+        """只检索共享 ``document`` 集合。"""
+        return await self._search_document_collection(
+            query, top_k=top_k, where=where, user_id=None, collection="document"
+        )
+
+    async def search_user_documents(
+        self,
+        query: str,
+        *,
+        user_id: int,
+        top_k: int | None = None,
+        where: dict[str, Any] | None = None,
+    ) -> list[dict[str, Any]]:
+        """只检索当前用户的私有集合；缺少用户 ID 时无法调用此接口。"""
+        return await self._search_document_collection(
+            query, top_k=top_k, where=where, user_id=int(user_id), collection="user_docs"
+        )
+
+    async def _search_document_collection(
+        self,
+        query: str,
+        *,
+        top_k: int | None,
+        where: dict[str, Any] | None,
+        user_id: int | None,
+        collection: str,
+    ) -> list[dict[str, Any]]:
+        """共享/私有文档集合的内部公共实现。"""
         is_user_doc = user_id is not None
-        collection = "user_docs" if is_user_doc else "document"
         effective_top_k = top_k or (
             settings.rag_doc_top_k if is_user_doc else self.top_k
         )
@@ -79,21 +130,31 @@ class RAGRetriever:
                 user_where = {"$and": [user_where, where]}
 
         query_top_k = max(effective_top_k * 4, effective_top_k + 8)
-        hits = self.store.query(
+        hits = self._annotate_ranks(
+            self.store.query(
             text=query,
             top_k=query_top_k,
             where=user_where,
             collection=collection,
+            ),
+            source="dense",
         )
-        keyword_search = getattr(self.store, "keyword_search", None)
+        keyword_search = (
+            getattr(self.store, "keyword_search", None)
+            if settings.rag_lexical_mode == "bm25"
+            else None
+        )
         if keyword_search is not None:
             hits = self._merge_hits(
                 hits,
-                keyword_search(
-                    text=query,
-                    top_k=query_top_k,
-                    where=user_where,
-                    collection=collection,
+                self._annotate_ranks(
+                    keyword_search(
+                        text=query,
+                        top_k=query_top_k,
+                        where=user_where,
+                        collection=collection,
+                    ),
+                    source="lexical",
                 ),
             )
         hits = [h for h in hits if h.get("score", 0) >= threshold]
@@ -104,9 +165,9 @@ class RAGRetriever:
                 hits, effective_top_k, user_id=user_id
             )
             if full_doc:
-                return hits
+                return self._sort_and_dedupe(hits)[:effective_top_k]
 
-        return hits[:effective_top_k]
+        return self._sort_and_dedupe(hits)[:effective_top_k]
 
     def _expand_parent_hits(
         self,
@@ -216,20 +277,64 @@ class RAGRetriever:
         return ordered[:limit], False
 
     @staticmethod
+    def _annotate_ranks(
+        hits: list[dict[str, Any]] | None,
+        *,
+        source: str,
+    ) -> list[dict[str, Any]]:
+        annotated: list[dict[str, Any]] = []
+        for rank, hit in enumerate(hits or [], start=1):
+            item = dict(hit)
+            item["retrieval_source"] = source
+            if source == "dense":
+                item["dense_rank"] = rank
+            else:
+                item["lexical_rank"] = item.get("lexical_rank") or rank
+            item["rank"] = rank
+            annotated.append(item)
+        return annotated
+
+    @staticmethod
     def _merge_hits(*hit_lists: list[dict[str, Any]]) -> list[dict[str, Any]]:
-        """合并 dense/lexical 候选，按稳定 chunk id 去重并保留最高分。"""
+        """合并 dense/lexical 候选，同时保留各路排名。"""
         merged: dict[str, dict[str, Any]] = {}
         for hits in hit_lists:
             for hit in hits or []:
                 key = hit.get("chunk_id") or hit.get("id") or str(id(hit))
                 previous = merged.get(key)
-                if previous is None or float(hit.get("score") or 0) > float(previous.get("score") or 0):
-                    merged[key] = hit
+                if previous is None:
+                    merged[key] = dict(hit)
+                    continue
+                best = hit if float(hit.get("score") or 0) > float(previous.get("score") or 0) else previous
+                combined = {**previous, **best}
+                for field in ("dense_rank", "lexical_rank"):
+                    values = [previous.get(field), hit.get(field)]
+                    values = [int(value) for value in values if value is not None and int(value) > 0]
+                    if values:
+                        combined[field] = min(values)
+                if previous.get("retrieval_source") and hit.get("retrieval_source") and previous.get("retrieval_source") != hit.get("retrieval_source"):
+                    combined["retrieval_source"] = "hybrid"
+                combined["score"] = max(float(previous.get("score") or 0), float(hit.get("score") or 0))
+                merged[key] = combined
         return list(merged.values())
 
     @classmethod
     def _sort_and_dedupe(cls, hits: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        unique = cls._merge_hits(hits)
+        for hit in unique:
+            ranks = [
+                int(hit[field])
+                for field in ("dense_rank", "lexical_rank")
+                if hit.get(field) is not None and int(hit[field]) > 0
+            ]
+            if not ranks and hit.get("rank") is not None and int(hit["rank"]) > 0:
+                ranks = [int(hit["rank"])]
+            hit["fusion_score"] = sum(1.0 / (60 + rank) for rank in ranks)
         return sorted(
-            cls._merge_hits(hits),
-            key=lambda hit: (-float(hit.get("score") or 0), hit.get("chunk_id") or ""),
+            unique,
+            key=lambda hit: (
+                -float(hit.get("fusion_score") or 0),
+                -float(hit.get("score") or 0),
+                hit.get("chunk_id") or "",
+            ),
         )

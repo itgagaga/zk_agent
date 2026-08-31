@@ -190,8 +190,9 @@ agent layer
   ├── Answer Generator
   └── Fallback Checker
 
-说明：旧 `QuestionRouter`、`EvidenceSupervisor` 和 `LLMRouter` 仅作为兼容模块保留，
-不参与默认请求链路，也不再决定某一种证据的全局优先级。
+说明：默认请求链路只有 `QueryPlanner` 一个规划入口。旧 `QuestionRouter` 和
+`EvidenceSupervisor` 仅作为历史调用方的兼容适配保留，不参与默认请求链路；独立
+LLM 路由模块已废弃，不再通过旧的 `AGENT_ROUTER_MODE` 配置控制路由。
 
 knowledge layer
   ├── RAG Retriever
@@ -673,10 +674,13 @@ zhku-campus-agent/
 │   │   └── admin.py
 │   ├── agents/
 │   │   ├── controller.py
-│   │   ├── router.py
 │   │   ├── answer_generator.py
 │   │   └── fallback.py
 │   ├── rag/
+│   │   ├── query_planner.py
+│   │   ├── retrieval_manager.py
+│   │   ├── evidence_fusion.py
+│   │   ├── evidence_gate.py
 │   │   ├── retriever.py
 │   │   ├── embedder.py
 │   │   ├── vector_store.py

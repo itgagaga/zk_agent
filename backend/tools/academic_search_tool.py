@@ -18,6 +18,7 @@ from typing import Any
 import httpx
 
 from backend.config import settings
+from backend.utils.llm_content import extract_text_content
 
 
 class AcademicSearchTool:
@@ -80,7 +81,7 @@ class AcademicSearchTool:
 
         try:
             response = await self.llm.ainvoke(prompt)
-            text = response.content.strip()
+            text = extract_text_content(response).strip()
             # 尝试提取 JSON
             if "```json" in text:
                 text = text.split("```json")[1].split("```")[0].strip()

@@ -44,4 +44,6 @@ dependencies = [
     "bcrypt>=4.2.0",
     "PyJWT>=2.9.0",
     "apscheduler>=3.10.4",
+    "jieba>=0.42.1",
+    "rank-bm25>=0.2.2",
 ]

@@ -6,9 +6,11 @@
 
 import { getAuthHeader, getAuthSnapshot } from './authStore.js'
 import { mergeRetrievalMeta } from './retrievalSummary.js'
+import { extractTextContent } from './utils/llmText.js'
 
 const STORAGE_PREFIX = 'zhku_emb_chat_'
 const OPEN_PREFIX = 'zhku_emb_open_'
+const EMPTY_ANSWER_MESSAGE = '模型未返回有效回答，请重试。'
 
 // ---------- 实例存储 ----------
 
@@ -40,7 +42,13 @@ function loadSaved(key) {
     const raw = localStorage.getItem(STORAGE_PREFIX + key)
     if (raw) {
       const parsed = JSON.parse(raw)
-      if (Array.isArray(parsed) && parsed.length > 0) return parsed
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed.map(message => (
+          message?.role === 'assistant' && !String(message.content || '').trim() && message.data
+            ? { ...message, content: EMPTY_ANSWER_MESSAGE }
+            : message
+        ))
+      }
     }
   } catch { /* ignore */ }
   return null
@@ -185,17 +193,23 @@ export async function ask(key, question) {
               return next
             })
           } else if (data.type === 'token') {
+            const token = extractTextContent(data.content)
+            if (!token) continue
             setMessages(key, inst, prev => {
               if (idx < 0 || idx >= prev.length) return prev
               const next = [...prev]
-              next[idx] = { ...next[idx], content: next[idx].content + data.content }
+              next[idx] = { ...next[idx], content: next[idx].content + token }
               return next
             })
           } else if (data.type === 'done') {
             setMessages(key, inst, prev => {
               if (idx < 0 || idx >= prev.length) return prev
               const next = [...prev]
-              next[idx] = { ...next[idx], streaming: false }
+              next[idx] = {
+                ...next[idx],
+                content: next[idx].content || EMPTY_ANSWER_MESSAGE,
+                streaming: false,
+              }
               return next
             })
           }

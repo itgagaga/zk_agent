@@ -8,10 +8,13 @@ import {
   subscribeAuth,
 } from './authStore.js'
 import { mergeRetrievalMeta } from './retrievalSummary.js'
+import { extractTextContent } from './utils/llmText.js'
 
 const STORAGE_KEY = 'zhku_chat_messages'
 const SESSION_KEY = 'zhku_session_id'
 const SERVER_SESSION_KEY = 'zhku_server_chat_session_id'
+
+const EMPTY_ANSWER_MESSAGE = '模型未返回有效回答，请重试。'
 
 function getGuestSessionId() {
   let id = localStorage.getItem(SESSION_KEY)
@@ -27,12 +30,20 @@ function loadLocalMessages() {
     const saved = localStorage.getItem(STORAGE_KEY)
     if (saved) {
       const parsed = JSON.parse(saved)
-      if (Array.isArray(parsed) && parsed.length > 0) return parsed
+      if (Array.isArray(parsed) && parsed.length > 0) return normalizeMessages(parsed)
     }
   } catch {
     // ignore
   }
   return []
+}
+
+function normalizeMessages(messages) {
+  return messages.map((message) => (
+    message?.role === 'assistant' && !String(message.content || '').trim() && message.data
+      ? { ...message, content: EMPTY_ANSWER_MESSAGE }
+      : message
+  ))
 }
 
 let state = {
@@ -168,11 +179,11 @@ async function loadServerMessages(sessionId) {
   const resp = await axios.get(`/api/chat/sessions/${sessionId}/messages`, {
     headers: getAuthHeader(),
   })
-  return (resp.data || []).map((m) => ({
+  return normalizeMessages((resp.data || []).map((m) => ({
     role: m.role,
     content: m.content || '',
     data: m.meta || null,
-  }))
+  })))
 }
 
 async function savePairToServer(userContent, assistantMsg) {
@@ -302,6 +313,7 @@ export async function ask(question, autoStick) {
         user_role: role,
         history,
         session_id: getSessionIdRef(),
+        context_hint: null,
       }),
       signal: abortRef.signal,
     })
@@ -362,17 +374,23 @@ export async function ask(question, autoStick) {
               return next
             })
           } else if (data.type === 'token') {
+            const token = extractTextContent(data.content)
+            if (!token) continue
             setMessages((prev) => {
               if (idx < 0 || idx >= prev.length) return prev
               const next = [...prev]
-              next[idx] = { ...next[idx], content: next[idx].content + data.content }
+              next[idx] = { ...next[idx], content: next[idx].content + token }
               return next
             })
           } else if (data.type === 'done') {
             setMessages((prev) => {
               if (idx < 0 || idx >= prev.length) return prev
               const next = [...prev]
-              next[idx] = { ...next[idx], streaming: false }
+              next[idx] = {
+                ...next[idx],
+                content: next[idx].content || EMPTY_ANSWER_MESSAGE,
+                streaming: false,
+              }
               return next
             })
           }

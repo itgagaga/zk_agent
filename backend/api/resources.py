@@ -17,6 +17,7 @@ from backend.tools.download_tool import DownloadTool
 from backend.tools.job_tool import JobDataError, JobTool
 from backend.tools.major_tool import MajorTool
 from backend.tools.service_link_tool import ServiceLinkTool
+from backend.utils.llm_content import extract_text_content
 
 router = APIRouter()
 
@@ -389,9 +390,10 @@ async def analyze_academic(req: AcademicAnalyzeRequest):
 {papers_text}
 
 【AI 解读】
-"""
+    """
     try:
         response = await _answer_generator.llm.ainvoke(prompt)
-        return {"analysis": response.content}
+        analysis = extract_text_content(response)
+        return {"analysis": analysis or "模型未返回有效解读，请重试。"}
     except Exception as e:
         return {"analysis": f"(AI 解读失败: {e})"}

@@ -5,9 +5,9 @@
 from __future__ import annotations
 
 from typing import Any
-import re
 
 from backend.config import settings
+from backend.rag.lexical_index import LexicalDocument, LexicalIndex
 
 
 class VectorStore:
@@ -22,6 +22,11 @@ class VectorStore:
         self._zhku_collection: Any = None
         self._doc_collection: Any = None
         self._user_docs_collection: Any = None
+        self._lexical_indexes: dict[str, LexicalIndex | None] = {
+            "zhku": None,
+            "document": None,
+            "user_docs": None,
+        }
 
     def _init_client(self) -> None:
         """初始化 Chroma 客户端。"""
@@ -62,6 +67,7 @@ class VectorStore:
         target = self._target(collection)
         embeddings = get_embedder().embed(texts)
         target.upsert(ids=ids, documents=texts, metadatas=metadatas, embeddings=embeddings)
+        self.invalidate_lexical_index(collection)
 
     def query(
         self,
@@ -92,7 +98,7 @@ class VectorStore:
         where: dict[str, Any] | None = None,
         collection: str = "zhku",
     ) -> list[dict[str, Any]]:
-        """在候选集合上执行轻量词法召回，补足 embedding 对专名/表名的漏召回。"""
+        """使用中文 BM25 执行词法召回。"""
         target = self._target(collection)
         kwargs: dict[str, Any] = {"include": ["documents", "metadatas"]}
         if where:
@@ -101,72 +107,36 @@ class VectorStore:
         ids = result.get("ids") or []
         docs = result.get("documents") or []
         metas = result.get("metadatas") or []
-        query = re.sub(r"[^\u4e00-\u9fffA-Za-z0-9]", "", text).lower()
-        # The institution name appears on almost every campus page and would
-        # otherwise create a large, arbitrary tie set. Keep the subject terms.
-        query = query.replace("仲恺农业工程学院", "")
-        for frame in (
-            "主要讲了什么", "讲了什么", "介绍了什么", "在哪里", "在哪",
-            "有哪些", "有什么", "是什么", "有几个", "几个", "多少",
-            "请问", "帮我", "一下",
-        ):
-            query = query.replace(frame, "")
-        term_sizes = (2, 3, 4, 5, 6) if len(query) < 4 else (4, 5, 6)
-        terms = {
-            query[i : i + size]
-            for size in term_sizes
-            for i in range(max(0, len(query) - size + 1))
-            if not query[i : i + size].isdigit() or len(query[i : i + size]) >= 4
-        }
-        # 常见业务称谓不是字面同义词：本科招生章程通常以“普通高考招生章程”发布。
-        if "本科" in query:
-            terms.update({"普通高考", "本科招生"})
-        hits: list[dict[str, Any]] = []
-        for chunk_id, doc, meta in zip(ids, docs, metas):
-            meta = meta or {}
-            title = str(meta.get("title") or "").lower()
-            body = f"{title} {doc or ''}".lower()
-            score = 0.0
-            if query and query in title:
-                score += 4.0
-            if query and query in body:
-                score += 1.5
-            score += sum(0.12 + len(term) * 0.18 for term in terms if term in title)
-            score += sum(0.03 + len(term) * 0.02 for term in terms if term in body)
-            if "章程" in query:
-                if "招生章程" in title:
-                    score += 15.0
-                elif "简章" in title:
-                    score -= 10.0
-            if (
-                "校区" in query
-                and not any(term in query for term in ("电话", "网络", "报障", "联系", "天气", "路线"))
-                and any(
-                marker in title for marker in ("学校概况", "学校简介", "校园概况")
-                )
-            ):
-                score += 8.0
-            if "本科" in query and any(term in title for term in ("研究生", "硕士")):
-                score -= 8.0
-            if score <= 0:
-                continue
-            hits.append(
-                {
-                    "snippet": doc or "",
-                    "title": meta.get("title", ""),
-                    "department": meta.get("department"),
-                    "url": meta.get("source_url", ""),
-                    "publish_date": meta.get("publish_date"),
-                    # lexical hits carry an explicit bonus so an exact named
-                    # document can outrank a dense hit whose score is tied at 1.0.
-                    "score": 1.0 + score,
-                    "metadata": meta,
-                    "chunk_id": chunk_id,
-                    "chunk_index": _chunk_index_from_id(chunk_id),
-                }
-            )
-        hits.sort(key=lambda hit: (-hit["score"], hit.get("chunk_id") or ""))
-        return hits[: top_k or settings.rag_top_k]
+        documents = [
+            LexicalDocument(doc_id=str(chunk_id), text=str(doc or ""), metadata=dict(meta or {}))
+            for chunk_id, doc, meta in zip(ids, docs, metas)
+        ]
+        key = self._lexical_collection_key(collection)
+        index = self._lexical_indexes.get(key)
+        if index is None or where is not None:
+            if where is None:
+                index = LexicalIndex(documents)
+                self._lexical_indexes[key] = index
+            else:
+                # Chroma 已按 where 过滤，临时索引只包含本次授权候选。
+                index = LexicalIndex(documents)
+        candidate_ids = {document.doc_id for document in documents} if where is not None else None
+        return index.search(
+            text,
+            top_k=top_k or settings.rag_top_k,
+            candidate_ids=candidate_ids,
+        )
+
+    def invalidate_lexical_index(self, collection: str) -> None:
+        """写入/删除后使对应 collection 的 BM25 索引失效。"""
+        self._lexical_indexes[self._lexical_collection_key(collection)] = None
+
+    def _lexical_collection_key(self, collection: str) -> str:
+        if collection in ("zhku", "campus"):
+            return "zhku"
+        if collection in ("user_docs", "zhku_user_docs"):
+            return "user_docs"
+        return "document"
 
     def delete_documents(
         self,
@@ -184,6 +154,7 @@ class VectorStore:
         if not kwargs:
             return
         target.delete(**kwargs)
+        self.invalidate_lexical_index(collection)
 
     def count_documents(self, where: dict[str, Any] | None = None, collection: str = "document") -> int:
         """统计文档集合中的 chunk 数量，支持按 where 过滤。"""
@@ -295,6 +266,7 @@ class VectorStore:
                     "url": meta.get("source_url", ""),
                     "publish_date": meta.get("publish_date"),
                     "score": 1.0 - float(dist),
+                    "retrieval_source": "dense",
                     "metadata": meta,
                     "chunk_id": chunk_id,
                     "chunk_index": _chunk_index_from_id(chunk_id),

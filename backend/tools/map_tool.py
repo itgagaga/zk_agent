@@ -14,6 +14,7 @@ from typing import Any
 import httpx
 
 from backend.config import settings
+from backend.utils.llm_content import extract_text_content
 
 # 高德 Web 服务 API 基地址
 AMAP_API_BASE = "https://restapi.amap.com"
@@ -390,7 +391,7 @@ class MapTool:
 历史：用户问过去白云校区怎么走；当前问「从广州东站」→ {{"origin": "广州东站", "destination": "仲恺农业工程学院白云校区", "travel_mode": "transit"}}"""
 
             response = await llm.ainvoke(prompt)
-            text = response.content.strip()
+            text = extract_text_content(response).strip()
 
             # 提取 JSON（LLM 可能返回带 markdown 标记的 JSON）
             json_match = re.search(r"\{[^}]+\}", text)

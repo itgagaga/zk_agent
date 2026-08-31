@@ -12,6 +12,7 @@ from sqlalchemy.orm import Session
 from backend.config import settings
 from backend.services.resume_store import save_resume_data
 from backend.storage.user_files import delete_path, to_data_relative, user_resume_dir
+from backend.utils.llm_content import extract_text_content
 
 ALLOWED_RESUME_EXT = {".pdf", ".docx", ".txt", ".md"}
 MAX_RESUME_SIZE = 10 * 1024 * 1024  # 10MB
@@ -41,7 +42,7 @@ async def _call_llm(prompt: str, temperature: float = 0.3, max_tokens: int = 200
         return ""
     try:
         response = await llm.ainvoke(prompt)
-        return response.content
+        return extract_text_content(response)
     except Exception as e:
         print(f"[ResumeUpload] LLM 调用失败: {e}")
         return ""

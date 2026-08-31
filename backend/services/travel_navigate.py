@@ -7,6 +7,7 @@ from typing import Any
 
 from backend.config import settings
 from backend.tools.map_tool import MapTool
+from backend.utils.llm_content import extract_text_content
 
 # 前端可选地点 key → 高德 geocode 用完整地址
 NAVIGATION_LOCATIONS: dict[str, str] = {
@@ -237,7 +238,7 @@ async def generate_travel_analysis(
             weather=weather,
         )
         response = await llm.ainvoke(prompt)
-        parsed = _parse_analysis_json((response.content or "").strip())
+        parsed = _parse_analysis_json(extract_text_content(response).strip())
         if parsed and parsed.get("summary"):
             return parsed
     except Exception as e:

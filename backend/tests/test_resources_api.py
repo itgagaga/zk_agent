@@ -116,3 +116,24 @@ def test_jobs_route_rejects_unknown_kind():
     response = TestClient(app).get("/jobs?kind=unknown")
 
     assert response.status_code == 422
+
+
+def test_academic_analysis_normalizes_structured_llm_content(monkeypatch):
+    class FakeResponse:
+        content = [{"type": "text", "text": "该领域可分为三个研究方向。"}]
+
+    class FakeLLM:
+        async def ainvoke(self, prompt):
+            return FakeResponse()
+
+    monkeypatch.setattr(resources._answer_generator, "llm", FakeLLM())
+    response = asyncio.run(
+        resources.analyze_academic(
+            resources.AcademicAnalyzeRequest(
+                keyword="深度学习",
+                papers=[{"title": "A paper", "snippet": "摘要"}],
+            )
+        )
+    )
+
+    assert response["analysis"] == "该领域可分为三个研究方向。"

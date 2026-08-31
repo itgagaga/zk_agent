@@ -13,11 +13,9 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, Field
 
-from backend.config import settings
-
 PathType = Literal["general_rag", "document_rag", "tool", "hybrid", "fallback"]
 RouteMode = Literal["fast", "collab"]
-RouterSource = Literal["rule", "llm", "hybrid_rule", "hybrid_llm", "rule_fallback"]
+RouterSource = Literal["rule", "planner", "rule_fallback"]
 
 # 办事协作 Agent 组（材料 / 联系 / 入口）
 _AFFAIRS_TOOLS = frozenset({"download_search", "contact_search", "service_link_search"})
@@ -122,25 +120,17 @@ _RULES = [
 
 
 class QuestionRouter:
-    """问题路由器：判定 fast / collab 并输出意图列表。
+    """旧路由兼容适配器。
 
-    支持三种模式（由 AGENT_ROUTER_MODE 控制）：
-    - rule：纯关键词规则（低延迟、可复现，用于评测）
-    - llm：LLM Structured Output 选路（理解换说法、模糊意图）
-    - hybrid（默认）：规则高置信快路径 + LLM 兜底
+    默认请求链路不再使用本类；主链路的唯一规划入口是
+    :class:`backend.rag.query_planner.QueryPlanner`。这里保留同步规则接口，
+    供离线分析脚本和历史调用方使用；异步 ``route`` 则转调 QueryPlanner，
+    不再读取旧的 ``AGENT_ROUTER_MODE``，也不再加载独立的 LLM 路由模块。
     """
 
     def __init__(self) -> None:
-        self.mode = settings.agent_router_mode
-        self._llm_router: Any = None
-
-    @property
-    def llm_router(self) -> Any:
-        if self._llm_router is None:
-            from backend.agents.llm_router import LLMRouter
-
-            self._llm_router = LLMRouter()
-        return self._llm_router
+        # 保留可写属性，避免旧脚本在迁移期因设置 mode 失败；该值不再控制生产链路。
+        self.mode = "compatibility"
 
     def route_rule(self, question: str) -> RoutePlan:
         """同步规则路由（评测与离线分析用）。"""
@@ -149,25 +139,71 @@ class QuestionRouter:
         return plan
 
     async def route(self, question: str) -> RoutePlan:
-        """根据问题文本判断路由计划。"""
-        if self.mode == "rule":
-            return self.route_rule(question)
+        """兼容异步入口：委托唯一的 QueryPlanner 并映射为旧 RoutePlan。"""
+        from backend.rag.query_planner import QueryPlanner
 
-        matched = self._match_all_intents(question)
+        retrieval_plan = await QueryPlanner().plan(question)
+        return self._from_retrieval_plan(retrieval_plan)
 
-        if self.mode == "hybrid" and self._is_confident_rule_match(question, matched):
-            plan = self._route_by_rule(question)
-            plan.router_source = "hybrid_rule"
-            return plan
-
-        llm_plan = await self.llm_router.route(question)
-        if llm_plan is not None:
-            llm_plan.router_source = "hybrid_llm" if self.mode == "hybrid" else "llm"
-            return llm_plan
-
-        plan = self._route_by_rule(question)
-        plan.router_source = "rule_fallback"
-        return plan
+    @staticmethod
+    def _from_retrieval_plan(retrieval_plan: Any) -> RoutePlan:
+        """将新检索计划转换成旧调用方可识别的 RoutePlan。"""
+        label_map = {
+            "major_search": "专业学院查询",
+            "download_search": "资料下载查询",
+            "contact_search": "联系方式查询",
+            "service_link_search": "服务入口查询",
+            "weather_search": "天气查询",
+            "academic_search": "学术搜索",
+            "map_route": "路线规划",
+            "job_search": "就业信息查询",
+            "news_search": "校园资讯查询",
+            "campus_rag": "通用问答",
+            "shared_docs": "智能文档问答",
+            "user_docs": "智能文档问答",
+        }
+        intents: list[IntentResult] = []
+        seen: set[str] = set()
+        retrievers = [
+            retriever
+            for subquestion in retrieval_plan.subquestions
+            for retriever in subquestion.retrievers
+        ]
+        for retriever in retrievers:
+            if retriever in {"campus_rag", "shared_docs", "user_docs"}:
+                path: PathType = "document_rag" if retriever != "campus_rag" else "general_rag"
+                tool = None
+            elif retriever in _STANDALONE_TOOLS or retriever in {
+                "download_search", "academic_search", "job_search", "news_search"
+            }:
+                path = "tool"
+                tool = retriever
+            else:
+                continue
+            key = tool or path
+            if key in seen:
+                continue
+            seen.add(key)
+            intents.append(
+                IntentResult(
+                    path=path,
+                    tool=tool,
+                    intent_label=label_map.get(retriever, "通用问答"),
+                )
+            )
+        if not intents:
+            intents = [IntentResult(path="general_rag", intent_label="通用问答")]
+        mode: RouteMode = "collab" if len(intents) > 1 else "fast"
+        if mode == "collab":
+            for intent in intents:
+                if intent.path == "tool":
+                    intent.path = "hybrid"
+        return RoutePlan(
+            mode=mode,
+            intents=intents,
+            collab_reason="兼容映射：QueryPlanner 多检索目标" if mode == "collab" else "",
+            router_source="planner",
+        )
 
     @staticmethod
     def _is_confident_rule_match(question: str, matched: list[IntentResult]) -> bool:

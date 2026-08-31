@@ -23,6 +23,7 @@ from analytics.evaluation import (
     normalize_title,
     title_matches,
 )
+from analytics.rag_semantic_evaluation import evaluate_planner
 
 
 def latency_annotation_y(values: list[float]) -> float:
@@ -107,7 +108,7 @@ def build_offline_metrics(project_root: Path) -> dict[str, Any]:
 
 
 def evaluate_routes() -> dict[str, Any]:
-    """使用项目当前规则路由器评测意图分类。"""
+    """使用兼容规则适配器进行离线意图基线评测。"""
     from backend.agents.router import QuestionRouter
 
     router = QuestionRouter()
@@ -605,7 +606,7 @@ def generate_figures(
     axis.set_xlabel("系统预测意图")
     axis.set_ylabel("标准意图")
     axis.set_title(
-        f"Agent Router 意图识别混淆矩阵（准确率 {routes['accuracy'] * 100:.1f}%）",
+        f"Query Planner 兼容基线混淆矩阵（准确率 {routes['accuracy'] * 100:.1f}%）",
         pad=16,
         fontsize=16,
     )
@@ -682,6 +683,13 @@ def main() -> int:
     offline = build_offline_metrics(project_root)
     rag = evaluate_rag(args.api_base)
     routes = evaluate_routes()
+    semantic = evaluate_planner()
+    print(
+        "语义黄金集："
+        f"{semantic['metrics']['case_count']} 条，"
+        f"Planner micro-F1={semantic['metrics']['retriever_selection_micro_f1']:.3f}，"
+        f"实体保留率={semantic['metrics']['standalone_entity_preservation']:.3f}"
+    )
     vectors = project_vectors(project_root)
     latency = None
     if not args.skip_latency:

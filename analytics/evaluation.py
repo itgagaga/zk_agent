@@ -3,7 +3,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+import json
 import re
+from pathlib import Path
+from typing import Any
 
 
 def normalize_title(title: str) -> str:
@@ -44,6 +47,77 @@ class RAGCase:
 class RouteCase:
     query: str
     expected_label: str
+
+
+@dataclass(frozen=True)
+class SemanticCase:
+    """离线语义回归夹具中的一条用例。"""
+
+    id: str
+    question: str
+    history: list[dict[str, str]] = field(default_factory=list)
+    expected_retrievers: set[str] = field(default_factory=set)
+    forbidden_retrievers: set[str] = field(default_factory=set)
+    expected_entities: dict[str, str] = field(default_factory=dict)
+    expected_subquestions: int | None = None
+    expected_gate: str | None = None
+
+
+def load_semantic_cases(path: str | Path | None = None) -> list[SemanticCase]:
+    """读取不依赖外部 API 的语义回归夹具。"""
+    fixture = Path(path) if path else Path(__file__).resolve().parents[1] / "backend" / "tests" / "fixtures" / "rag_semantic_cases.json"
+    payload = json.loads(fixture.read_text(encoding="utf-8"))
+    if not isinstance(payload, list):
+        raise ValueError("semantic fixture must be a JSON list")
+    return [
+        SemanticCase(
+            id=str(item["id"]),
+            question=str(item["question"]),
+            history=list(item.get("history") or []),
+            expected_retrievers=set(item.get("expected_retrievers") or []),
+            forbidden_retrievers=set(item.get("forbidden_retrievers") or []),
+            expected_entities={str(k): str(v) for k, v in (item.get("expected_entities") or {}).items()},
+            expected_subquestions=item.get("expected_subquestions"),
+            expected_gate=item.get("expected_gate"),
+        )
+        for item in payload
+    ]
+
+
+def retrieval_selection_counts(
+    expected: list[set[str]], predicted: list[set[str]]
+) -> dict[str, int]:
+    """按检索器集合统计 micro-F1 所需的 TP/FP/FN。"""
+    true_positive = sum(len(actual & guess) for actual, guess in zip(expected, predicted))
+    false_positive = sum(len(guess - actual) for actual, guess in zip(expected, predicted))
+    false_negative = sum(len(actual - guess) for actual, guess in zip(expected, predicted))
+    return {"tp": true_positive, "fp": false_positive, "fn": false_negative}
+
+
+def micro_f1_from_counts(counts: dict[str, int]) -> float:
+    """从集合标签计数计算 retriever selection micro-F1。"""
+    tp, fp, fn = (counts.get(key, 0) for key in ("tp", "fp", "fn"))
+    denominator = 2 * tp + fp + fn
+    return (2 * tp / denominator) if denominator else 1.0
+
+
+def semantic_case_metrics(cases: list[SemanticCase], plans: list[Any]) -> dict[str, float]:
+    """对 Planner 结果做轻量离线指标统计，供 CI 和分析脚本复用。"""
+    if len(cases) != len(plans):
+        raise ValueError("cases and plans must have equal length")
+    expected = [case.expected_retrievers for case in cases]
+    predicted = [set(plan.retrievers) for plan in plans]
+    counts = retrieval_selection_counts(expected, predicted)
+    entity_total = 0
+    entity_kept = 0
+    for case, plan in zip(cases, plans):
+        entity_total += len(case.expected_entities)
+        entities = {key: value for subq in plan.subquestions for key, value in subq.entities.items()}
+        entity_kept += sum(entities.get(key) == value for key, value in case.expected_entities.items())
+    return {
+        "retriever_selection_micro_f1": micro_f1_from_counts(counts),
+        "standalone_entity_preservation": entity_kept / entity_total if entity_total else 1.0,
+    }
 
 
 RAG_CASES = [

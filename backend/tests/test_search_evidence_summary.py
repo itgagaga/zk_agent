@@ -20,7 +20,7 @@ def test_rag_search_exposes_chunk_ids_and_evidence_assessment(monkeypatch):
     result = asyncio.run(search.rag_search(q="2026年本科招生章程主要讲了什么", top_k=5))
 
     assert result.hits[0].chunk_id == "zsb_bkzs_zc_2026_0"
-    assert result.retrieval_summary["evidence_assessment"]["status"] == "sufficient"
+    assert result.retrieval_summary["evidence_assessment"]["status"] == "supported"
 
 
 def test_rag_search_gate_ranks_charter_above_nearby_brochure(monkeypatch):

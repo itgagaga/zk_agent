@@ -21,6 +21,7 @@ from backend.database.models import User
 from backend.database.session import get_db
 from backend.services.resume_store import load_resume_data
 from backend.services.resume_upload import upload_resume_file as process_resume_upload
+from backend.utils.llm_content import extract_text_content
 
 router = APIRouter()
 
@@ -115,7 +116,7 @@ async def _call_llm(prompt: str, temperature: float = 0.7, max_tokens: int = 200
         return ""
     try:
         response = await llm.ainvoke(prompt)
-        return response.content
+        return extract_text_content(response)
     except Exception as e:
         print(f"[InterviewAPI] LLM 调用失败: {e}")
         return ""
@@ -129,8 +130,9 @@ async def _stream_llm(prompt: str, temperature: float = 0.7, max_tokens: int = 2
         return
     try:
         async for chunk in llm.astream(prompt):
-            if chunk.content:
-                yield chunk.content
+            text = extract_text_content(chunk)
+            if text:
+                yield text
     except Exception as e:
         print(f"[InterviewAPI] LLM 流式调用失败: {e}")
         yield ""

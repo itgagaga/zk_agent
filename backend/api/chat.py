@@ -31,6 +31,9 @@ class ChatRequest(BaseModel):
         default="student", description="用户角色，用于个性化推荐"
     )
     history: list[dict] = Field(default_factory=list, description="历史对话，用于多轮上下文")
+    context_hint: str | None = Field(
+        default=None, max_length=200, description="嵌入式问答页面上下文，仅用于辅助选择检索范围"
+    )
 
 
 class SourceItem(BaseModel):
@@ -132,6 +135,7 @@ async def chat(
         user_role=role,
         history=req.history,
         user_id=current_user.id if current_user else None,
+        context_hint=req.context_hint,
     )
     return ChatResponse(**result)
 
@@ -154,6 +158,7 @@ async def chat_stream(
                 user_role=role,
                 history=req.history,
                 user_id=user_id,
+                context_hint=req.context_hint,
             ):
                 yield chunk
         except Exception as exc:

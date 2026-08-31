@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import axios from 'axios'
+import { extractTextContent } from '../utils/llmText.js'
 
 const EXAMPLE_QUERIES = [
   { q: 'deep learning', label: 'Deep Learning' },
@@ -85,7 +86,7 @@ export default function AcademicSearchPanel() {
         keyword: query,
         papers: results,
       })
-      setAnalysis(resp.data.analysis || '')
+      setAnalysis(extractTextContent(resp.data.analysis) || '模型未返回有效解读，请重试。')
     } catch (err) {
       console.error('AI 解读失败:', err)
       setAnalysis('(AI 解读请求失败，请稍后重试)')

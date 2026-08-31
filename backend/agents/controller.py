@@ -21,6 +21,8 @@ from backend.tools.service_link_tool import ServiceLinkTool
 from backend.tools.weather_tool import WeatherTool
 from backend.tools.academic_search_tool import AcademicSearchTool
 from backend.tools.map_tool import MapTool
+from backend.tools.job_tool import JobTool
+from backend.tools.news_tool import NewsTool
 
 
 class AgentController:
@@ -38,6 +40,8 @@ class AgentController:
             "weather_search": WeatherTool(),
             "academic_search": AcademicSearchTool(),
             "map_route": MapTool(),
+            "job_search": JobTool(),
+            "news_search": NewsTool(),
         }
         self.planner = QueryPlanner()
         self.retrieval_manager = RetrievalManager(
@@ -75,6 +79,20 @@ class AgentController:
         )
         return evidence
 
+    @staticmethod
+    def _generation_question(question: str, evidence: dict[str, Any]) -> str:
+        """把 Evidence Judge 的边界传给生成器，避免 partial 被写成完整答案。"""
+        assessment = (evidence.get("retrieval_summary") or {}).get("evidence_assessment") or {}
+        if assessment.get("status") != "partial":
+            return question
+        missing = assessment.get("missing_information") or []
+        missing_text = "；".join(str(item) for item in missing[:8]) or "部分信息未被证据覆盖"
+        return (
+            f"{question}\n\n"
+            "【证据边界】当前资料只支持问题的一部分。只回答已有证据明确支持的内容，"
+            f"并明确说明未覆盖项：{missing_text}。不得根据常识补全或声称问题已完整解决。"
+        )
+
     async def handle(
         self,
         question: str,
@@ -83,8 +101,14 @@ class AgentController:
         user_role: str = "student",
         history: list[dict[str, str]] | None = None,
         user_id: int | None = None,
+        context_hint: str | None = None,
     ) -> dict[str, Any]:
-        plan = self.planner.plan(question, user_id=user_id)
+        plan = await self.planner.plan(
+            question,
+            history=history,
+            user_id=user_id,
+            context_hint=context_hint,
+        )
         print(
             f"[Agent] Planner 检索器={plan.retrievers} "
             f"查询='{plan.normalized_query}' (原始: '{question}')"
@@ -97,7 +121,9 @@ class AgentController:
             fallback = self.fallback.no_evidence(question)
             fallback["retrieval_summary"] = evidence.get("retrieval_summary")
             return fallback
-        result = await self.answer_generator.generate(question, evidence, history=history)
+        result = await self.answer_generator.generate(
+            self._generation_question(question, evidence), evidence, history=history
+        )
 
         if not result.get("sources") and self.fallback.enabled:
             return self.fallback.no_evidence(question)
@@ -121,10 +147,16 @@ class AgentController:
         user_role: str = "student",
         history: list[dict[str, str]] | None = None,
         user_id: int | None = None,
+        context_hint: str | None = None,
     ):
         import json
 
-        plan = self.planner.plan(question, user_id=user_id)
+        plan = await self.planner.plan(
+            question,
+            history=history,
+            user_id=user_id,
+            context_hint=context_hint,
+        )
         print(
             f"[Agent] Planner 检索器={plan.retrievers} "
             f"查询='{plan.normalized_query}' (原始: '{question}')"
@@ -161,5 +193,7 @@ class AgentController:
             yield f'data: {json.dumps({"type": "done"}, ensure_ascii=False)}\n\n'
             return
 
-        async for chunk in self.answer_generator.generate_stream(question, evidence, history=history):
+        async for chunk in self.answer_generator.generate_stream(
+            self._generation_question(question, evidence), evidence, history=history
+        ):
             yield chunk

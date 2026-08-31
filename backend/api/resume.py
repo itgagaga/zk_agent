@@ -19,6 +19,7 @@ from backend.database.models import User
 from backend.database.session import get_db
 from backend.services.resume_store import load_resume_data, save_resume_data
 from backend.services.resume_upload import upload_resume_file as process_resume_upload
+from backend.utils.llm_content import extract_text_content
 
 router = APIRouter()
 
@@ -188,7 +189,7 @@ async def _call_llm(prompt: str) -> str:
         return ""
     try:
         response = await llm.ainvoke(prompt)
-        return response.content
+        return extract_text_content(response)
     except Exception as e:
         print(f"[ResumeAPI] LLM 调用失败: {e}")
         return ""
