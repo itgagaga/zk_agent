@@ -41,6 +41,24 @@ class FakeAnswerGenerator:
         yield 'data: ' + json.dumps({"type": "done"}) + "\n\n"
 
 
+def test_partial_generation_constraint_does_not_expose_missing_information():
+    evidence = {
+        "retrieval_summary": {
+            "evidence_assessment": {
+                "status": "partial",
+                "missing_information": ["未覆盖：联系电话"],
+            }
+        }
+    }
+
+    generation_question = AgentController._generation_question("学院地址是什么？", evidence)
+
+    assert generation_question.startswith("学院地址是什么？")
+    assert "联系电话" not in generation_question
+    assert "未覆盖项" not in generation_question
+    assert "仅回答现有证据明确支持的内容" in generation_question
+
+
 def test_controller_uses_planner_pipeline_without_exclusive_supervisor_filter():
     controller = AgentController()
     controller.planner = QueryPlanner()

@@ -99,12 +99,10 @@ class AgentController:
         assessment = (evidence.get("retrieval_summary") or {}).get("evidence_assessment") or {}
         if assessment.get("status") != "partial":
             return question
-        missing = assessment.get("missing_information") or []
-        missing_text = "；".join(str(item) for item in missing[:8]) or "部分信息未被证据覆盖"
         return (
             f"{question}\n\n"
-            "【证据边界】当前资料只支持问题的一部分。只回答已有证据明确支持的内容，"
-            f"并明确说明未覆盖项：{missing_text}。不得根据常识补全或声称问题已完整解决。"
+            "【内部生成约束】仅回答现有证据明确支持的内容。直接作答，不要讨论资料是否完整，"
+            "也不要列举无法回答的内容；不得根据常识补全或声称问题已完整解决。"
         )
 
     @staticmethod

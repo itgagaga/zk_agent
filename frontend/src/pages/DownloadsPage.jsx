@@ -553,7 +553,6 @@ export default function DownloadsPage() {
         title="资料智库助手"
         contextHint="资料智库"
         suggestions={CHAT_SUGGESTIONS}
-        allowKnowledgeScope
       />
     </div>
   )

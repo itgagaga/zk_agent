@@ -40,6 +40,19 @@ def test_composite_prompt_requires_specific_personal_facts_before_advice():
     assert "明确区分“文档事实”和“基于事实的建议”" in prompt
 
 
+def test_prompt_suppresses_unrelated_domain_and_tool_diagnostics():
+    prompt = build_qa_prompt(
+        "学校有哪些教学机构？",
+        sources=[{"title": "教学机构", "snippet": "学校设有多个教学单位。"}],
+        evidence_mode="composite",
+    )
+
+    assert "只回答当前问题实际涉及的内容" in prompt
+    assert "不要说明哪些领域未涉及" in prompt
+    assert "哪些工具或 Agent 未调用" in prompt
+    assert "不要为这些内容生成空小节" in prompt
+
+
 def test_answer_generator_exposes_mode_and_keeps_legacy_priority_compatibility():
     generator = object.__new__(AnswerGenerator)
     captured: dict[str, str] = {}

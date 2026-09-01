@@ -254,6 +254,7 @@ def build_qa_prompt(
     return f"""{system}
 
 请根据以下信息回答用户问题，并在回答末尾列出引用来源。
+只回答当前问题实际涉及的内容；不要说明哪些领域未涉及、哪些工具或 Agent 未调用，也不要为这些内容生成空小节。
 {history_block}【当前问题】
 {question}
 
