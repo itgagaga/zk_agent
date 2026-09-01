@@ -22,10 +22,10 @@ class FallbackHandler:
     def __init__(self) -> None:
         self.enabled = settings.enable_fallback
 
-    def no_evidence(self, question: str) -> dict[str, Any]:
+    def no_evidence(self, question: str, message: str | None = None) -> dict[str, Any]:
         """无依据兜底。"""
         return {
-            "answer": FALLBACK_MESSAGE,
+            "answer": message or FALLBACK_MESSAGE,
             "confidence": "low",
             "sources": [],
             "attachments": [],

@@ -10,6 +10,41 @@ from backend.config import settings
 from backend.rag.lexical_index import LexicalDocument, LexicalIndex
 
 
+def normalize_where(where: dict[str, Any] | None) -> dict[str, Any] | None:
+    """将 metadata 过滤条件规范化为 Chroma 接受的单根表达式。"""
+    if not where:
+        return None
+    if len(where) == 1:
+        key, value = next(iter(where.items()))
+        if key in {"$and", "$or"} and isinstance(value, list):
+            clauses: list[dict[str, Any]] = []
+            for clause in value:
+                normalized = normalize_where(clause)
+                if normalized is None:
+                    continue
+                if key == "$and" and set(normalized) == {"$and"}:
+                    clauses.extend(normalized["$and"])
+                else:
+                    clauses.append(normalized)
+            if not clauses:
+                return None
+            if len(clauses) == 1:
+                return clauses[0]
+            return {key: clauses}
+        return dict(where)
+    return {"$and": [{key: value} for key, value in where.items()]}
+
+
+def combine_where(*filters: dict[str, Any] | None) -> dict[str, Any] | None:
+    """组合多个 metadata 条件，统一生成 Chroma 合法的 AND 表达式。"""
+    clauses = [normalized for item in filters if (normalized := normalize_where(item))]
+    if not clauses:
+        return None
+    if len(clauses) == 1:
+        return clauses[0]
+    return normalize_where({"$and": clauses})
+
+
 class VectorStore:
     """向量库封装。"""
 
@@ -81,12 +116,13 @@ class VectorStore:
 
         target = self._target(collection)
         embedding = get_embedder().embed_one(text)
+        normalized_where = normalize_where(where)
         kwargs: dict[str, Any] = {
             "query_embeddings": [embedding],
             "n_results": top_k or settings.rag_top_k,
         }
-        if where:
-            kwargs["where"] = where
+        if normalized_where:
+            kwargs["where"] = normalized_where
         result = target.query(**kwargs)
         return self._format_result(result, ids=result.get("ids", [[]])[0])
 
@@ -100,9 +136,10 @@ class VectorStore:
     ) -> list[dict[str, Any]]:
         """使用中文 BM25 执行词法召回。"""
         target = self._target(collection)
+        normalized_where = normalize_where(where)
         kwargs: dict[str, Any] = {"include": ["documents", "metadatas"]}
-        if where:
-            kwargs["where"] = where
+        if normalized_where:
+            kwargs["where"] = normalized_where
         result = target.get(**kwargs)
         ids = result.get("ids") or []
         docs = result.get("documents") or []
@@ -146,11 +183,12 @@ class VectorStore:
     ) -> None:
         """从向量库删除文档，支持按 id 或按元数据 where 过滤。"""
         target = self._target(collection)
+        normalized_where = normalize_where(where)
         kwargs: dict[str, Any] = {}
         if ids:
             kwargs["ids"] = ids
-        if where:
-            kwargs["where"] = where
+        if normalized_where:
+            kwargs["where"] = normalized_where
         if not kwargs:
             return
         target.delete(**kwargs)
@@ -159,8 +197,9 @@ class VectorStore:
     def count_documents(self, where: dict[str, Any] | None = None, collection: str = "document") -> int:
         """统计文档集合中的 chunk 数量，支持按 where 过滤。"""
         target = self._target(collection)
-        if where:
-            result = target.get(where=where)
+        normalized_where = normalize_where(where)
+        if normalized_where:
+            result = target.get(where=normalized_where)
             return len(result.get("ids", []))
         return target.count()
 
@@ -178,7 +217,7 @@ class VectorStore:
             clauses.append({"doc_id": doc_id})
         if user_id is not None:
             clauses.append({"user_id": int(user_id)})
-        where: dict[str, Any] = clauses[0] if len(clauses) == 1 else {"$and": clauses}
+        where = combine_where(*clauses)
         result = target.get(
             where=where,
             include=["documents", "metadatas"],
@@ -215,9 +254,10 @@ class VectorStore:
     ) -> list[dict[str, Any]]:
         """按 doc_id 取回该文档的全部 chunk（按片段序号排序）。"""
         target = self._target(collection)
-        where: dict[str, Any] = {"doc_id": doc_id}
-        if user_id is not None:
-            where["user_id"] = int(user_id)
+        where = combine_where(
+            {"doc_id": doc_id},
+            {"user_id": int(user_id)} if user_id is not None else None,
+        )
         result = target.get(
             where=where,
             include=["documents", "metadatas"],

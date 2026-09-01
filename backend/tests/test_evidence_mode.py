@@ -23,6 +23,23 @@ def test_prompt_uses_evidence_mode_when_legacy_priority_conflicts():
     assert "020-12345678" in prompt
 
 
+def test_composite_prompt_requires_specific_personal_facts_before_advice():
+    prompt = build_qa_prompt(
+        "我是信计大一新生，有什么学习建议？",
+        user_sources=[
+            {
+                "title": "我的信息与计算科学培养方案",
+                "snippet": "大一课程包括高等数学、程序设计，课程有对应学分和学期安排。",
+            }
+        ],
+        evidence_mode="composite",
+    )
+
+    assert "个人资料主要依据" in prompt
+    assert "具体事实" in prompt
+    assert "明确区分“文档事实”和“基于事实的建议”" in prompt
+
+
 def test_answer_generator_exposes_mode_and_keeps_legacy_priority_compatibility():
     generator = object.__new__(AnswerGenerator)
     captured: dict[str, str] = {}

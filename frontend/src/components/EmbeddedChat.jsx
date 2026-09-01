@@ -12,6 +12,13 @@ import {
   closePanel,
   recoverIfNeeded,
 } from '../embeddedChatStore.js'
+import { getAuthSnapshot, subscribeAuth } from '../authStore.js'
+import {
+  KNOWLEDGE_SCOPE_OPTIONS,
+  isKnowledgeScope,
+  persistKnowledgeScope,
+  readKnowledgeScope,
+} from '../knowledgeScope.js'
 
 const TOOL_LABELS = {
   major_search: '专业查询',
@@ -38,7 +45,12 @@ const CONFIDENCE_LABELS = {
  * - props.contextHint: 上下文提示（如 "资料智库"），也用作 store 实例 key
  * - props.suggestions: 初始建议标签
  */
-export default function EmbeddedChat({ title = '智能体助手', contextHint = '', suggestions = [] }) {
+export default function EmbeddedChat({
+  title = '智能体助手',
+  contextHint = '',
+  suggestions = [],
+  allowKnowledgeScope = false,
+}) {
   const key = contextHint || title
 
   // 订阅模块级 store：组件卸载后状态保留，重新挂载时拿回完整消息
@@ -47,6 +59,14 @@ export default function EmbeddedChat({ title = '智能体助手', contextHint = 
   const messages = state.messages
   const loading = state.loading
   const open = state.open
+  const auth = useSyncExternalStore(subscribeAuth, getAuthSnapshot, getAuthSnapshot)
+  const [knowledgeScope, setKnowledgeScope] = useState(() => (
+    readKnowledgeScope(localStorage, Boolean(auth.token && auth.user))
+  ))
+
+  useEffect(() => {
+    setKnowledgeScope(readKnowledgeScope(localStorage, Boolean(auth.token && auth.user)))
+  }, [auth.token, auth.user])
 
   // 输入框状态持久化，切标签不丢失正在输入的内容
   const [input, setInput] = useStickyInput(key)
@@ -120,7 +140,14 @@ export default function EmbeddedChat({ title = '智能体助手', contextHint = 
     const text = (q || input).trim()
     if (!text || loading) return
     setInput('')
-    await storeAsk(key, text)
+    await storeAsk(key, text, { knowledgeScope: allowKnowledgeScope ? knowledgeScope : 'auto' })
+  }
+
+  function handleKnowledgeScopeChange(event) {
+    const next = event.target.value
+    if (!isKnowledgeScope(next)) return
+    if (next !== 'auto' && !(auth.token && auth.user)) return
+    setKnowledgeScope(persistKnowledgeScope(localStorage, next))
   }
 
   return (
@@ -175,6 +202,27 @@ export default function EmbeddedChat({ title = '智能体助手', contextHint = 
           </div>
 
           <div className="emb-chat-input-bar">
+            {allowKnowledgeScope && (
+              <label className="emb-chat-scope">
+                资料范围
+                <select
+                  value={knowledgeScope}
+                  onChange={handleKnowledgeScopeChange}
+                  disabled={loading}
+                  aria-label="资料范围"
+                >
+                  {KNOWLEDGE_SCOPE_OPTIONS.map(option => (
+                    <option
+                      key={option.value}
+                      value={option.value}
+                      disabled={option.value !== 'auto' && !(auth.token && auth.user)}
+                    >
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
             <input
               ref={inputRef}
               className="emb-chat-input"

@@ -37,7 +37,7 @@ class EvidenceGate:
         ("申请表", ("申请表", "表格", "表")),
         ("联系方式", ("电话", "联系方式", "联系")),
         ("路线", ("路线", "怎么去", "导航")),
-        ("天气", ("天气", "气温", "下雨")),
+        ("天气", ("天气", "气温", "温度", "下雨", "下雪", "带伞", "雨具")),
         ("校区", ("校区", "校园地址", "学校地址")),
     )
     _TOPIC_ALIASES: tuple[tuple[str, tuple[str, ...]], ...] = (
@@ -75,12 +75,10 @@ class EvidenceGate:
         if not settings.rag_evidence_judge_enabled or not settings.deepseek_api_key:
             return
         try:
-            from langchain_deepseek import ChatDeepSeek
+            from backend.utils.deepseek import create_deepseek_chat
 
-            llm = ChatDeepSeek(
+            llm = create_deepseek_chat(
                 model=settings.rag_evidence_judge_model,
-                api_key=settings.deepseek_api_key,
-                base_url=settings.deepseek_base_url,
                 temperature=0.0,
                 max_tokens=1200,
             )
@@ -232,6 +230,46 @@ class EvidenceGate:
         ranked.sort(key=lambda item: (-item[0], item[1].evidence_id))
         return [evidence for _, evidence in ranked]
 
+    def filter_for_answer(
+        self,
+        bundle: EvidenceBundle,
+        assessment: EvidenceAssessment,
+    ) -> list[Evidence]:
+        """按子问题保留个人证据，避免公共证据跨子问题误删私有证据。"""
+        direct_ids = set(assessment.supported_evidence_ids)
+        for subquestion in assessment.subquestions:
+            direct_ids.update(subquestion.directly_supported_ids)
+        subquestion_queries = {
+            subquestion.id: subquestion.query for subquestion in bundle.subquestions
+        }
+
+        selected: list[Evidence] = []
+        for evidence in bundle.evidences:
+            if evidence.retriever != "user_docs":
+                selected.append(evidence)
+                continue
+            if evidence.evidence_id in direct_ids:
+                selected.append(evidence)
+                continue
+
+            # 增强模式允许个人资料作为跨领域建议的补充，但仍拒绝明显冲突的
+            # 私有片段；有明确事实要求时必须由该子问题直接匹配后才能保留。
+            if bundle.diagnostics.get("knowledge_scope") != "with_personal":
+                continue
+            subquestion_id = str(evidence.metadata.get("subquestion_id") or "")
+            query = subquestion_queries.get(subquestion_id, bundle.query)
+            requirements = self._requirements(query)
+            if not requirements:
+                if not self._conflicts(query, evidence):
+                    selected.append(evidence)
+                continue
+            if (
+                self._matches_enough(requirements, evidence)
+                and not self._conflicts(query, evidence)
+            ):
+                selected.append(evidence)
+        return selected
+
     def _assess_subquestion(
         self,
         subquestion_id: str,
@@ -289,10 +327,14 @@ class EvidenceGate:
         ]
         coverage = len(matched) / len(requirements) if requirements else 0.0
         independent_sources = len({self._source_key(evidence) for evidence in ranked_candidates})
+        private_conflict = bool(
+            conflict_list
+            and any(evidence.retriever == "user_docs" for evidence in ranked_candidates)
+        )
 
         if not matched and requirements:
             status: EvidenceStatus = "unsupported"
-        elif coverage >= 0.8 and directly_supported and not critical_missing:
+        elif coverage >= 0.8 and directly_supported and not critical_missing and not private_conflict:
             status = "supported"
         else:
             status = "partial"
@@ -368,6 +410,10 @@ class EvidenceGate:
     def _conflicts(self, query: str, evidence: Evidence) -> list[str]:
         text = f"{evidence.title}\n{evidence.snippet}".lower()
         conflicts: list[str] = []
+        query_years = set(re.findall(r"20\d{2}", query))
+        evidence_years = set(re.findall(r"20\d{2}", text))
+        if query_years and evidence_years and not query_years & evidence_years:
+            conflicts.append("问题要求特定年份，但证据属于其他年份")
         if "本科" in query and any(term in text for term in ("研究生", "硕士", "考研")) and not any(term in text for term in ("本科", "普通高考")):
             conflicts.append("问题要求本科资料，但证据属于研究生/硕士范围")
         if any(term in query for term in ("研究生", "硕士", "考研")) and "本科" in text and not any(term in text for term in ("研究生", "硕士")):

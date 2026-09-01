@@ -9,6 +9,11 @@ import {
 } from './authStore.js'
 import { mergeRetrievalMeta } from './retrievalSummary.js'
 import { extractTextContent } from './utils/llmText.js'
+import {
+  isKnowledgeScope,
+  persistKnowledgeScope,
+  readKnowledgeScope,
+} from './knowledgeScope.js'
 
 const STORAGE_KEY = 'zhku_chat_messages'
 const SESSION_KEY = 'zhku_session_id'
@@ -52,6 +57,10 @@ let state = {
   serverSessionId: null,
   syncing: false,
   authMode: 'guest', // guest | user
+  knowledgeScope: readKnowledgeScope(
+    localStorage,
+    Boolean(getAuthSnapshot().token && getAuthSnapshot().user),
+  ),
 }
 
 let abortRef = null
@@ -117,6 +126,19 @@ export function isLoading() {
 
 export function hasUnfinishedStream() {
   return hasUnfinished
+}
+
+export function setKnowledgeScope(scope) {
+  if (!isKnowledgeScope(scope)) return false
+  const auth = getAuthSnapshot()
+  if (scope !== 'auto' && !(auth.token && auth.user)) {
+    persistKnowledgeScope(localStorage, 'auto')
+    if (state.knowledgeScope !== 'auto') setState({ knowledgeScope: 'auto' })
+    return false
+  }
+  const nextScope = persistKnowledgeScope(localStorage, scope)
+  if (state.knowledgeScope !== nextScope) setState({ knowledgeScope: nextScope })
+  return true
 }
 
 function buildHistory() {
@@ -238,10 +260,12 @@ async function migrateLocalIfNeeded(sessionId, serverMessages) {
 export async function syncWithAuth() {
   const auth = getAuthSnapshot()
   if (!auth.token || !auth.user) {
+    persistKnowledgeScope(localStorage, 'auto')
     setState({
       authMode: 'guest',
       serverSessionId: null,
       messages: loadLocalMessages(),
+      knowledgeScope: 'auto',
     })
     return
   }
@@ -314,6 +338,7 @@ export async function ask(question, autoStick) {
         history,
         session_id: getSessionIdRef(),
         context_hint: null,
+        knowledge_scope: state.knowledgeScope,
       }),
       signal: abortRef.signal,
     })

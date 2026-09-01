@@ -73,7 +73,7 @@ def test_user_document_followup_fetches_keep_user_scope(monkeypatch):
 
     assert store.parent_calls == []
     assert store.query_where == {"user_id": 7}
-    assert store.count_calls[0][0] == {"doc_id": "doc-a", "user_id": 7}
+    assert store.count_calls[0][0] == {"$and": [{"doc_id": "doc-a"}, {"user_id": 7}]}
 
 
 def test_keyword_search_prefers_admission_charter_over_other_2026_documents():

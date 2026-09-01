@@ -47,7 +47,7 @@ def test_hybrid_planner_calls_structured_llm_once_and_preserves_plan_fields():
     assert plan.subquestions[0].entities["campus"] == "海珠校区"
 
 
-def test_hybrid_planner_removes_private_target_for_guest_even_if_llm_requests_it():
+def test_auto_scope_removes_private_target_but_keeps_public_target():
     planner = QueryPlanner()
     planner._structured_llm = FakeStructuredLLM({
         "standalone_query": "我的培养方案学分要求",
@@ -62,5 +62,106 @@ def test_hybrid_planner_removes_private_target_for_guest_even_if_llm_requests_it
     plan = asyncio.run(_resolve(planner, "我的培养方案要求多少学分"))
 
     assert "user_docs" not in plan.retrievers
-    assert "shared_docs" not in plan.retrievers
-    assert "登录" in plan.planner_reason
+    assert "shared_docs" in plan.retrievers
+
+
+def test_scope_is_server_authoritative_and_auto_removes_llm_private_target():
+    planner = QueryPlanner()
+    planner._structured_llm = FakeStructuredLLM({
+        "standalone_query": "信计大一课程安排",
+        "subquestions": [{
+            "id": "q1",
+            "query": "信计大一课程安排",
+            "intent": "major",
+            "retrievers": ["campus_rag", "user_docs"],
+        }],
+    })
+
+    plan = asyncio.run(_resolve(
+        planner,
+        "信计大一要学什么",
+        user_id=7,
+        knowledge_scope="auto",
+        has_personal_documents=True,
+    ))
+
+    assert "user_docs" not in plan.retrievers
+    assert all("user_docs" not in subquestion.retrievers for subquestion in plan.subquestions)
+
+
+def test_auto_scope_falls_back_to_public_plan_when_llm_only_returns_private_target():
+    planner = QueryPlanner()
+    planner._structured_llm = FakeStructuredLLM({
+        "standalone_query": "我的培养方案课程安排",
+        "subquestions": [{
+            "id": "q1",
+            "query": "我的培养方案课程安排",
+            "intent": "private_document",
+            "retrievers": ["user_docs"],
+        }],
+    })
+
+    plan = asyncio.run(_resolve(
+        planner,
+        "我的培养方案课程安排",
+        user_id=7,
+        knowledge_scope="auto",
+        has_personal_documents=True,
+    ))
+
+    assert "user_docs" not in plan.retrievers
+    assert plan.retrievers
+
+
+def test_with_personal_adds_user_docs_when_llm_omits_it():
+    planner = QueryPlanner()
+    planner._structured_llm = FakeStructuredLLM({
+        "standalone_query": "信计大一课程安排",
+        "subquestions": [{
+            "id": "q1",
+            "query": "信计大一课程安排",
+            "intent": "major",
+            "retrievers": ["campus_rag"],
+        }],
+    })
+
+    plan = asyncio.run(_resolve(
+        planner,
+        "信计大一要学什么",
+        user_id=7,
+        knowledge_scope="with_personal",
+        has_personal_documents=True,
+    ))
+
+    assert "campus_rag" in plan.retrievers
+    assert "user_docs" in plan.retrievers
+
+
+def test_curriculum_question_does_not_accept_llm_academic_search_misroute():
+    planner = QueryPlanner()
+    planner._structured_llm = FakeStructuredLLM({
+        "standalone_query": "仲恺农业工程学院信息与计算科学专业大一课程",
+        "subquestions": [{
+            "id": "q1",
+            "query": "仲恺农业工程学院信息与计算科学专业大一课程",
+            "intent": "major",
+            "retrievers": ["academic_search", "campus_rag"],
+        }],
+    })
+
+    plan = asyncio.run(_resolve(planner, "信计大一要学什么"))
+
+    assert "academic_search" not in plan.retrievers
+
+
+def test_rule_planner_splits_broad_major_study_advice_into_actionable_subquestions():
+    planner = QueryPlanner()
+    planner._structured_llm = None
+
+    plan = asyncio.run(_resolve(planner, "我是信计大一新生，你有什么学习建议"))
+
+    assert [subquestion.intent for subquestion in plan.subquestions] == [
+        "curriculum", "practice", "advice",
+    ]
+    assert all("user_docs" not in subquestion.retrievers for subquestion in plan.subquestions)
+    assert all("课程" in subquestion.query or "实践" in subquestion.query or "规划" in subquestion.query for subquestion in plan.subquestions)

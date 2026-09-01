@@ -236,6 +236,43 @@ Evidence Gate 评估概念覆盖；不足时最多补检索一次
 返回答案、来源、附件、入口和置信度
 ```
 
+### 6.1.1 个人知识库资料范围
+
+聊天请求通过 `knowledge_scope` 明确资料范围，取值为 `auto`、
+`with_personal` 或 `personal_only`。`context_hint` 仍然只表示页面上下文，
+不能作为个人知识库开关。
+
+| 范围 | 实际检索边界 | 空个人库行为 |
+|---|---|---|
+| `auto`（标准） | 只执行 Planner 的公开资料、共享文档和工具目标，并强制移除 `user_docs` | 不影响默认流程 |
+| `with_personal`（增强） | 保留默认目标，并为每个子问题追加带当前 `user_id` 的 `user_docs` | 保留默认检索，并标记个人库不可用 |
+| `personal_only`（私有） | 只执行 `user_docs`，公开资料和工具不得调用，重试也不能越界 | 直接进入个人资料未覆盖的兜底 |
+
+结合模式表示“增加一个个人资料覆盖层”，不表示私有资料自动优先。所有证据仍经
+Evidence Fusion 和 Evidence Gate 处理；天气、路线等实时问题以对应工具为准，
+无关个人片段不会进入最终来源。未登录用户使用两个个人范围时由 API 返回 `401`。
+
+路由和检索 SSE 事件，以及非流式响应的 `retrieval_summary`，会返回以下不含私有
+正文的诊断字段：
+
+| 字段 | 含义 |
+|---|---|
+| `knowledge_scope` | 本次请求选择的范围 |
+| `base_retrievers` | 应用资料范围前的默认检索目标 |
+| `effective_retrievers` | 应用范围后实际允许执行的目标 |
+| `personal_documents_requested` | 是否请求个人资料范围 |
+| `personal_documents_available` | 请求个人范围时，当前用户是否存在个人文档 |
+| `personal_documents_attempted` | 是否实际启动过个人资料检索 |
+| `personal_documents_hit` | 个人资料检索是否召回至少一条候选 |
+| `personal_documents_status` | `not_requested`、`empty_library`、`retrieved`、`no_hit`、`failed` 或 `skipped` |
+| `personal_documents_used` | 最终证据中是否实际命中个人文档 |
+| `retriever_status` | 每个检索器的 `status`、尝试次数、候选数量和安全的异常类型/阶段 |
+
+这些字段只描述检索范围和使用状态，不返回个人文档正文、片段内容、标题或分数。
+服务端同时按 `trace_id` 记录每个检索器的结构化状态，例如
+`retrieval trace_id=... retriever=user_docs status=error candidate_count=0 error_type=ValueError`。
+日志不记录完整问题、个人文档正文或原始异常消息，因此可以定位“未执行、无命中、执行失败”而不泄露私有内容。
+
 ### 6.2 检索计划示例
 
 | 用户问题 | 意图 | 处理方式 |

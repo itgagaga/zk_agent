@@ -28,6 +28,7 @@ class EvidenceFusion:
         *,
         retrievers: list[str],
         trace_id: str | None = None,
+        max_items: int | None = None,
     ) -> EvidenceBundle:
         candidates = list(evidences)
         self._assign_missing_ranks(candidates)
@@ -49,7 +50,7 @@ class EvidenceFusion:
                     else unique[key].score
                 )
 
-        selected = sorted(
+        ranked = sorted(
             unique.values(),
             key=lambda item: (
                 -item.fusion_score,
@@ -58,7 +59,8 @@ class EvidenceFusion:
                 item.retriever,
                 item.evidence_id,
             ),
-        )[: self.max_items]
+        )
+        selected = ranked[: self.max_items if max_items is None else max_items]
         independent = len({item.retriever for item in selected})
         expected = len(set(retrievers))
         coverage = independent / expected if expected else 0.0

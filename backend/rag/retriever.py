@@ -7,7 +7,7 @@ from __future__ import annotations
 from typing import Any
 
 from backend.config import settings
-from backend.rag.vector_store import get_vector_store
+from backend.rag.vector_store import combine_where, get_vector_store
 
 
 class RAGRetriever:
@@ -125,9 +125,7 @@ class RAGRetriever:
 
         user_where: dict[str, Any] | None = where
         if is_user_doc:
-            user_where = {"user_id": int(user_id)}
-            if where:
-                user_where = {"$and": [user_where, where]}
+            user_where = combine_where({"user_id": int(user_id)}, where)
 
         query_top_k = max(effective_top_k * 4, effective_top_k + 8)
         hits = self._annotate_ranks(
@@ -250,9 +248,10 @@ class RAGRetriever:
                     ),
                     None,
                 )
-            where: dict[str, Any] = {"doc_id": doc_id}
-            if scoped_user_id is not None:
-                where["user_id"] = int(scoped_user_id)
+            where = combine_where(
+                {"doc_id": doc_id},
+                {"user_id": int(scoped_user_id)} if scoped_user_id is not None else None,
+            )
             chunk_count = self.store.count_documents(
                 where=where,
                 collection="user_docs",

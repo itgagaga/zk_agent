@@ -1,0 +1,38 @@
+@startuml
+title 个人知识库资料范围与检索边界
+
+start
+:ChatRequest\nknowledge_scope;
+:Query Planner 生成默认公共计划;
+
+if (资料范围?) then (自动)
+  :移除 user_docs;
+elseif (结合个人资料)
+  if (已登录且存在个人文档?) then (是)
+    :保留默认目标;
+    :为每个子问题追加 user_docs;
+  else (空库)
+    :保留默认目标;
+    :记录个人库不可用;
+  endif
+else (仅个人资料)
+  if (已登录且存在个人文档?) then (是)
+    :替换为 user_docs;
+  else (空库)
+    :不创建公开或私有检索任务;
+    :进入个人资料未覆盖兜底;
+  endif
+endif
+
+:Retrieval Manager 再次校验范围;
+:所有 user_docs 调用携带当前 user_id;
+:记录每个 retriever 的状态;
+note right
+成功 / 无命中 / 失败 / 跳过
+按 trace_id 关联
+end note
+:Evidence Fusion;
+:Evidence Gate 过滤无关私有片段;
+:输出范围、命中、采用和失败诊断;
+stop
+@enduml

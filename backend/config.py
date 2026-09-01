@@ -31,7 +31,19 @@ class Settings(BaseSettings):
     deepseek_base_url: str = Field(
         default="https://api.deepseek.com", alias="DEEPSEEK_BASE_URL"
     )
-    deepseek_model: str = Field(default="deepseek-chat", alias="DEEPSEEK_MODEL")
+    deepseek_model: str = Field(default="deepseek-v4-flash", alias="DEEPSEEK_MODEL")
+    deepseek_thinking_mode: Literal["enabled", "disabled"] = Field(
+        default="disabled", alias="DEEPSEEK_THINKING_MODE"
+    )
+    deepseek_reasoning_effort: Literal["low", "high", "max"] = Field(
+        default="low", alias="DEEPSEEK_REASONING_EFFORT"
+    )
+    deepseek_timeout_seconds: float = Field(
+        default=60.0, alias="DEEPSEEK_TIMEOUT_SECONDS", gt=0
+    )
+    deepseek_max_retries: int = Field(
+        default=1, alias="DEEPSEEK_MAX_RETRIES", ge=0, le=3
+    )
 
     # Embedding
     embedding_model: str = Field(
@@ -149,6 +161,18 @@ class Settings(BaseSettings):
     rag_fusion_mode: Literal["legacy", "rrf"] = Field(
         default="rrf", alias="RAG_FUSION_MODE"
     )
+    rag_personal_priority_policy: Literal["legacy", "adaptive"] = Field(
+        default="adaptive", alias="RAG_PERSONAL_PRIORITY_POLICY"
+    )
+    rag_answer_context_max_chars: int = Field(
+        default=16000, alias="RAG_ANSWER_CONTEXT_MAX_CHARS", ge=2000
+    )
+    rag_candidate_safety_max: int = Field(
+        default=80, alias="RAG_CANDIDATE_SAFETY_MAX", ge=12
+    )
+    rag_evidence_min_utility: float = Field(
+        default=0.0, alias="RAG_EVIDENCE_MIN_UTILITY", ge=0.0, le=1.0
+    )
     rag_reranker_enabled: bool = Field(default=False, alias="RAG_RERANKER_ENABLED")
     rag_reranker_model: str = Field(
         default="BAAI/bge-reranker-base", alias="RAG_RERANKER_MODEL"
@@ -158,7 +182,7 @@ class Settings(BaseSettings):
         default=False, alias="RAG_EVIDENCE_JUDGE_ENABLED"
     )
     rag_evidence_judge_model: str = Field(
-        default="deepseek-chat", alias="RAG_EVIDENCE_JUDGE_MODEL"
+        default="deepseek-v4-flash", alias="RAG_EVIDENCE_JUDGE_MODEL"
     )
 
     # Agent
@@ -166,16 +190,26 @@ class Settings(BaseSettings):
         default="hybrid", alias="QUERY_PLANNER_MODE"
     )
     query_planner_model: str = Field(
-        default="deepseek-chat", alias="QUERY_PLANNER_MODEL"
+        default="deepseek-v4-flash", alias="QUERY_PLANNER_MODEL"
     )
     rag_max_subquestions: int = Field(default=5, alias="RAG_MAX_SUBQUESTIONS", ge=1, le=5)
     rag_max_retry: int = Field(default=1, alias="RAG_MAX_RETRY", ge=0, le=1)
     enable_fallback: bool = Field(default=True, alias="ENABLE_FALLBACK")
 
+    # 启动预热
+    embedding_warmup_enabled: bool = Field(
+        default=True, alias="EMBEDDING_WARMUP_ENABLED"
+    )
+    embedding_warmup_mode: Literal["blocking", "disabled"] = Field(
+        default="blocking", alias="EMBEDDING_WARMUP_MODE"
+    )
+
     # 服务
     app_host: str = Field(default="0.0.0.0", alias="APP_HOST")
     app_port: int = Field(default=8000, alias="APP_PORT")
     app_debug: bool = Field(default=True, alias="APP_DEBUG")
+    app_reload_enabled: bool = Field(default=False, alias="APP_RELOAD_ENABLED")
+    app_reload_dirs: str = Field(default="backend", alias="APP_RELOAD_DIRS")
     log_level: str = Field(default="INFO", alias="LOG_LEVEL")
 
     # JWT 鉴权

@@ -17,11 +17,13 @@ def _offline_planner() -> QueryPlanner:
     return planner
 
 
-def _plan(case, *, user_id: int | None = None):
+def _plan(case, *, user_id: int | None = None, knowledge_scope: str = "auto"):
     return asyncio.run(_resolve(_offline_planner().plan(
         case.question,
         history=case.history,
         user_id=user_id,
+        knowledge_scope=knowledge_scope,
+        has_personal_documents=knowledge_scope != "auto",
     )))
 
 
@@ -40,7 +42,8 @@ def test_rule_fallback_handles_semantic_tool_and_negative_cases():
     plans = []
     for case in cases:
         user_id = 7 if case.id.startswith("private-") and case.id != "private-03" else None
-        plan = _plan(case, user_id=user_id)
+        scope = "with_personal" if user_id is not None else "auto"
+        plan = _plan(case, user_id=user_id, knowledge_scope=scope)
         plans.append(plan)
         predicted = set(plan.retrievers)
         assert case.expected_retrievers.issubset(predicted), case.id
@@ -68,10 +71,15 @@ def test_followup_query_preserves_previous_network_and_new_campus_entities():
 def test_private_documents_require_explicit_intent_and_user_scope():
     planner = _offline_planner()
     weather = asyncio.run(_resolve(planner.plan("今天要不要带伞", user_id=7)))
-    private = asyncio.run(_resolve(planner.plan("我的培养方案要求多少学分", user_id=7)))
+    private = asyncio.run(_resolve(planner.plan(
+        "我的培养方案要求多少学分",
+        user_id=7,
+        knowledge_scope="with_personal",
+        has_personal_documents=True,
+    )))
     guest_private = asyncio.run(_resolve(planner.plan("我的培养方案要求多少学分")))
 
     assert "user_docs" not in weather.retrievers
-    assert private.retrievers == ["user_docs"]
+    assert "user_docs" in private.retrievers
+    assert "major_search" in private.retrievers
     assert "user_docs" not in guest_private.retrievers
-    assert "登录" in guest_private.planner_reason

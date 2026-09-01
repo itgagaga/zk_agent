@@ -1,5 +1,6 @@
 import asyncio
 
+from backend.rag.contracts import EvidenceAssessment, RetrievalPlan, SubQuestion
 from backend.rag.query_planner import QueryPlanner
 from backend.rag.retrieval_manager import RetrievalManager
 
@@ -53,3 +54,59 @@ def test_retry_keeps_history_entities_in_rewritten_query():
     assert "白云校区" in rewritten
     assert "海珠校区" in rewritten
 
+
+def test_personal_only_retry_cannot_expand_to_public_retrievers():
+    class ScopeRetryRetriever:
+        def __init__(self):
+            self.calls = []
+
+        async def search(self, query, top_k=None, where=None):
+            self.calls.append(("campus_rag", query))
+            return [{"chunk_id": "public", "title": "公开课程", "snippet": "公开资料", "score": 0.8}]
+
+        async def search_user_documents(self, query, *, user_id, top_k=None, where=None):
+            self.calls.append(("user_docs", query, user_id))
+            return [{
+                "chunk_id": "private",
+                "title": "个人培养方案",
+                "snippet": "个人资料",
+                "score": 0.8,
+                "metadata": {"user_id": user_id, "doc_id": "private-doc"},
+            }]
+
+    class AlwaysRetryGate:
+        async def assess_async(self, bundle):
+            return EvidenceAssessment(
+                status="partial",
+                should_retry=True,
+                retry_recommended=True,
+                missing_information=["课程安排"],
+            )
+
+        def rank(self, query, evidences):
+            return list(evidences)
+
+    retriever = ScopeRetryRetriever()
+    plan = RetrievalPlan(
+        original_query="课程安排",
+        standalone_query="课程安排",
+        subquestions=[SubQuestion(
+            id="q1",
+            query="课程安排",
+            intent="major",
+            retrievers=["campus_rag"],
+        )],
+        knowledge_scope="personal_only",
+        base_retrievers=["campus_rag"],
+        retrievers=["campus_rag"],
+    )
+
+    bundle = asyncio.run(RetrievalManager(
+        retriever=retriever,
+        tools={},
+        gate=AlwaysRetryGate(),
+    ).retrieve(plan, user_id=7))
+
+    assert all(call[0] == "user_docs" for call in retriever.calls)
+    assert all(call[-1] == 7 for call in retriever.calls)
+    assert bundle.diagnostics["retry_retrievers"] == ["user_docs"]

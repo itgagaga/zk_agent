@@ -106,7 +106,7 @@ export function recoverIfNeeded(key) {
   )
 }
 
-export async function ask(key, question) {
+export async function ask(key, question, options = {}) {
   const text = (question || '').trim()
   const inst = getInstance(key)
   if (!text || inst.state.loading) return
@@ -136,6 +136,7 @@ export async function ask(key, question) {
         history,
         session_id: inst.sessionId,
         context_hint: key,
+        knowledge_scope: options.knowledgeScope || 'auto',
       }),
       signal: inst.abortRef.signal,
     })

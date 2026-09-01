@@ -16,8 +16,9 @@ from sqlalchemy.orm import Session
 
 from backend.agents.controller import AgentController
 from backend.auth.deps import get_current_user, get_current_user_optional
-from backend.database.models import ChatMessage, ChatSession, User
+from backend.database.models import ChatMessage, ChatSession, User, UserDocument
 from backend.database.session import get_db
+from backend.rag.contracts import KnowledgeScope
 
 router = APIRouter()
 
@@ -33,6 +34,9 @@ class ChatRequest(BaseModel):
     history: list[dict] = Field(default_factory=list, description="历史对话，用于多轮上下文")
     context_hint: str | None = Field(
         default=None, max_length=200, description="嵌入式问答页面上下文，仅用于辅助选择检索范围"
+    )
+    knowledge_scope: KnowledgeScope = Field(
+        default="auto", description="资料范围：自动、结合个人资料或仅个人资料"
     )
 
 
@@ -121,14 +125,31 @@ def _own_session(db: Session, session_id: int, user_id: int) -> ChatSession:
     return session
 
 
+def _has_personal_documents(db: Session, user_id: int) -> bool:
+    """只返回个人资料是否存在，不把私有文档内容带入聊天请求。"""
+    return db.query(UserDocument).filter(UserDocument.user_id == user_id).first() is not None
+
+
+def _personal_scope_user_or_401(req: ChatRequest, current_user: User | None) -> None:
+    if req.knowledge_scope != "auto" and current_user is None:
+        raise HTTPException(status_code=401, detail="请先登录后使用个人资料范围")
+
+
 @router.post("", response_model=ChatResponse)
 async def chat(
     req: ChatRequest,
     current_user: User | None = Depends(get_current_user_optional),
+    db: Session = Depends(get_db),
 ) -> ChatResponse:
     """主问答接口（非流式）。"""
+    _personal_scope_user_or_401(req, current_user)
     controller = AgentController()
     role = (current_user.role if current_user else None) or req.user_role
+    has_personal_documents = bool(
+        current_user
+        and req.knowledge_scope != "auto"
+        and _has_personal_documents(db, current_user.id)
+    )
     result = await controller.handle(
         req.question,
         session_id=req.session_id,
@@ -136,6 +157,8 @@ async def chat(
         history=req.history,
         user_id=current_user.id if current_user else None,
         context_hint=req.context_hint,
+        knowledge_scope=req.knowledge_scope,
+        has_personal_documents=has_personal_documents,
     )
     return ChatResponse(**result)
 
@@ -144,11 +167,18 @@ async def chat(
 async def chat_stream(
     req: ChatRequest,
     current_user: User | None = Depends(get_current_user_optional),
+    db: Session = Depends(get_db),
 ) -> StreamingResponse:
     """流式问答接口（SSE）。"""
+    _personal_scope_user_or_401(req, current_user)
     controller = AgentController()
     role = (current_user.role if current_user else None) or req.user_role
     user_id = current_user.id if current_user else None
+    has_personal_documents = bool(
+        current_user
+        and req.knowledge_scope != "auto"
+        and _has_personal_documents(db, current_user.id)
+    )
 
     async def event_generator():
         try:
@@ -159,6 +189,8 @@ async def chat_stream(
                 history=req.history,
                 user_id=user_id,
                 context_hint=req.context_hint,
+                knowledge_scope=req.knowledge_scope,
+                has_personal_documents=has_personal_documents,
             ):
                 yield chunk
         except Exception as exc:

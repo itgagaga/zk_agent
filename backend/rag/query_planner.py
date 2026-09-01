@@ -12,9 +12,9 @@ from typing import Any
 from pydantic import BaseModel, Field
 
 from backend.config import settings
-from backend.rag.contracts import RetrievalPlan, RetrievalTarget, SubQuestion
+from backend.rag.contracts import KnowledgeScope, RetrievalPlan, RetrievalTarget, SubQuestion
 
-__all__ = ["QueryPlanner", "RetrievalPlan", "RetrievalTarget", "SubQuestion"]
+__all__ = ["KnowledgeScope", "QueryPlanner", "RetrievalPlan", "RetrievalTarget", "SubQuestion"]
 
 
 TOOL_TARGETS: set[str] = {
@@ -33,14 +33,17 @@ class PlannerLLMOutput(BaseModel):
 
 PLANNER_SYSTEM_PROMPT = """你是仲恺农业工程学院校园信息服务的查询理解器。
 请把用户当前问题结合最近对话改写为可独立检索的问题，并拆成 1 到 5 个独立子问题。
-只选择真正需要的检索目标，不要因为用户已登录就选择 user_docs。
+只选择真正需要的公共检索目标，不要因为用户已登录就选择 user_docs。
 
 可选检索目标：campus_rag、shared_docs、user_docs、download_search、contact_search、
 service_link_search、major_search、job_search、news_search、weather_search、map_route、academic_search。
 
-user_docs 仅在用户明确提到“我的文档/我上传的/这份文件/根据我的培养方案”等私有上下文时选择。
+不要根据“我的文档/我上传的”等表达选择 user_docs；个人资料范围由服务端确定性叠加。
+“培养方案、课程设置、学分、大一课程”属于校园/专业资料，不是 academic_search。
+只有论文、文献、参考文献、研究成果或学术前沿才使用 academic_search。
 天气和路线等纯实时问题不要默认加入 campus_rag。每个子问题最多选择 4 个检索目标。
 entities 可填写 campus、date、department、major_name、document_type 等字段，filters 只填必要过滤条件。
+对于“某专业/年级有什么建议、如何学习、如何规划”这类宽泛问题，优先拆成课程与学分、实践与培养要求、阶段学习规划等子问题；不要只生成一个泛化的专业介绍查询。
 planner_reason 用一句短话说明意图和是否使用历史，不要生成答案。"""
 
 
@@ -56,6 +59,8 @@ class QueryPlanner:
     _DOWNLOAD = ("下载", "申请表", "表格", "材料", "办理", "学生证", "休学", "学籍异动")
     _MAJOR = ("专业", "学院", "培养方案", "专业目录", "专业代码")
     _ACADEMIC = ("论文", "文献", "参考文献", "学术搜索")
+    _STUDY_ADVICE = ("建议", "怎么学", "如何学习", "学习规划", "学习计划", "如何规划")
+    _STUDY_CONTEXT = ("信计", "信息与计算科学", "大一", "大二", "大三", "大四", "培养方案")
     _PRIVATE = (
         "我的文档", "我上传的", "上传的文档", "这份文件", "这份文档",
         "这份培养方案", "我的培养方案", "根据我的培养方案", "根据培养方案", "私有知识库",
@@ -69,12 +74,10 @@ class QueryPlanner:
         if settings.query_planner_mode == "rule_fallback" or not settings.deepseek_api_key:
             return
         try:
-            from langchain_deepseek import ChatDeepSeek
+            from backend.utils.deepseek import create_deepseek_chat
 
-            llm = ChatDeepSeek(
+            llm = create_deepseek_chat(
                 model=settings.query_planner_model,
-                api_key=settings.deepseek_api_key,
-                base_url=settings.deepseek_base_url,
                 temperature=0.0,
                 max_tokens=1200,
             )
@@ -120,13 +123,20 @@ class QueryPlanner:
         history: list[dict[str, str]] | None = None,
         user_id: int | None = None,
         context_hint: str | None = None,
+        knowledge_scope: KnowledgeScope = "auto",
+        has_personal_documents: bool = False,
     ) -> RetrievalPlan:
         """返回一个可直接使用、也可 await 的计划。
 
         计划对象的 await 兼容桥让旧的同步调用方可以平滑迁移；Controller
         会 await 它，因此启用 LLM 时仍只进行一次异步结构化调用。
         """
-        fallback = self._rule_plan(question, history=history, user_id=user_id, context_hint=context_hint)
+        fallback = self._apply_knowledge_scope(
+            self._rule_plan(question, history=history, user_id=user_id, context_hint=context_hint),
+            knowledge_scope=knowledge_scope,
+            user_id=user_id,
+            has_personal_documents=has_personal_documents,
+        )
         if not self.available:
             return fallback
 
@@ -138,9 +148,15 @@ class QueryPlanner:
                     SystemMessage(content=PLANNER_SYSTEM_PROMPT),
                     HumanMessage(content=f"最近对话：\n{self._history_text(history) or '无'}\n当前问题：{question}"),
                 ])
-                return self._validate_llm_plan(
+                base_plan = self._validate_llm_plan(
                     question, output, fallback=fallback, history=history,
                     user_id=user_id, context_hint=context_hint,
+                )
+                return self._apply_knowledge_scope(
+                    base_plan,
+                    knowledge_scope=knowledge_scope,
+                    user_id=user_id,
+                    has_personal_documents=has_personal_documents,
                 )
             except Exception as exc:
                 fallback.planner_reason = f"LLM 规划不可用，已保守降级：{type(exc).__name__}"
@@ -159,7 +175,6 @@ class QueryPlanner:
     ) -> RetrievalPlan:
         original = question or ""
         standalone, used_history = self._standalone_query(original, history)
-        private_requested = self._private_requested(original, context_hint, history)
         pairs = self._rule_subquestions(standalone)
         if not pairs:
             pairs = [(standalone, "general", ["campus_rag"], {})]
@@ -167,16 +182,9 @@ class QueryPlanner:
         subquestions: list[SubQuestion] = []
         for index, (query, intent, retrievers, entities) in enumerate(pairs[: settings.rag_max_subquestions], 1):
             selected = list(dict.fromkeys(retrievers))[:4]
-            if private_requested and (self._is_private_query(query) or self._hint_is_private(context_hint)):
-                selected = ["user_docs"]
-            requires_private = private_requested and any(r == "user_docs" for r in selected)
-            if private_requested and "user_docs" not in selected and self._is_private_query(query):
-                selected = [*selected[:3], "user_docs"]
-                requires_private = True
-            selected = self._scope_retrievers(selected, user_id=user_id, private_requested=private_requested)
             subquestions.append(SubQuestion(
                 id=f"q{index}", query=query, intent=intent, retrievers=selected,
-                entities=entities, requires_private_context=requires_private,
+                entities=entities,
             ))
 
         intents = {subq.intent for subq in subquestions}
@@ -187,14 +195,13 @@ class QueryPlanner:
                 first.retrievers.append("campus_rag")
 
         retrievers = list(dict.fromkeys(r for subq in subquestions for r in subq.retrievers))
-        reason = "规则降级：仅选择高精度意图目标"
+        reason = "规则降级：仅选择高精度公共意图目标"
         if used_history:
             reason += "；已结合最近对话补全当前问题"
-        if private_requested and user_id is None:
-            reason += "；检测到私有文档意图但当前未登录，需要登录后检索"
         return RetrievalPlan(
             original_query=original, standalone_query=standalone, subquestions=subquestions,
-            retrievers=retrievers, used_history=used_history, planner_source="rule_fallback",
+            base_retrievers=retrievers, retrievers=retrievers, used_history=used_history,
+            planner_source="rule_fallback",
             planner_reason=reason, trace_id=uuid.uuid4().hex,
         )
 
@@ -242,6 +249,31 @@ class QueryPlanner:
             ):
                 if any(term in query for term in terms):
                     found.append((f"{query}（查询{label}）", label, targets, {}))
+        if (
+            any(term in query for term in self._STUDY_ADVICE)
+            and any(term in query for term in self._STUDY_CONTEXT)
+        ):
+            curriculum_targets = ["campus_rag", "shared_docs", "major_search"]
+            found = [
+                (
+                    f"{query}；查询培养方案中的课程与学分",
+                    "curriculum",
+                    curriculum_targets,
+                    {},
+                ),
+                (
+                    f"{query}；查询培养方案中的实践与培养要求",
+                    "practice",
+                    curriculum_targets,
+                    {},
+                ),
+                (
+                    f"{query}；基于课程安排制定阶段学习规划",
+                    "advice",
+                    curriculum_targets,
+                    {},
+                ),
+            ]
         return found
 
     def _validate_llm_plan(
@@ -256,44 +288,125 @@ class QueryPlanner:
     ) -> RetrievalPlan:
         parsed = output if isinstance(output, PlannerLLMOutput) else PlannerLLMOutput.model_validate(output)
         standalone = self.normalize(parsed.standalone_query) or fallback.standalone_query
-        private_requested = self._private_requested(question, context_hint, history)
         subquestions: list[SubQuestion] = []
         for index, raw in enumerate(parsed.subquestions[: settings.rag_max_subquestions], 1):
             query = self.normalize(raw.query)[:500] or standalone
-            selected = [name for name in raw.retrievers if name in TOOL_TARGETS or name in {"campus_rag", "shared_docs", "user_docs"}]
+            selected = [
+                name for name in raw.retrievers
+                if name in TOOL_TARGETS or name in {"campus_rag", "shared_docs"}
+            ]
             selected = list(dict.fromkeys(selected))[:4]
-            if not (private_requested and user_id is not None):
-                selected = [name for name in selected if name != "user_docs"]
-                if private_requested and (self._is_private_query(query) or self._hint_is_private(context_hint)):
-                    selected = [name for name in selected if name not in {"shared_docs", "campus_rag"}]
+            if self._is_curriculum_query(" ".join((question, standalone, query))):
+                selected = [name for name in selected if name != "academic_search"]
             if not selected:
-                private_guest = private_requested and user_id is None and (
-                    self._is_private_query(query) or self._hint_is_private(context_hint)
-                )
-                selected = [] if private_guest else (
-                    ["campus_rag"] if not self._is_realtime_query(query) else fallback.subquestions[0].retrievers
-                )
+                fallback_subquestion = fallback.subquestions[min(index - 1, len(fallback.subquestions) - 1)]
+                selected = [
+                    name for name in fallback_subquestion.retrievers
+                    if name != "user_docs"
+                ]
+                if not selected and not self._is_realtime_query(query):
+                    selected = ["campus_rag"]
             entities = {str(k): str(v)[:100] for k, v in raw.entities.items() if str(v).strip()}
             subquestions.append(raw.model_copy(update={
                 "id": f"q{index}", "query": query, "retrievers": selected,
                 "entities": entities,
-                "requires_private_context": private_requested and "user_docs" in selected,
+                "requires_private_context": False,
             }))
         if not subquestions:
-            return fallback
+            return RetrievalPlan(
+                original_query=question,
+                standalone_query=standalone,
+                language=parsed.language or "zh",
+                subquestions=[SubQuestion(id="q1", query=standalone, retrievers=["campus_rag"])],
+                base_retrievers=["campus_rag"],
+                retrievers=["campus_rag"],
+                used_history=bool(history),
+                planner_source="llm",
+                planner_reason=(parsed.planner_reason or "LLM 完成查询改写、意图识别和问题分解")[:300],
+                trace_id=fallback.trace_id,
+            )
         retrievers = list(dict.fromkeys(r for subq in subquestions for r in subq.retrievers))
         reason = (parsed.planner_reason or "LLM 完成查询改写、意图识别和问题分解")[:300]
-        if private_requested and user_id is None:
-            reason += "；私有文档需要登录"
         return RetrievalPlan(
             original_query=question, standalone_query=standalone, language=parsed.language or "zh",
-            subquestions=subquestions, retrievers=retrievers, used_history=bool(history),
+            subquestions=subquestions, base_retrievers=retrievers, retrievers=retrievers, used_history=bool(history),
             planner_source="llm", planner_reason=reason, trace_id=fallback.trace_id,
         )
 
-    def _scope_retrievers(self, retrievers: list[str], *, user_id: int | None, private_requested: bool) -> list[str]:
-        scoped = [r for r in retrievers if r != "user_docs" or (private_requested and user_id is not None)]
-        return scoped or (["campus_rag"] if not retrievers else [])
+    def _apply_knowledge_scope(
+        self,
+        plan: RetrievalPlan,
+        *,
+        knowledge_scope: KnowledgeScope,
+        user_id: int | None,
+        has_personal_documents: bool,
+    ) -> RetrievalPlan:
+        """把用户选择应用到公共基础计划，LLM/历史不能覆盖该结果。"""
+        if knowledge_scope not in {"auto", "with_personal", "personal_only"}:
+            raise ValueError(f"不支持的 knowledge_scope: {knowledge_scope}")
+        if knowledge_scope != "auto" and user_id is None:
+            raise PermissionError("个人资料范围需要登录")
+
+        base_subquestions = [
+            subquestion.model_copy(update={
+                "retrievers": [r for r in subquestion.retrievers if r != "user_docs"],
+                "requires_private_context": False,
+            })
+            for subquestion in plan.subquestions
+        ]
+        base_retrievers = list(dict.fromkeys(
+            retriever
+            for subquestion in base_subquestions
+            for retriever in subquestion.retrievers
+        ))
+        diagnostics = dict(plan.diagnostics)
+        scoped_subquestions = base_subquestions
+        reason = plan.planner_reason
+
+        if knowledge_scope == "with_personal" and not has_personal_documents:
+            diagnostics["personal_documents_empty"] = True
+            reason = f"{reason}；个人知识库为空，保留公共检索"
+        elif knowledge_scope == "with_personal":
+            scoped_subquestions = [subquestion.model_copy(update={
+                "retrievers": [*subquestion.retrievers, "user_docs"],
+                "requires_private_context": True,
+            }) for subquestion in base_subquestions]
+            reason = f"{reason}；已叠加个人知识库"
+        elif knowledge_scope == "personal_only":
+            if not has_personal_documents:
+                diagnostics["personal_documents_empty"] = True
+                scoped_subquestions = [subquestion.model_copy(update={
+                    "retrievers": [], "requires_private_context": True,
+                }) for subquestion in base_subquestions]
+                reason = f"{reason}；个人知识库为空，未改用公共资料"
+            else:
+                scoped_subquestions = [subquestion.model_copy(update={
+                    "retrievers": ["user_docs"], "requires_private_context": True,
+                }) for subquestion in base_subquestions]
+                reason = f"{reason}；仅使用个人知识库"
+
+        effective_retrievers = list(dict.fromkeys(
+            retriever
+            for subquestion in scoped_subquestions
+            for retriever in subquestion.retrievers
+        ))
+        return plan.model_copy(update={
+            "knowledge_scope": knowledge_scope,
+            "base_retrievers": base_retrievers,
+            "subquestions": scoped_subquestions,
+            "retrievers": effective_retrievers,
+            "diagnostics": diagnostics,
+            "planner_reason": reason,
+        })
+
+    def _is_curriculum_query(self, text: str) -> bool:
+        curriculum_terms = (
+            "培养方案", "课程", "课程设置", "课程安排", "教学计划", "教学安排",
+            "学分", "大一", "大二", "大三", "大四",
+        )
+        return any(term in text for term in curriculum_terms) and not any(
+            term in text for term in self._ACADEMIC
+        )
 
     def _private_requested(self, question: str, context_hint: str | None, history: list[dict[str, str]] | None) -> bool:
         text = " ".join([question or "", context_hint or "", self._history_text(history)])

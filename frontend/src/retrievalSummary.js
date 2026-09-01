@@ -9,3 +9,20 @@ export function mergeRetrievalMeta(previous = {}, incoming = {}) {
     confidence: incoming.confidence ?? previous.confidence,
   }
 }
+
+export function getPersonalScopeStatus(summary = {}) {
+  if (!summary || summary.knowledge_scope === 'auto') return null
+
+  if (summary.personal_documents_used) {
+    return { tone: 'success', symbol: '✓', label: '已使用个人资料' }
+  }
+
+  const labels = {
+    no_hit: { tone: 'neutral', symbol: '⌕', label: '个人资料未命中' },
+    failed: { tone: 'warning', symbol: '!', label: '个人资料检索失败' },
+    empty_library: { tone: 'neutral', symbol: '∅', label: '个人知识库为空' },
+    skipped: { tone: 'neutral', symbol: '–', label: '个人资料未执行' },
+    retrieved: { tone: 'neutral', symbol: '·', label: '个人资料已检索，未作为回答依据' },
+  }
+  return labels[summary.personal_documents_status] || null
+}

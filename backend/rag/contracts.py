@@ -15,6 +15,8 @@ from pydantic import BaseModel, Field, PrivateAttr
 
 EvidenceKind = Literal["rag", "document", "tool", "api"]
 EvidenceStatus = Literal["supported", "partial", "unsupported"]
+KnowledgeScope = Literal["auto", "with_personal", "personal_only"]
+PersonalRelevanceLevel = Literal["high", "medium", "low", "none"]
 
 # Planner 输出的检索器白名单。LLM 只能从这里选择，实际调用仍由服务端映射。
 RetrievalTarget = Literal[
@@ -52,7 +54,10 @@ class RetrievalPlan(BaseModel, Coroutine[Any, Any, "RetrievalPlan"]):
     standalone_query: str
     language: str = "zh"
     subquestions: list[SubQuestion] = Field(default_factory=list)
+    knowledge_scope: KnowledgeScope = "auto"
+    base_retrievers: list[RetrievalTarget] = Field(default_factory=list)
     retrievers: list[RetrievalTarget] = Field(default_factory=list)
+    diagnostics: dict[str, Any] = Field(default_factory=dict)
     used_history: bool = False
     planner_source: Literal["llm", "rule_fallback"] = "rule_fallback"
     planner_reason: str = ""
@@ -110,6 +115,18 @@ class SubquestionAssessment(BaseModel):
     conflicts: list[str] = Field(default_factory=list)
     independent_source_count: int = 0
     reason: str = ""
+
+
+class PersonalRelevanceAssessment(BaseModel):
+    """个人资料对单个子问题的相关性诊断，不包含私有正文。"""
+
+    subquestion_id: str
+    level: PersonalRelevanceLevel
+    personal_candidate_count: int = 0
+    personal_selected_count: int = 0
+    matched_concepts: list[str] = Field(default_factory=list)
+    has_conflict: bool = False
+    reason_code: str = "no_personal_evidence"
 
 
 class EvidenceAssessment(BaseModel):

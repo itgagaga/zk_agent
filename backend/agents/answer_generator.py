@@ -5,12 +5,18 @@
 from __future__ import annotations
 
 import json
+import logging
+import time
 from typing import Any, AsyncGenerator
 
 from backend.config import settings
 from backend.rag.prompt_templates import build_qa_prompt
 from backend.rag.retriever import RAGRetriever
+from backend.utils.deepseek import create_deepseek_chat
 from backend.utils.llm_content import extract_text_content
+
+
+logger = logging.getLogger(__name__)
 
 
 class AnswerGenerator:
@@ -30,12 +36,8 @@ class AnswerGenerator:
         if not settings.deepseek_api_key:
             return
         try:
-            from langchain_deepseek import ChatDeepSeek
-
-            self.llm = ChatDeepSeek(
+            self.llm = create_deepseek_chat(
                 model=settings.deepseek_model,
-                api_key=settings.deepseek_api_key,
-                base_url=settings.deepseek_base_url,
                 temperature=0.3,
                 max_tokens=2000,
             )
@@ -164,6 +166,10 @@ class AnswerGenerator:
 
     async def generate_stream(self, question: str, evidence: dict[str, Any], history: list[dict[str, str]] | None = None) -> AsyncGenerator[str, None]:
         """流式生成回答，逐条 yield SSE 格式字符串。"""
+        started_at = time.perf_counter()
+        retrieval_summary = evidence.get("retrieval_summary") or {}
+        trace_id = retrieval_summary.get("trace_id", "-")
+        logger.info("answer_stream_started trace_id=%s", trace_id)
         sources, attachments, tools_used, tool_results, user_sources = self._prepare_evidence(evidence)
         confidence = self._confidence(sources + user_sources)
 
@@ -197,24 +203,86 @@ class AnswerGenerator:
             evidence_priority=evidence.get("evidence_priority"),
         )
         emitted_text = False
+        first_token_at: float | None = None
+        reasoning_chunks = 0
+        reasoning_chars = 0
+        finish_reason: str | None = None
+        usage_present = False
+        stream_status = "completed"
         if self.llm is None:
             emitted_text = True
+            stream_status = "llm_uninitialized"
             yield f'data: {json.dumps({"type": "token", "content": "(LLM 未初始化，请检查 DEEPSEEK_API_KEY 配置)"}, ensure_ascii=False)}\n\n'
         else:
             try:
                 async for chunk in self.llm.astream(prompt):
+                    response_metadata = getattr(chunk, "response_metadata", {}) or {}
+                    generation_info = getattr(chunk, "generation_info", {}) or {}
+                    finish_reason = (
+                        response_metadata.get("finish_reason")
+                        or generation_info.get("finish_reason")
+                        or finish_reason
+                    )
+                    usage_present = usage_present or bool(
+                        response_metadata.get("usage")
+                        or response_metadata.get("token_usage")
+                        or getattr(chunk, "usage_metadata", None)
+                    )
+                    additional_kwargs = getattr(chunk, "additional_kwargs", {}) or {}
+                    reasoning = additional_kwargs.get("reasoning_content")
+                    if reasoning:
+                        reasoning_chunks += 1
+                        reasoning_chars += len(str(reasoning))
                     token = extract_text_content(chunk)
                     if token:
                         emitted_text = True
+                        if first_token_at is None:
+                            first_token_at = time.perf_counter()
+                            logger.info(
+                                "answer_stream_first_token trace_id=%s duration_ms=%.1f",
+                                trace_id,
+                                (first_token_at - started_at) * 1000,
+                            )
                         yield f'data: {json.dumps({"type": "token", "content": token}, ensure_ascii=False)}\n\n'
             except Exception as e:
-                emitted_text = True
-                yield f'data: {json.dumps({"type": "token", "content": f"(LLM 调用失败: {e})"}, ensure_ascii=False)}\n\n'
+                stream_status = "error"
+                logger.warning(
+                    "answer_stream_error trace_id=%s error_type=%s",
+                    trace_id,
+                    type(e).__name__,
+                )
+                if not emitted_text:
+                    emitted_text = True
+                    yield f'data: {json.dumps({"type": "token", "content": "(LLM 调用失败，请稍后重试)"}, ensure_ascii=False)}\n\n'
 
         # 某些兼容接口会正常结束，但整个流只有空 content/reasoning 块。
         # 不能只发 done，否则前端会留下“仅有来源引用”的空回答。
         if not emitted_text:
+            stream_status = "empty"
+            logger.warning(
+                "answer_stream_empty trace_id=%s finish_reason=%s reasoning_chunks=%s "
+                "reasoning_chars=%s duration_ms=%.1f",
+                trace_id,
+                finish_reason or "unknown",
+                reasoning_chunks,
+                reasoning_chars,
+                (time.perf_counter() - started_at) * 1000,
+            )
             yield f'data: {json.dumps({"type": "token", "content": "模型未返回有效回答，请重试。"}, ensure_ascii=False)}\n\n'
+
+        logger.info(
+            "answer_stream_completed trace_id=%s status=%s finish_reason=%s "
+            "reasoning_chunks=%s reasoning_chars=%s usage_present=%s "
+            "first_token_ms=%s duration_ms=%.1f",
+            trace_id,
+            stream_status,
+            finish_reason or "unknown",
+            reasoning_chunks,
+            reasoning_chars,
+            usage_present,
+            f"{(first_token_at - started_at) * 1000:.1f}" if first_token_at else "-",
+            (time.perf_counter() - started_at) * 1000,
+        )
 
         # 3. 发 done
         yield f'data: {json.dumps({"type": "done"}, ensure_ascii=False)}\n\n'

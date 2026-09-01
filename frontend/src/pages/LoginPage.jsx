@@ -24,6 +24,10 @@ export default function LoginPage() {
       await login(username.trim(), password)
       navigate(from, { replace: true })
     } catch (err) {
+      if (!err?.response) {
+        setError('服务正在启动或重启，请稍后重试')
+        return
+      }
       const detail = err?.response?.data?.detail
       setError(typeof detail === 'string' ? detail : '登录失败，请检查账号密码')
     } finally {

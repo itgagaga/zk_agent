@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, useCallback, useSyncExternalStore } from '
 import { useSearchParams } from 'react-router-dom'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import { BookOpen, LockKeyhole, Sparkles } from 'lucide-react'
 import {
   subscribe,
   getState,
@@ -10,7 +11,10 @@ import {
   clearChat as storeClear,
   deleteMessage as storeDelete,
   recoverIfNeeded,
+  setKnowledgeScope,
 } from '../chatStore.js'
+import { KNOWLEDGE_SCOPE_OPTIONS } from '../knowledgeScope.js'
+import { getPersonalScopeStatus } from '../retrievalSummary.js'
 
 const SUGGESTIONS = [
   '仲恺农业工程学院有几个校区？',
@@ -35,6 +39,12 @@ const CONFIDENCE_LABELS = {
   high: { text: '高可信', color: '#16a34a' },
   medium: { text: '中可信', color: '#ea580c' },
   low: { text: '低可信', color: '#dc2626' },
+}
+
+const SCOPE_ICONS = {
+  standard: BookOpen,
+  enhanced: Sparkles,
+  private: LockKeyhole,
 }
 
 function generateFollowUps(question) {
@@ -65,6 +75,11 @@ export default function ChatPage() {
   const state = useSyncExternalStore(subscribe, getState, getState)
   const messages = state.messages
   const loading = state.loading
+  const isAuthenticated = state.authMode === 'user'
+  const selectedScope = KNOWLEDGE_SCOPE_OPTIONS.find(
+    (option) => option.value === (state.knowledgeScope || 'auto')
+  ) || KNOWLEDGE_SCOPE_OPTIONS[0]
+  const ScopeIcon = SCOPE_ICONS[selectedScope.tone]
   const messagesEndRef = useRef(null)
   const messagesWrapRef = useRef(null)
   const inputRef = useRef(null)
@@ -226,6 +241,33 @@ export default function ChatPage() {
 
       <div className="chat-input-bar">
         <div className="chat-input-inner">
+          <div className="chat-scope-control">
+            <span
+              className={`chat-scope-icon is-${selectedScope.tone}`}
+              title={selectedScope.description}
+              aria-hidden="true"
+            >
+              <ScopeIcon size={15} strokeWidth={2} />
+            </span>
+            <label htmlFor="knowledge-scope">资料模式</label>
+            <select
+              id="knowledge-scope"
+              value={state.knowledgeScope || 'auto'}
+              onChange={(e) => setKnowledgeScope(e.target.value)}
+              disabled={loading}
+              title={selectedScope.description}
+            >
+              {KNOWLEDGE_SCOPE_OPTIONS.map((option) => (
+                <option
+                  key={option.value}
+                  value={option.value}
+                  disabled={option.value !== 'auto' && !isAuthenticated}
+                >
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
           <input
             ref={inputRef}
             className="chat-input-field"
@@ -265,7 +307,7 @@ export default function ChatPage() {
           </button>
         </div>
         <div className="chat-input-hint">
-          按 Enter 发送 · AI 基于仲恺官网资料与知识库文档回答，可能存在延迟
+          按 Enter 发送 · {isAuthenticated ? '登录后可选择增强或私有模式' : '登录后可使用增强或私有模式'} · AI 可能存在延迟
         </div>
       </div>
     </div>
@@ -303,6 +345,7 @@ function MessageBubble({ message, index, onDelete, onAsk, loading, prevQuestion 
   }
 
   const conf = data ? CONFIDENCE_LABELS[data.confidence] : null
+  const personalScopeStatus = getPersonalScopeStatus(data?.retrieval_summary)
 
   return (
     <div className="msg-row msg-row-ai">
@@ -322,6 +365,18 @@ function MessageBubble({ message, index, onDelete, onAsk, loading, prevQuestion 
               <ReactMarkdown remarkPlugins={[remarkGfm]}>{message.content}</ReactMarkdown>
               {streaming && <span className="typing-cursor" />}
             </div>
+
+            {personalScopeStatus && (
+              <div
+                className={`personal-scope-badge is-${personalScopeStatus.tone}`}
+                role="status"
+              >
+                <span className="personal-scope-symbol" aria-hidden="true">
+                  {personalScopeStatus.symbol}
+                </span>
+                {personalScopeStatus.label}
+              </div>
+            )}
 
             {data && !streaming && (
               <AnswerDetails data={data} />

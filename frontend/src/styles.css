@@ -1193,6 +1193,58 @@ button {
   -webkit-box-orient: vertical;
 }
 
+.personal-scope-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.personal-scope-symbol {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.personal-scope-badge.is-success {
+  color: #15803d;
+  background: rgba(22, 163, 74, 0.1);
+}
+
+.personal-scope-badge.is-success .personal-scope-symbol {
+  color: var(--color-white);
+  background: #16a34a;
+}
+
+.personal-scope-badge.is-neutral {
+  color: var(--color-slate);
+  background: rgba(105, 105, 105, 0.1);
+}
+
+.personal-scope-badge.is-neutral .personal-scope-symbol {
+  color: var(--color-white);
+  background: var(--color-slate);
+}
+
+.personal-scope-badge.is-warning {
+  color: #b45309;
+  background: rgba(245, 158, 11, 0.14);
+}
+
+.personal-scope-badge.is-warning .personal-scope-symbol {
+  color: var(--color-white);
+  background: #d97706;
+}
+
 /* 附件区 */
 .detail-attachments {
   margin-top: 12px;
@@ -1242,6 +1294,62 @@ button {
   display: flex;
   gap: 10px;
   align-items: center;
+}
+
+.chat-scope-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  min-height: 48px;
+  padding: 0 12px 0 14px;
+  background: var(--color-white);
+  border: 1.5px solid var(--color-dust-taupe);
+  border-radius: var(--radius-pill);
+  color: var(--color-slate);
+  font-size: 12px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.chat-scope-icon {
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.chat-scope-icon.is-standard {
+  color: var(--color-link-blue);
+  background: rgba(56, 96, 190, 0.1);
+}
+
+.chat-scope-icon.is-enhanced {
+  color: var(--color-signal-orange);
+  background: rgba(207, 69, 0, 0.1);
+}
+
+.chat-scope-icon.is-private {
+  color: #7c3aed;
+  background: rgba(124, 58, 237, 0.1);
+}
+
+.chat-scope-control select {
+  min-width: 58px;
+  border: 0;
+  outline: 0;
+  color: var(--color-ink);
+  background: transparent;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.chat-scope-control:focus-within {
+  border-color: var(--color-signal-orange);
+  box-shadow: 0 0 0 3px rgba(207, 69, 0, 0.1);
 }
 
 .chat-input-field {
@@ -1308,6 +1416,30 @@ button {
   font-size: 12px;
   color: var(--color-slate);
   margin-top: 8px;
+}
+
+@media (max-width: 640px) {
+  .chat-input-inner {
+    flex-wrap: wrap;
+  }
+
+  .chat-scope-control {
+    order: 2;
+    flex: 1;
+  }
+
+  .chat-scope-control select {
+    flex: 1;
+  }
+
+  .chat-input-field {
+    order: 1;
+    min-width: 0;
+  }
+
+  .chat-send-btn {
+    order: 1;
+  }
 }
 
 /* 上传按钮 */
@@ -6111,6 +6243,25 @@ a.as-paper-title:hover {
   border-top: 1px solid var(--color-dust-taupe);
   background: var(--color-white);
   flex-shrink: 0;
+}
+
+.emb-chat-scope {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex: 0 0 auto;
+  color: var(--color-slate);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.emb-chat-scope select {
+  border: 1px solid var(--color-line);
+  border-radius: 6px;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-size: 11px;
+  padding: 3px 18px 3px 5px;
 }
 
 .emb-chat-input {
