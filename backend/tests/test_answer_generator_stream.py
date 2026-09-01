@@ -19,8 +19,10 @@ class _Chunk:
 class _LLM:
     def __init__(self, chunks):
         self.chunks = chunks
+        self.prompts = []
 
     async def astream(self, prompt):
+        self.prompts.append(prompt)
         for chunk in self.chunks:
             yield chunk
 
@@ -109,6 +111,78 @@ def test_stream_diagnoses_reasoning_only_length_completion(caplog):
     assert "trace-reasoning-only" in caplog.text
     assert "finish_reason=length" in caplog.text
     assert "reasoning_chunks=1" in caplog.text
+
+
+def _duplicate_source_evidence():
+    return {
+        "evidence_mode": "composite",
+        "rag_hits": [
+            {
+                "title": "本科招生章程",
+                "url": "https://example.edu/charter.htm#section-1",
+                "chunk_id": "charter-1",
+                "doc_id": "charter",
+                "snippet": "排名最靠前的片段",
+            },
+            {
+                "title": "本科招生章程",
+                "url": "https://example.edu/charter.htm#section-2",
+                "chunk_id": "charter-2",
+                "doc_id": "charter",
+                "snippet": "同一来源的另一片段",
+            },
+        ],
+    }
+
+
+def test_non_stream_deduplicates_only_display_sources():
+    generator = _generator(_LLM([]))
+    captured: dict[str, str] = {}
+
+    async def fake_call(prompt: str) -> str:
+        captured["prompt"] = prompt
+        return "基于全部片段生成的回答"
+
+    generator._call_llm = fake_call
+    result = asyncio.run(generator.generate("本科招生章程是什么？", _duplicate_source_evidence()))
+
+    assert len(result["sources"]) == 1
+    assert result["sources"][0]["chunk_id"] == "charter-1"
+    assert result["confidence"] == "high"
+    assert "排名最靠前的片段" in captured["prompt"]
+    assert "同一来源的另一片段" in captured["prompt"]
+
+
+def test_stream_deduplicates_only_meta_sources():
+    llm = _LLM([_Chunk("基于全部片段生成的回答")])
+    generator = _generator(llm)
+
+    events = _events(
+        asyncio.run(
+            _collect(
+                generator.generate_stream(
+                    "本科招生章程是什么？",
+                    _duplicate_source_evidence(),
+                )
+            )
+        )
+    )
+
+    meta = next(event for event in events if event["type"] == "meta")
+    assert len(meta["sources"]) == 1
+    assert meta["sources"][0]["chunk_id"] == "charter-1"
+    assert meta["confidence"] == "high"
+    assert "排名最靠前的片段" in llm.prompts[0]
+    assert "同一来源的另一片段" in llm.prompts[0]
+
+
+def test_display_source_deduplication_ignores_url_fragment():
+    sources = [
+        {"title": "办事指南第一处", "url": "https://example.edu/guide/#part-a"},
+        {"title": "办事指南第二处", "url": "https://example.edu/guide#part-b"},
+    ]
+
+    assert AnswerGenerator._deduplicate_display_sources(sources) == [sources[0]]
 
 
 async def _collect(stream):

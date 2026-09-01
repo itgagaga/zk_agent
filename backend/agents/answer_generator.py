@@ -8,6 +8,7 @@ import json
 import logging
 import time
 from typing import Any, AsyncGenerator
+from urllib.parse import urldefrag, urlsplit, urlunsplit
 
 from backend.config import settings
 from backend.rag.prompt_templates import build_qa_prompt
@@ -50,6 +51,51 @@ class AnswerGenerator:
         if not tool_results and evidence.get("tool_result"):
             tool_results = [evidence["tool_result"]]
         return tool_results
+
+    @staticmethod
+    def _display_source_identity(source: dict[str, Any]) -> tuple[str, ...] | None:
+        """生成展示层来源标识，不参与检索、证据准备或答案生成。"""
+        doc_id = str(source.get("doc_id") or "").strip()
+        if doc_id:
+            return ("doc_id", doc_id)
+
+        url = str(source.get("url") or "").strip()
+        if url:
+            fragmentless_url = urldefrag(url)[0]
+            parsed = urlsplit(fragmentless_url)
+            normalized_url = urlunsplit(
+                (
+                    parsed.scheme.lower(),
+                    parsed.netloc.lower(),
+                    parsed.path.rstrip("/") or ("/" if parsed.netloc else ""),
+                    parsed.query,
+                    "",
+                )
+            )
+            return ("url", normalized_url)
+
+        title = "".join(str(source.get("title") or "").split()).lower()
+        department = "".join(str(source.get("department") or "").split()).lower()
+        if title:
+            return ("title", title, department)
+        return None
+
+    @classmethod
+    def _deduplicate_display_sources(
+        cls,
+        sources: list[dict[str, Any]],
+    ) -> list[dict[str, Any]]:
+        """仅对响应中的展示来源去重，并保留排序最靠前的位置。"""
+        display_sources: list[dict[str, Any]] = []
+        seen: set[tuple[str, ...]] = set()
+        for source in sources:
+            identity = cls._display_source_identity(source)
+            if identity is not None and identity in seen:
+                continue
+            if identity is not None:
+                seen.add(identity)
+            display_sources.append(source)
+        return display_sources
 
     def _prepare_evidence(self, evidence: dict[str, Any]) -> tuple[list[dict], list[dict], list[str], list[dict], list[dict]]:
         """从 evidence 中提取来源、附件、工具名、tool_results 和用户上传来源。"""
@@ -142,11 +188,12 @@ class AnswerGenerator:
         )
         answer_text = await self._call_llm(prompt)
         confidence = self._confidence(sources + user_sources)
+        display_sources = self._deduplicate_display_sources(sources + user_sources)
 
         result = {
             "answer": answer_text,
             "confidence": confidence,
-            "sources": sources + user_sources,
+            "sources": display_sources,
             "attachments": attachments,
             "tools_used": tools_used,
             "fallback": False,
@@ -172,11 +219,12 @@ class AnswerGenerator:
         logger.info("answer_stream_started trace_id=%s", trace_id)
         sources, attachments, tools_used, tool_results, user_sources = self._prepare_evidence(evidence)
         confidence = self._confidence(sources + user_sources)
+        display_sources = self._deduplicate_display_sources(sources + user_sources)
 
         meta = {
             "type": "meta",
             "confidence": confidence,
-            "sources": sources + user_sources,
+            "sources": display_sources,
             "attachments": attachments,
             "tools_used": tools_used,
             "fallback": False,
