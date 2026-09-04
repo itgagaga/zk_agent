@@ -46,4 +46,5 @@ dependencies = [
     "apscheduler>=3.10.4",
     "jieba>=0.42.1",
     "rank-bm25>=0.2.2",
+    "redis>=5.2.0,<6.0.0",
 ]

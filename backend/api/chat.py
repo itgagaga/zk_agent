@@ -16,6 +16,7 @@ from sqlalchemy.orm import Session
 
 from backend.agents.controller import AgentController
 from backend.auth.deps import get_current_user, get_current_user_optional
+from backend.cache.qa_file_cache import CachedAnswer, qa_cache
 from backend.database.models import ChatMessage, ChatSession, User, UserDocument
 from backend.database.session import get_db
 from backend.rag.contracts import KnowledgeScope
@@ -135,6 +136,42 @@ def _personal_scope_user_or_401(req: ChatRequest, current_user: User | None) -> 
         raise HTTPException(status_code=401, detail="请先登录后使用个人资料范围")
 
 
+def _cache_response(cached: CachedAnswer, session_id: str | None = None) -> ChatResponse:
+    """将答案文件内容包装为现有非流式响应格式。"""
+    return ChatResponse(
+        answer=cached.answer,
+        confidence="high",
+        tools_used=["redis_file_cache"],
+        session_id=session_id,
+        retrieval_summary={"cache_hit": True, "cache_kind": cached.kind},
+    )
+
+
+def _sse(payload: dict[str, Any]) -> str:
+    return f"data: {json.dumps(payload, ensure_ascii=False)}\n\n"
+
+
+def _sse_payloads(chunk: str):
+    """解析 Agent 产生的 SSE 块，用于累计可缓存的 token。"""
+    for line in str(chunk).splitlines():
+        if not line.startswith("data: "):
+            continue
+        try:
+            payload = json.loads(line[6:])
+        except (TypeError, json.JSONDecodeError):
+            continue
+        if isinstance(payload, dict):
+            yield payload
+
+
+def _stream_headers() -> dict[str, str]:
+    return {
+        "Cache-Control": "no-cache",
+        "Connection": "keep-alive",
+        "X-Accel-Buffering": "no",
+    }
+
+
 @router.post("", response_model=ChatResponse)
 async def chat(
     req: ChatRequest,
@@ -143,6 +180,10 @@ async def chat(
 ) -> ChatResponse:
     """主问答接口（非流式）。"""
     _personal_scope_user_or_401(req, current_user)
+    cached = await qa_cache.get_answer(req.question)
+    if cached is not None:
+        return _cache_response(cached, req.session_id)
+
     controller = AgentController()
     role = (current_user.role if current_user else None) or req.user_role
     has_personal_documents = bool(
@@ -160,6 +201,8 @@ async def chat(
         knowledge_scope=req.knowledge_scope,
         has_personal_documents=has_personal_documents,
     )
+    if result.get("answer") and not result.get("fallback"):
+        await qa_cache.save_generated_answer(req.question, result["answer"])
     return ChatResponse(**result)
 
 
@@ -171,6 +214,31 @@ async def chat_stream(
 ) -> StreamingResponse:
     """流式问答接口（SSE）。"""
     _personal_scope_user_or_401(req, current_user)
+    cached = await qa_cache.get_answer(req.question)
+    if cached is not None:
+
+        async def cached_event_generator():
+            yield _sse(
+                {
+                    "type": "meta",
+                    "confidence": "high",
+                    "sources": [],
+                    "attachments": [],
+                    "tools_used": ["redis_file_cache"],
+                    "fallback": False,
+                    "cache_hit": True,
+                    "cache_kind": cached.kind,
+                }
+            )
+            yield _sse({"type": "token", "content": cached.answer})
+            yield _sse({"type": "done"})
+
+        return StreamingResponse(
+            cached_event_generator(),
+            media_type="text/event-stream",
+            headers=_stream_headers(),
+        )
+
     controller = AgentController()
     role = (current_user.role if current_user else None) or req.user_role
     user_id = current_user.id if current_user else None
@@ -181,6 +249,9 @@ async def chat_stream(
     )
 
     async def event_generator():
+        answer_parts: list[str] = []
+        cacheable = True
+        saw_done = False
         try:
             async for chunk in controller.handle_stream(
                 req.question,
@@ -192,23 +263,33 @@ async def chat_stream(
                 knowledge_scope=req.knowledge_scope,
                 has_personal_documents=has_personal_documents,
             ):
+                for payload in _sse_payloads(chunk):
+                    if payload.get("type") == "token":
+                        content = payload.get("content")
+                        if content:
+                            answer_parts.append(str(content))
+                    elif payload.get("type") == "meta" and payload.get("fallback"):
+                        cacheable = False
+                    elif payload.get("type") == "done":
+                        saw_done = True
                 yield chunk
         except Exception as exc:
             # 流式响应一旦在 Agent/LLM 阶段异常，必须发送终止事件，
             # 否则浏览器只能一直保持 loading 状态。
             print(f"[ChatStream] 生成失败: {exc}")
+            cacheable = False
             # 复用前端已有 token 处理逻辑，确保错误也能显示在消息气泡中。
-            yield f'data: {json.dumps({"type": "token", "content": "回答生成失败，请稍后重试"}, ensure_ascii=False)}\n\n'
-            yield f'data: {json.dumps({"type": "done"}, ensure_ascii=False)}\n\n'
+            yield _sse({"type": "token", "content": "回答生成失败，请稍后重试"})
+            yield _sse({"type": "done"})
+        else:
+            answer = "".join(answer_parts).strip()
+            if cacheable and saw_done and answer:
+                await qa_cache.save_generated_answer(req.question, answer)
 
     return StreamingResponse(
         event_generator(),
         media_type="text/event-stream",
-        headers={
-            "Cache-Control": "no-cache",
-            "Connection": "keep-alive",
-            "X-Accel-Buffering": "no",
-        },
+        headers=_stream_headers(),
     )
 
 

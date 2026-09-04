@@ -24,6 +24,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from backend.api import admin, auth, chat, interview, resources, resume, schedule, search, upload
+from backend.cache.qa_file_cache import qa_cache
 from backend.config import settings
 
 
@@ -47,6 +48,8 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI):
     """应用生命周期：启动时初始化资源，关闭时清理。"""
     settings.ensure_dirs()
+    await qa_cache.connect()
+    app.state.qa_cache_status = qa_cache.status
     app.state.embedding_status = "loading"
     should_warmup = (
         settings.embedding_warmup_enabled
@@ -102,7 +105,7 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         print(f"[Startup] 用户相关表初始化跳过: {e}")
     yield
-    # TODO: 关闭资源
+    await qa_cache.close()
 
 
 app = FastAPI(
@@ -141,6 +144,7 @@ async def health() -> dict:
         "service": "zhku-campus-agent",
         "version": "0.1.0",
         "embedding_status": getattr(app.state, "embedding_status", "loading"),
+        "qa_cache_status": getattr(app.state, "qa_cache_status", qa_cache.status),
     }
 
 

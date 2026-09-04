@@ -185,6 +185,16 @@ class Settings(BaseSettings):
         default="deepseek-v4-flash", alias="RAG_EVIDENCE_JUDGE_MODEL"
     )
 
+    # Redis 问答文件缓存
+    redis_url: str = Field(default="redis://127.0.0.1:6379/0", alias="REDIS_URL")
+    qa_cache_enabled: bool = Field(default=True, alias="QA_CACHE_ENABLED")
+    qa_cache_prefix: str = Field(default="qa:answer-file:", alias="QA_CACHE_PREFIX")
+    qa_cache_ttl_seconds: int = Field(default=0, alias="QA_CACHE_TTL_SECONDS", ge=0)
+    qa_answer_dir: Path = Field(default=DATA_DIR / "qa_answers", alias="QA_ANSWER_DIR")
+    qa_answers_file: Path = Field(
+        default=DATA_DIR / "qa_answers" / "answers.json", alias="QA_ANSWERS_FILE"
+    )
+
     # Agent
     query_planner_mode: Literal["rule_fallback", "hybrid", "llm"] = Field(
         default="hybrid", alias="QUERY_PLANNER_MODE"
@@ -220,7 +230,13 @@ class Settings(BaseSettings):
     jwt_algorithm: str = Field(default="HS256", alias="JWT_ALGORITHM")
     jwt_expire_minutes: int = Field(default=60 * 24 * 7, alias="JWT_EXPIRE_MINUTES")
 
-    @field_validator("vector_store_path", "sqlite_path", mode="before")
+    @field_validator(
+        "vector_store_path",
+        "sqlite_path",
+        "qa_answer_dir",
+        "qa_answers_file",
+        mode="before",
+    )
     @classmethod
     def _resolve_data_path(cls, value: str | Path) -> Path:
         """将 .env 中的相对路径固定解析到项目根目录。"""
@@ -231,9 +247,20 @@ class Settings(BaseSettings):
 
     def ensure_dirs(self) -> None:
         """创建必要的目录。"""
-        for sub in ["raw", "cleaned", "metadata", "sqlite", "vector_store", "users", "uploads"]:
+        for sub in [
+            "raw",
+            "cleaned",
+            "metadata",
+            "sqlite",
+            "vector_store",
+            "users",
+            "uploads",
+            "qa_answers",
+        ]:
             (DATA_DIR / sub).mkdir(parents=True, exist_ok=True)
         self.vector_store_path.mkdir(parents=True, exist_ok=True)
+        self.qa_answer_dir.mkdir(parents=True, exist_ok=True)
+        self.qa_answers_file.parent.mkdir(parents=True, exist_ok=True)
         # 保留 sqlite 目录，便于从旧库迁移，不删除原文件
         self.sqlite_path.parent.mkdir(parents=True, exist_ok=True)
 
