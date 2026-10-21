@@ -30,3 +30,15 @@ test('keeps source and attachment metadata when retrieval summary arrives', () =
   assert.equal(result.sources.length, 1)
   assert.equal(result.retrieval_summary.coverage, 1)
 })
+
+test('final answer metadata replaces sources and preserves citation numbers', () => {
+  const initial = mergeRetrievalMeta({}, { sources: [], attachments: [], confidence: 'low' })
+  const final = mergeRetrievalMeta(initial, {
+    sources: [{ title: '信计培养方案', citation_id: 9 }],
+    attachments: [],
+    confidence: 'medium',
+  })
+  assert.deepEqual(final.sources, [{ title: '信计培养方案', citation_id: 9 }])
+  assert.equal(final.confidence, 'medium')
+  assert.deepEqual(mergeRetrievalMeta(final, { sources: [] }).sources, [])
+})

@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import json
 import logging
+import re
 import time
 from typing import Any, AsyncGenerator
 from urllib.parse import urldefrag, urlsplit, urlunsplit
@@ -103,7 +104,12 @@ class AnswerGenerator:
         user_sources: list[dict[str, Any]] = []
         attachments: list[dict[str, Any]] = []
         tools_used: list[str] = []
-        tool_results = self._get_tool_results(evidence)
+        # 编号只属于本次回答，避免修改共享检索结果或沿用历史回答的编号。
+        tool_results = [
+            {**result, "items": [dict(item) for item in result.get("items", []) or []]}
+            for result in self._get_tool_results(evidence)
+        ]
+        tool_source_pairs: list[tuple[dict, dict, dict | None]] = []
 
         def _classify(hit: dict[str, Any], from_doc_library: bool = False) -> None:
             meta = hit.get("metadata", {}) or {}
@@ -135,20 +141,20 @@ class AnswerGenerator:
             if tool_name and tool_name not in tools_used:
                 tools_used.append(tool_name)
             for item in tool_result.get("items", []) or []:
+                attachment = None
                 if item.get("file_url") or item.get("source_page_url"):
-                    attachments.append(
-                        {
-                            "name": item.get("title") or item.get("name", ""),
-                            "file_type": item.get("file_type"),
-                            "source_page_url": item.get("source_page_url"),
-                            "file_url": item.get("file_url"),
-                        }
-                    )
+                    attachment = {
+                        "name": item.get("title") or item.get("name", ""),
+                        "file_type": item.get("file_type"),
+                        "source_page_url": item.get("source_page_url"),
+                        "file_url": item.get("file_url"),
+                    }
+                    attachments.append(attachment)
                 sources.append(
                     {
                         "title": item.get("title") or item.get("name", ""),
                         "department": item.get("department"),
-                        "url": item.get("source_page_url") or item.get("url", ""),
+                        "url": item.get("source_page_url") or item.get("url") or item.get("file_url", ""),
                         "publish_date": item.get("publish_date"),
                         "snippet": (
                             item.get("snippet")
@@ -161,8 +167,30 @@ class AnswerGenerator:
                         "score": item.get("match_score") or item.get("score"),
                     }
                 )
+                tool_source_pairs.append((item, sources[-1], attachment))
+
+        identities: dict[tuple[str, ...], int] = {}
+        for source in sources + user_sources:
+            identity = self._display_source_identity(source) or ("anonymous", str(len(identities)))
+            source["citation_id"] = identities.setdefault(identity, len(identities) + 1)
+        for item, source, attachment in tool_source_pairs:
+            item["citation_id"] = source["citation_id"]
+            if attachment is not None:
+                attachment["citation_id"] = source["citation_id"]
 
         return sources, attachments, tools_used, tool_results, user_sources
+
+    @classmethod
+    def _cited_evidence(cls, answer: str, sources: list[dict], attachments: list[dict]) -> tuple[list[dict], list[dict]]:
+        """只接受正文中的明确引用；代码和 Markdown 链接里的数字不是引用。"""
+        text = re.sub(r"```[\s\S]*?(?:```|$)|~~~[\s\S]*?(?:~~~|$)|`[^`\n]*`", "", answer)
+        text = re.sub(r"!?\[[^\]\n]*\]\([^\n)]*\)|^\s*\[\d+\]:.*$", "", text, flags=re.MULTILINE)
+        cited_ids = {int(match) for match in re.findall(r"(?<!!)\[(\d+)\](?!\()", text)}
+        cited_sources = cls._deduplicate_display_sources(
+            [source for source in sources if source.get("citation_id") in cited_ids]
+        )
+        cited_attachments = [item for item in attachments if item.get("citation_id") in cited_ids]
+        return cited_sources, cited_attachments
 
     def _confidence(self, sources: list[dict]) -> str:
         """根据来源数量判断置信度。"""
@@ -187,8 +215,8 @@ class AnswerGenerator:
             evidence_priority=legacy_priority,
         )
         answer_text = await self._call_llm(prompt)
-        confidence = self._confidence(sources + user_sources)
-        display_sources = self._deduplicate_display_sources(sources + user_sources)
+        display_sources, attachments = self._cited_evidence(answer_text, sources + user_sources, attachments)
+        confidence = self._confidence(display_sources)
 
         result = {
             "answer": answer_text,
@@ -218,14 +246,11 @@ class AnswerGenerator:
         trace_id = retrieval_summary.get("trace_id", "-")
         logger.info("answer_stream_started trace_id=%s", trace_id)
         sources, attachments, tools_used, tool_results, user_sources = self._prepare_evidence(evidence)
-        confidence = self._confidence(sources + user_sources)
-        display_sources = self._deduplicate_display_sources(sources + user_sources)
-
         meta = {
             "type": "meta",
-            "confidence": confidence,
-            "sources": display_sources,
-            "attachments": attachments,
+            "confidence": "low",
+            "sources": [],
+            "attachments": [],
             "tools_used": tools_used,
             "fallback": False,
             "route_mode": evidence.get("route_mode", "fast"),
@@ -251,6 +276,7 @@ class AnswerGenerator:
             evidence_priority=evidence.get("evidence_priority"),
         )
         emitted_text = False
+        answer_parts: list[str] = []
         first_token_at: float | None = None
         reasoning_chunks = 0
         reasoning_chars = 0
@@ -283,6 +309,7 @@ class AnswerGenerator:
                         reasoning_chars += len(str(reasoning))
                     token = extract_text_content(chunk)
                     if token:
+                        answer_parts.append(token)
                         emitted_text = True
                         if first_token_at is None:
                             first_token_at = time.perf_counter()
@@ -331,6 +358,17 @@ class AnswerGenerator:
             f"{(first_token_at - started_at) * 1000:.1f}" if first_token_at else "-",
             (time.perf_counter() - started_at) * 1000,
         )
+
+        # 正文完成后才能确认实际引用；前端用最终 meta 替换初始的空来源。
+        cited_sources, cited_attachments = self._cited_evidence(
+            "".join(answer_parts), sources + user_sources, attachments
+        )
+        meta.update(
+            sources=cited_sources,
+            attachments=cited_attachments,
+            confidence=self._confidence(cited_sources),
+        )
+        yield f"data: {json.dumps(meta, ensure_ascii=False)}\n\n"
 
         # 3. 发 done
         yield f'data: {json.dumps({"type": "done"}, ensure_ascii=False)}\n\n'

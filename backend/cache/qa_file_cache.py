@@ -12,7 +12,7 @@ import json
 import logging
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal
 
 from backend.config import Settings, settings
 
@@ -30,6 +30,7 @@ class CachedAnswer:
     answer: str
     relative_path: str
     kind: AnswerKind
+    metadata: dict[str, Any] | None = None
 
 
 class QAFileCache:
@@ -68,10 +69,10 @@ class QAFileCache:
         return resolved
 
     @staticmethod
-    def _empty_store() -> dict[str, dict[str, str]]:
-        return {"preset": {}, "generated": {}}
+    def _empty_store() -> dict[str, dict[str, Any]]:
+        return {"preset": {}, "generated": {}, "generated_metadata": {}}
 
-    def _normalize_store(self, raw: object) -> dict[str, dict[str, str]]:
+    def _normalize_store(self, raw: object) -> dict[str, dict[str, Any]]:
         store = self._empty_store()
         if not isinstance(raw, dict):
             return store
@@ -87,16 +88,22 @@ class QAFileCache:
                     and isinstance(answer, str)
                     and answer.strip()
                 }
+        metadata = raw.get("generated_metadata")
+        if isinstance(metadata, dict):
+            store["generated_metadata"] = {
+                question: value for question, value in metadata.items()
+                if question in store["generated"] and isinstance(value, dict)
+            }
         return store
 
-    def _read_store(self) -> dict[str, dict[str, str]]:
+    def _read_store(self) -> dict[str, dict[str, Any]]:
         path = self._answers_path()
         if not path.is_file():
             return self._empty_store()
         raw = json.loads(path.read_text(encoding="utf-8"))
         return self._normalize_store(raw)
 
-    def _write_store(self, store: dict[str, dict[str, str]]) -> None:
+    def _write_store(self, store: dict[str, dict[str, Any]]) -> None:
         path = self._answers_path()
         path.parent.mkdir(parents=True, exist_ok=True)
         payload = json.dumps(store, ensure_ascii=False, indent=2) + "\n"
@@ -168,6 +175,7 @@ class QAFileCache:
             async with self._file_lock:
                 store = await asyncio.to_thread(self._read_store)
                 store["generated"] = {}
+                store["generated_metadata"] = {}
                 await asyncio.to_thread(self._write_store, store)
         except Exception as exc:
             logger.warning(
@@ -245,6 +253,7 @@ class QAFileCache:
                 answer=answer,
                 relative_path=_ANSWERS_FILENAME,
                 kind=kind,
+                metadata=store["generated_metadata"].get(normalized) if kind == "generated" else None,
             )
         except Exception as exc:
             logger.warning(
@@ -253,7 +262,7 @@ class QAFileCache:
             )
             return None
 
-    async def save_generated_answer(self, question: str, answer: str) -> str | None:
+    async def save_generated_answer(self, question: str, answer: str, *, metadata: dict[str, Any] | None = None) -> str | None:
         """将动态回答写入统一答案文件的 generated 段，再建立 Redis 映射。"""
         normalized = (question or "").strip()
         content = (answer or "").strip()
@@ -264,6 +273,10 @@ class QAFileCache:
             async with self._file_lock:
                 store = await asyncio.to_thread(self._read_store)
                 store["generated"][normalized] = content
+                if metadata is not None:
+                    store["generated_metadata"][normalized] = metadata
+                else:
+                    store["generated_metadata"].pop(normalized, None)
                 await asyncio.to_thread(self._write_store, store)
             await self._set_mapping(normalized, "generated")
             logger.info(

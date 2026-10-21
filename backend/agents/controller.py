@@ -200,7 +200,12 @@ class AgentController:
             len(result.get("sources") or []),
         )
 
-        if not result.get("sources") and self.fallback.enabled:
+        # sources 现在仅表示正文实际引用，不能再用它判断检索是否有证据。
+        has_evidence = bool(
+            evidence.get("rag_hits") or evidence.get("doc_hits")
+            or any(tr.get("items") for tr in (evidence.get("tool_results") or [evidence.get("tool_result") or {}]))
+        )
+        if not has_evidence and self.fallback.enabled:
             fallback = self.fallback.no_evidence(question)
             notice = self._personal_scope_notice(summary)
             if notice:

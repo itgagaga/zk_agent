@@ -8,6 +8,7 @@ from typing import Any
 
 from backend.config import settings
 from backend.rag.vector_store import combine_where, get_vector_store
+from backend.rag.pdf_context import user_pdf_table_context
 
 
 class RAGRetriever:
@@ -156,15 +157,18 @@ class RAGRetriever:
                 ),
             )
         hits = [h for h in hits if h.get("score", 0) >= threshold]
-        hits = self._expand_parent_hits(hits, collection=collection, user_id=user_id)
 
         if is_user_doc and hits:
             hits, full_doc = self._enrich_user_doc_hits(
                 hits, effective_top_k, user_id=user_id
             )
             if full_doc:
+                # 全文补取后先重建完整章节，再排名/截断。否则原始 Child 会覆盖
+                # 已展开内容，并在下游按 Parent 去重时丢掉课程表的其余行。
+                hits = self._expand_parent_hits(hits, collection=collection, user_id=user_id)
                 return self._sort_and_dedupe(hits)[:effective_top_k]
 
+        hits = self._expand_parent_hits(hits, collection=collection, user_id=user_id)
         return self._sort_and_dedupe(hits)[:effective_top_k]
 
     def _expand_parent_hits(
@@ -180,32 +184,43 @@ class RAGRetriever:
 
         merged: dict[str, dict[str, Any]] = {}
         order: list[str] = []
+        siblings_cache: dict[tuple[str, str], list[dict[str, Any]]] = {}
 
         for hit in hits:
             meta = hit.get("metadata") or {}
             chunk_role = meta.get("chunk_role", "")
             parent_id = meta.get("parent_id", "")
+            doc_id = meta.get("doc_id", "")
 
             if chunk_role == "child" and parent_id:
-                siblings = self.store.get_chunks_by_parent_id(
-                    parent_id,
-                    user_id=user_id,
-                    collection=collection,
-                )
+                parent_key = (doc_id, parent_id)
+                if parent_key not in siblings_cache:
+                    siblings_cache[parent_key] = self.store.get_chunks_by_parent_id(
+                        parent_id,
+                        doc_id=doc_id or None,
+                        user_id=user_id,
+                        collection=collection,
+                    )
+                siblings = siblings_cache[parent_key]
                 if len(siblings) > 1:
                     best_score = hit.get("score", 0)
                     combined_snippet = "\n".join(
                         s.get("snippet", "") for s in siblings if s.get("snippet")
                     )
-                    key = f"parent:{parent_id}"
+                    key = f"parent:{doc_id}:{parent_id}"
                     if key not in merged:
                         order.append(key)
-                    merged[key] = {
+                    expanded = {
                         **hit,
                         "snippet": combined_snippet,
                         "score": best_score,
                         "metadata": {**meta, "chunk_role": "parent_expanded"},
                     }
+                    if key in merged:
+                        # 同章多个命中保留最好的 dense/lexical 排名，正文仍为完整章节。
+                        expanded["chunk_id"] = merged[key].get("chunk_id")
+                        expanded = self._merge_hits([merged[key]], [expanded])[0]
+                    merged[key] = expanded
                     continue
 
             key = hit.get("chunk_id") or str(id(hit))
@@ -261,7 +276,28 @@ class RAGRetriever:
                 for chunk in self.store.get_chunks_by_doc_id(
                     doc_id, user_id=scoped_user_id, collection="user_docs"
                 ):
-                    merged[chunk["chunk_id"]] = chunk
+                    key = chunk["chunk_id"]
+                    merged[key] = self._merge_hits([chunk], [merged[key]])[0] if key in merged else chunk
+                # 旧索引中的 PDF 纯文本不保留空学期列。只读解析当前用户的
+                # 原文件作为完整文档上下文，避免将页码并入学分或猜测开课学期。
+                pdf_context = (
+                    user_pdf_table_context(doc_id, user_id=int(scoped_user_id))
+                    if scoped_user_id is not None else None
+                )
+                if pdf_context:
+                    doc_hits = [hit for hit in merged.values()
+                                if (hit.get("metadata") or {}).get("doc_id") == doc_id]
+                    best = self._sort_and_dedupe(doc_hits)[0]
+                    for hit in doc_hits:
+                        merged.pop(hit["chunk_id"])
+                    merged[best["chunk_id"]] = {
+                        **best,
+                        "snippet": pdf_context,
+                        "metadata": {**best.get("metadata", {}),
+                                     "chunk_role": "document_full",
+                                     "parent_id": f"{doc_id}:full",
+                                     "context_format": "pdf_tables"},
+                    }
 
         ordered = sorted(
             merged.values(),

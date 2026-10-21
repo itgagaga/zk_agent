@@ -49,6 +49,7 @@ class SourceItem(BaseModel):
     url: str
     publish_date: str | None = None
     snippet: str | None = None
+    citation_id: int | None = None
 
 
 class AttachmentItem(BaseModel):
@@ -138,13 +139,37 @@ def _personal_scope_user_or_401(req: ChatRequest, current_user: User | None) -> 
 
 def _cache_response(cached: CachedAnswer, session_id: str | None = None) -> ChatResponse:
     """将答案文件内容包装为现有非流式响应格式。"""
+    meta = cached.metadata or {}
     return ChatResponse(
         answer=cached.answer,
-        confidence="high",
+        confidence=meta.get("confidence", "high"),
+        sources=meta.get("sources", []),
+        attachments=meta.get("attachments", []),
         tools_used=["redis_file_cache"],
         session_id=session_id,
         retrieval_summary={"cache_hit": True, "cache_kind": cached.kind},
     )
+
+
+def _usable_cached_answer(cached: CachedAnswer | None) -> bool:
+    # 旧动态缓存只保存正文，无法恢复真实来源；重新生成即可，无须删除旧文件。
+    return cached is not None and (
+        cached.kind == "preset" or (cached.metadata or {}).get("citation_version") == 1
+    )
+
+
+def _cache_eligible(req: ChatRequest) -> bool:
+    # 当前缓存以问题为键，个人资料、历史追问和页面上下文不能共用来源。
+    return req.knowledge_scope == "auto" and not req.history and not req.context_hint
+
+
+def _answer_cache_metadata(result: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "citation_version": 1,
+        "confidence": result.get("confidence", "low"),
+        "sources": result.get("sources", []),
+        "attachments": result.get("attachments", []),
+    }
 
 
 def _sse(payload: dict[str, Any]) -> str:
@@ -180,8 +205,8 @@ async def chat(
 ) -> ChatResponse:
     """主问答接口（非流式）。"""
     _personal_scope_user_or_401(req, current_user)
-    cached = await qa_cache.get_answer(req.question)
-    if cached is not None:
+    cached = await qa_cache.get_answer(req.question) if _cache_eligible(req) else None
+    if _usable_cached_answer(cached):
         return _cache_response(cached, req.session_id)
 
     controller = AgentController()
@@ -201,8 +226,8 @@ async def chat(
         knowledge_scope=req.knowledge_scope,
         has_personal_documents=has_personal_documents,
     )
-    if result.get("answer") and not result.get("fallback"):
-        await qa_cache.save_generated_answer(req.question, result["answer"])
+    if _cache_eligible(req) and result.get("answer") and not result.get("fallback"):
+        await qa_cache.save_generated_answer(req.question, result["answer"], metadata=_answer_cache_metadata(result))
     return ChatResponse(**result)
 
 
@@ -214,16 +239,16 @@ async def chat_stream(
 ) -> StreamingResponse:
     """流式问答接口（SSE）。"""
     _personal_scope_user_or_401(req, current_user)
-    cached = await qa_cache.get_answer(req.question)
-    if cached is not None:
+    cached = await qa_cache.get_answer(req.question) if _cache_eligible(req) else None
+    if _usable_cached_answer(cached):
 
         async def cached_event_generator():
             yield _sse(
                 {
                     "type": "meta",
-                    "confidence": "high",
-                    "sources": [],
-                    "attachments": [],
+                    "confidence": (cached.metadata or {}).get("confidence", "high"),
+                    "sources": (cached.metadata or {}).get("sources", []),
+                    "attachments": (cached.metadata or {}).get("attachments", []),
                     "tools_used": ["redis_file_cache"],
                     "fallback": False,
                     "cache_hit": True,
@@ -252,6 +277,7 @@ async def chat_stream(
         answer_parts: list[str] = []
         cacheable = True
         saw_done = False
+        answer_meta: dict[str, Any] = {}
         try:
             async for chunk in controller.handle_stream(
                 req.question,
@@ -268,8 +294,10 @@ async def chat_stream(
                         content = payload.get("content")
                         if content:
                             answer_parts.append(str(content))
-                    elif payload.get("type") == "meta" and payload.get("fallback"):
-                        cacheable = False
+                    elif payload.get("type") == "meta":
+                        answer_meta.update(payload)
+                        if payload.get("fallback"):
+                            cacheable = False
                     elif payload.get("type") == "done":
                         saw_done = True
                 yield chunk
@@ -283,8 +311,8 @@ async def chat_stream(
             yield _sse({"type": "done"})
         else:
             answer = "".join(answer_parts).strip()
-            if cacheable and saw_done and answer:
-                await qa_cache.save_generated_answer(req.question, answer)
+            if _cache_eligible(req) and cacheable and saw_done and answer:
+                await qa_cache.save_generated_answer(req.question, answer, metadata=_answer_cache_metadata(answer_meta))
 
     return StreamingResponse(
         event_generator(),

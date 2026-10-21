@@ -86,7 +86,10 @@ def test_stream_does_not_finish_with_an_empty_answer():
         )
     )
 
-    assert events[-2] == {"type": "token", "content": "模型未返回有效回答，请重试。"}
+    assert [event for event in events if event["type"] == "token"] == [
+        {"type": "token", "content": "模型未返回有效回答，请重试。"}
+    ]
+    assert events[-2]["sources"] == []
     assert events[-1] == {"type": "done"}
 
 
@@ -141,20 +144,20 @@ def test_non_stream_deduplicates_only_display_sources():
 
     async def fake_call(prompt: str) -> str:
         captured["prompt"] = prompt
-        return "基于全部片段生成的回答"
+        return "基于全部片段生成的回答。[1]"
 
     generator._call_llm = fake_call
     result = asyncio.run(generator.generate("本科招生章程是什么？", _duplicate_source_evidence()))
 
     assert len(result["sources"]) == 1
     assert result["sources"][0]["chunk_id"] == "charter-1"
-    assert result["confidence"] == "high"
+    assert result["confidence"] == "medium"
     assert "排名最靠前的片段" in captured["prompt"]
     assert "同一来源的另一片段" in captured["prompt"]
 
 
 def test_stream_deduplicates_only_meta_sources():
-    llm = _LLM([_Chunk("基于全部片段生成的回答")])
+    llm = _LLM([_Chunk("基于全部片段生成的回答。[1]")])
     generator = _generator(llm)
 
     events = _events(
@@ -168,10 +171,11 @@ def test_stream_deduplicates_only_meta_sources():
         )
     )
 
-    meta = next(event for event in events if event["type"] == "meta")
+    assert events[0]["sources"] == []
+    meta = [event for event in events if event["type"] == "meta"][-1]
     assert len(meta["sources"]) == 1
     assert meta["sources"][0]["chunk_id"] == "charter-1"
-    assert meta["confidence"] == "high"
+    assert meta["confidence"] == "medium"
     assert "排名最靠前的片段" in llm.prompts[0]
     assert "同一来源的另一片段" in llm.prompts[0]
 

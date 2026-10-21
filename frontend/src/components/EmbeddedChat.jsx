@@ -325,7 +325,7 @@ function EmbMessageBubble({ message }) {
                 <div className="emb-sources-list">
                   {data.sources.map((s, i) => (
                     <div key={i} className="emb-source-item">
-                      <span className="emb-source-idx">{i + 1}</span>
+                      <span className="emb-source-idx">{s.citation_id ?? i + 1}</span>
                       <div className="emb-source-info">
                         <span className="emb-source-title">{s.title}</span>
                         <div className="emb-source-meta">

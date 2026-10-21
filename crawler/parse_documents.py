@@ -9,7 +9,61 @@ from pathlib import Path
 from typing import Any
 
 
-def parse_pdf(file_path: str | Path) -> dict[str, Any]:
+def _pdf_table_markdown(rows: list[list[str | None]]) -> str:
+    """保留空单元格和多行表头；不能把学期列压成一串数字。"""
+    width = max((len(row) for row in rows), default=0)
+    if not width:
+        return ""
+    normalized = [[" ".join(str(cell or "").split()).replace("|", "\\|") for cell in row] for row in rows]
+    # 给多行表头里的学期列补上明确对应关系，避免模型靠数空格猜学期。
+    semesters = {number: str(index) for index, number in enumerate("一二三四五六七八", start=1)}
+    name_column = next((index for row in normalized[:4] for index, cell in enumerate(row)
+                        if cell == "课程名称"), None)
+    semester_columns = next((
+        {index: semesters[cell] for index, cell in enumerate(row) if cell in semesters}
+        for row in normalized[:4]
+        if [cell for cell in row if cell in semesters] == list(semesters)
+    ), {})
+    lines = ["| " + " | ".join(f"列{i + 1}" for i in range(width)) + " |",
+             "| " + " | ".join("---" for _ in range(width)) + " |"]
+    for row in normalized:
+        cells = list(row)
+        cells.extend([""] * (width - len(cells)))
+        if name_column is not None and semester_columns:
+            name = cells[name_column]
+            terms = [f"第{semester}学期" for index, semester in semester_columns.items()
+                     if cells[index] and cells[index] not in {"0", "0.0"}]
+            if name and name != "课程名称" and not any(label in name for label in ("小计", "合计", "总计")) and terms:
+                cells[name_column] += f"（开课学期：{'、'.join(terms)}）"
+        lines.append("| " + " | ".join(cells) + " |")
+    return "\n".join(lines)
+
+
+def _pdf_page_with_tables(page: Any) -> tuple[str, bool]:
+    """按版面顺序组合正文和表格，表格正文只出现一次。"""
+    import fitz
+
+    find_tables = getattr(page, "find_tables", None)
+    if find_tables is None:
+        return page.get_text("text"), False
+    tables = find_tables().tables
+    if not tables:
+        return page.get_text("text"), False
+    rectangles = [fitz.Rect(table.bbox) for table in tables]
+    elements = [(table.bbox[1], table.bbox[0], _pdf_table_markdown(table.extract())) for table in tables]
+    for block in page.get_text("dict")["blocks"]:
+        for line in block.get("lines", []):
+            rect = fitz.Rect(line["bbox"])
+            center = fitz.Point((rect.x0 + rect.x1) / 2, (rect.y0 + rect.y1) / 2)
+            if any(center in table_rect for table_rect in rectangles):
+                continue
+            text = "".join(span.get("text", "") for span in line.get("spans", [])).strip()
+            if text:
+                elements.append((rect.y0, rect.x0, text))
+    return "\n\n".join(text for _, _, text in sorted(elements)), True
+
+
+def parse_pdf(file_path: str | Path, *, preserve_tables: bool = False) -> dict[str, Any]:
     """解析 PDF 文件，返回文本和章节信息。
 
     使用 pymupdf（fitz）。若提取文本为空（扫描版 PDF），自动降级用 OCR。
@@ -20,12 +74,17 @@ def parse_pdf(file_path: str | Path) -> dict[str, Any]:
     pages: list[dict[str, Any]] = []
     full_text_parts: list[str] = []
 
+    has_tables = False
     for page_idx, page in enumerate(doc):
-        text = page.get_text("text")
+        if preserve_tables:
+            text, page_has_tables = _pdf_page_with_tables(page)
+            has_tables = has_tables or page_has_tables
+        else:
+            text = page.get_text("text")
         pages.append({"page_number": page_idx + 1, "text": text})
         full_text_parts.append(text)
 
-    full_text = "\n".join(full_text_parts)
+    full_text = "\n\n".join(full_text_parts)
 
     # 扫描版 PDF 降级：pymupdf 提取为空时使用 OCR
     if not full_text.strip():
@@ -35,11 +94,14 @@ def parse_pdf(file_path: str | Path) -> dict[str, Any]:
             # OCR 结果按页重新分配（简化处理：全部放在第 1 页）
             pages = [{"page_number": 1, "text": full_text}]
 
+    page_count = len(pages) if pages else doc.page_count
+    doc.close()
     return {
         "file_path": str(file_path),
-        "page_count": len(pages) if pages else doc.page_count,
+        "page_count": page_count,
         "pages": pages,
         "full_text": full_text,
+        "has_tables": has_tables,
     }
 
 

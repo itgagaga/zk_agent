@@ -91,6 +91,26 @@ def test_first_question_misses_until_generated_answer_is_saved(tmp_path):
     asyncio.run(scenario())
 
 
+def test_generated_answer_preserves_actual_citations_after_reloading_file(tmp_path):
+    async def scenario():
+        cache = QAFileCache(_config(tmp_path))
+        cache.client = FakeRedis()
+        metadata = {
+            "citation_version": 1,
+            "sources": [{"title": "信计培养方案", "url": "", "citation_id": 9}],
+            "attachments": [],
+            "confidence": "medium",
+        }
+        await cache.save_generated_answer("信计必修课？", "数学分析。[9]", metadata=metadata)
+        reloaded = QAFileCache(_config(tmp_path))
+        reloaded.client = cache.client
+        cached = await reloaded.get_answer("信计必修课？")
+        assert cached.answer == "数学分析。[9]"
+        assert cached.metadata == metadata
+
+    asyncio.run(scenario())
+
+
 def test_invalid_mapping_is_not_read(tmp_path):
     async def scenario():
         (tmp_path / "answers.json").write_text(

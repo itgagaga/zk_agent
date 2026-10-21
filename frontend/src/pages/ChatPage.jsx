@@ -477,7 +477,7 @@ function AnswerDetails({ data }) {
               {data.sources.map((s, i) => (
                 <div key={i} className="source-card">
                   <div className="source-card-header">
-                    <span className="source-index">{i + 1}</span>
+                    <span className="source-index">{s.citation_id ?? i + 1}</span>
                     <span className="source-title">{s.title}</span>
                   </div>
                   <div className="source-card-meta">

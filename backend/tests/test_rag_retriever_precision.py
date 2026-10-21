@@ -2,6 +2,8 @@ import asyncio
 
 from backend.rag.retriever import RAGRetriever
 from backend.rag.vector_store import VectorStore
+from backend.rag.contracts import Evidence
+from backend.rag.evidence_fusion import EvidenceFusion
 
 
 class FakeStore:
@@ -74,6 +76,58 @@ def test_user_document_followup_fetches_keep_user_scope(monkeypatch):
     assert store.parent_calls == []
     assert store.query_where == {"user_id": 7}
     assert store.count_calls[0][0] == {"$and": [{"doc_id": "doc-a"}, {"user_id": 7}]}
+
+
+def test_full_document_fetch_preserves_curriculum_tables_through_parent_fusion(monkeypatch):
+    from backend.config import settings
+
+    monkeypatch.setattr(settings, "rag_doc_full_fetch_max_chunks", 20)
+    contents = [
+        ("title", "信息与计算科学培养方案"),
+        ("credits", "六、学时与学分 最低毕业学分157"),
+        ("schedule", "专业必修课 第五学期 数据库原理与应用"),
+        ("schedule", "专业选修课 第六学期 机器学习"),
+        ("schedule", "实践教学平台 数据库课程设计"),
+    ]
+    chunks = [{
+        "chunk_id": f"doc-a_{index}", "chunk_index": index,
+        "title": "信计培养方案", "score": 0.5, "snippet": text,
+        "metadata": {"doc_id": "doc-a", "user_id": 7, "parent_id": parent,
+                     "chunk_role": "child" if parent == "schedule" else "parent"},
+    } for index, (parent, text) in enumerate(contents)]
+
+    class CurriculumStore(FakeStore):
+        def count_documents(self, **kwargs):
+            return len(chunks)
+
+        def get_chunks_by_doc_id(self, doc_id, user_id=None, collection="user_docs"):
+            self.doc_calls.append((doc_id, user_id, collection))
+            return chunks
+
+        def get_chunks_by_parent_id(self, parent_id, doc_id=None, user_id=None, collection="zhku"):
+            self.parent_calls.append((parent_id, doc_id, user_id, collection))
+            return [chunk for chunk in chunks if chunk["metadata"]["parent_id"] == parent_id]
+
+    store = CurriculumStore([{**chunks[2], "score": 0.9}])
+    retriever = _retriever(monkeypatch, store)
+    hits = asyncio.run(retriever.search_user_documents("信计大三课程和毕业学分", user_id=7, top_k=3))
+    bundle = EvidenceFusion(max_items=10).fuse(
+        "信计大三课程和毕业学分",
+        [Evidence.from_rag_hit(hit, retriever="user_docs") for hit in hits],
+        retrievers=["user_docs"],
+    )
+    text = "\n".join(evidence.snippet for evidence in bundle.evidences)
+
+    assert "最低毕业学分157" in text
+    assert "第五学期 数据库原理与应用" in text
+    assert "第六学期 机器学习" in text
+    assert "数据库课程设计" in text
+    assert len(bundle.evidences) == 3
+    schedule = next(hit for hit in hits if hit["metadata"].get("parent_id") == "schedule")
+    assert schedule["dense_rank"] == 1
+    assert schedule["score"] == 0.9
+    assert schedule["metadata"]["chunk_role"] == "parent_expanded"
+    assert store.parent_calls == [("schedule", "doc-a", 7, "user_docs")]
 
 
 def test_keyword_search_prefers_admission_charter_over_other_2026_documents():

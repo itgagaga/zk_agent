@@ -36,6 +36,8 @@ def _format_tool_result(context_parts: list[str], tool_result: dict[str, Any]) -
     if tool_result.get("error"):
         context_parts.append(f"工具调用提示：{tool_result['error']}")
     for item in tool_result.get("items", []) or []:
+        if item.get("citation_id"):
+            context_parts.append(f"引用编号：[{item['citation_id']}]")
         if tool_name == "weather_search":
             context_parts.append(f"- 城市：{item.get('city', '')}")
             context_parts.append(
@@ -97,6 +99,14 @@ def _format_tool_result(context_parts: list[str], tool_result: dict[str, Any]) -
                 f"- {item.get('title') or item.get('name', '')}："
                 f"{item.get('url', '')}（{item.get('service_scope') or item.get('description', '')}）"
             )
+        elif tool_name == "download_search":
+            context_parts.append(f"- 资料名称：{item.get('title') or item.get('name', '')}")
+            if item.get("file_url"):
+                context_parts.append(f"  资料下载入口：{item['file_url']}")
+            if item.get("source_page_url"):
+                context_parts.append(f"  来源页面：{item['source_page_url']}")
+            context_parts.append(f"  发布日期：{item.get('publish_date') or '未知'}")
+            context_parts.append(f"  部门：{item.get('department') or '未知'}")
         else:
             context_parts.append(f"- {item}")
     context_parts.append("")
@@ -182,7 +192,7 @@ def _build_context(
         context_parts.append("【知识库文档 · 个人资料主要依据】")
         for i, src in enumerate(user_sources, 1):
             context_parts.append(
-                f"U{i}. {src.get('title', '')}\n   片段：{src.get('snippet', '')}"
+                f"[{src.get('citation_id', i)}] {src.get('title', '')}\n   片段：{src.get('snippet', '')}"
             )
         context_parts.append("")
 
@@ -191,7 +201,7 @@ def _build_context(
         context_parts.append(label)
         for i, src in enumerate(sources, 1):
             context_parts.append(
-                f"{i}. {src.get('title', '')}\n"
+                f"[{src.get('citation_id', i)}] {src.get('title', '')}\n"
                 f"   来源：{src.get('department', '')} - {src.get('url', '')}\n"
                 f"   发布时间：{src.get('publish_date', '未知')}\n"
                 f"   片段：{src.get('snippet', '')}"
@@ -253,7 +263,18 @@ def build_qa_prompt(
 
     return f"""{system}
 
-请根据以下信息回答用户问题，并在回答末尾列出引用来源。
+请根据以下信息回答用户问题。
+引用规则：可用资料中的 [数字] 是本次回答的来源编号。同一文档的不同片段共用编号。
+每个使用资料得出的事实、课程要求或建议依据，必须在对应句子末尾标注原编号，例如“课程包括数学分析。[3]”。
+只引用实际支撑当前回答的资料；未使用、与问题无关的检索结果不得引用，不要为了凑来源引用全部资料。
+不要另行罗列来源清单，界面会根据正文引用自动展示来源。不要自行编造或重新排列编号，不要引用历史回答的编号。
+没有资料支持的内容不标注来源；未找到依据时如实说明，不得用无关资料充当依据。
+链接规则：回答提到所需材料、申请表、流程图、下载入口或系统入口时，如果可用资料提供了对应 URL，必须使用 Markdown 链接，例如“[补办学生证申请表](资料中的真实URL)。[1]”。
+优先使用该条资料的 file_url 或正文中对应的下载入口；没有独立入口时使用 source_page_url 或对应来源 URL，并注明是来源页面。HTML 入口页不能称为附件直链。
+保留每份资料各自对应的链接，不得只输出加粗名称或“下载入口”文字，不得用统一栏目页替代已有的独立入口；[数字] 仅是来源引用，不能替代可点击链接。
+只能使用可用资料中实际提供的 URL；没有地址时如实说明未提供链接，不得猜测、拼接或编造链接。
+培养方案表格须按表头对应的列读取，保留空列的含义；大三对应第五、六学期。
+回答毕业总学分时，以“最低毕业学分”等全专业合计为准，不能把某课程平台的小计或页码当成毕业总学分。
 只回答当前问题实际涉及的内容；不要说明哪些领域未涉及、哪些工具或 Agent 未调用，也不要为这些内容生成空小节。
 {history_block}【当前问题】
 {question}
