@@ -5,9 +5,12 @@
 """
 from __future__ import annotations
 
+import json
+import logging
 from typing import Any, Literal
 
 from fastapi import APIRouter, HTTPException, Query
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
 from backend.agents.answer_generator import AnswerGenerator
@@ -18,6 +21,9 @@ from backend.tools.job_tool import JobDataError, JobTool
 from backend.tools.major_tool import MajorTool
 from backend.tools.service_link_tool import ServiceLinkTool
 from backend.utils.llm_content import extract_text_content
+from backend.utils.academic_pipeline import SearchSessionError
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -106,6 +112,17 @@ class ListResponse(BaseModel):
     llm_query_optimization: dict | None = Field(
         default=None, description="LLM 关键词优化结果（学术搜索专用）"
     )
+
+
+class AcademicSearchResponse(ListResponse):
+    source_status: dict[str, Any] = Field(default_factory=dict, description="各论文数据源的检索状态")
+    partial_failure: bool = Field(default=False, description="是否有数据源请求失败")
+    language_summary: dict[str, Any] = Field(default_factory=dict, description="优先语言及本次结果的中英文数量")
+    link_check_summary: dict[str, Any] = Field(default_factory=dict, description="论文原文链接的可用性检查结果")
+    search_status: str = "complete"
+    search_id: str | None = None
+    continuation_cursor: str | None = None
+    timing: dict[str, Any] = Field(default_factory=dict)
 
 
 def _detect_file_type(url: str) -> str | None:
@@ -298,16 +315,20 @@ async def list_jobs(
     return JobListResponse(total=result["total"], items=result["items"])
 
 
-@router.get("/academic", response_model=ListResponse)
+@router.get("/academic", response_model=AcademicSearchResponse)
 async def search_academic(
     keyword: str = Query(default=..., description="搜索关键词"),
     top_k: int = Query(default=5, ge=1, le=20),
-) -> ListResponse:
+) -> AcademicSearchResponse:
     """学术论文搜索（LLM 优化关键词 + Crossref/arXiv API）。
 
     流程：用户输入 → LLM 优化为学术搜索关键词 → Crossref + arXiv 搜索 → 返回结果
     """
     result = await _academic_search_tool.run(keyword, top_k=top_k)
+    return _academic_response(result)
+
+
+def _academic_response(result: dict[str, Any]) -> AcademicSearchResponse:
     items: list[dict[str, Any]] = []
     for item in result.get("items", []):
         items.append(
@@ -320,14 +341,52 @@ async def search_academic(
                 "url": item.get("url", ""),
                 "source": item.get("source", ""),
                 "snippet": item.get("snippet", ""),
+                "link_verified": item.get("link_verified", False),
+                "link_checked_at": item.get("link_checked_at"),
             }
         )
-    # 附加 LLM 优化关键词信息
-    extra = {}
-    query_used = result.get("query_used")
-    if query_used:
-        extra["llm_query_optimization"] = query_used
-    return ListResponse(total=len(items), items=items, **extra)
+    return AcademicSearchResponse(
+        total=len(items),
+        items=items,
+        llm_query_optimization=result.get("llm_query_optimization"),
+        source_status=result.get("source_status", {}),
+        partial_failure=result.get("partial_failure", False),
+        language_summary=result.get("language_summary", {}),
+        link_check_summary=result.get("link_check_summary", {}),
+        search_status=result.get("search_status", "complete"),
+        search_id=result.get("search_id"),
+        continuation_cursor=result.get("continuation_cursor"),
+        timing=result.get("timing", {}),
+    )
+
+
+@router.get("/academic/stream")
+async def stream_academic(
+    keyword: str = Query(..., min_length=1, max_length=500),
+    top_k: int = Query(default=8, ge=1, le=20),
+    cursor: str | None = Query(default=None, max_length=64),
+) -> StreamingResponse:
+    if not keyword.strip():
+        raise HTTPException(status_code=422, detail="请输入搜索关键词")
+
+    async def events():
+        stream = _academic_search_tool.stream(keyword.strip(), top_k=top_k, cursor=cursor)
+        try:
+            async for event in stream:
+                if "result" in event:
+                    event = {**event, "result": _academic_response(event["result"]).model_dump()}
+                yield f"data: {json.dumps(event, ensure_ascii=False)}\n\n"
+        except SearchSessionError as error:
+            yield f"data: {json.dumps({'type': 'error', 'message': str(error), 'code': error.code}, ensure_ascii=False)}\n\n"
+        except Exception:
+            logger.exception("Academic stream failed")
+            yield 'data: {"type":"error","message":"搜索暂时中断，已显示的结果可以继续使用，请重试。"}\n\n'
+        finally:
+            await stream.aclose()
+
+    return StreamingResponse(events(), media_type="text/event-stream", headers={
+        "Cache-Control": "no-cache, no-transform", "X-Accel-Buffering": "no",
+    })
 
 
 class AcademicAnalyzeRequest(BaseModel):

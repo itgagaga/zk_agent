@@ -1,6 +1,6 @@
 """SQLAlchemy 数据模型定义。
 
-对应 ZHKU_Campus_Agent.md 第 13.1 节的核心表设计。
+对应 docs/校园智能体开发说明.md 第 13.1 节的核心表设计。
 """
 from __future__ import annotations
 

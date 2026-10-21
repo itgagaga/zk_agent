@@ -45,6 +45,12 @@ class Settings(BaseSettings):
         default=1, alias="DEEPSEEK_MAX_RETRIES", ge=0, le=3
     )
 
+    # 学术搜索：整体时限包括规划、来源检索和原文验证；不会分阶段叠加。
+    academic_search_timeout_seconds: float = Field(default=15, alias="ACADEMIC_SEARCH_TIMEOUT_SECONDS", ge=1, le=60)
+    academic_query_timeout_seconds: float = Field(default=4, alias="ACADEMIC_QUERY_TIMEOUT_SECONDS", gt=0, le=15)
+    academic_link_timeout_seconds: float = Field(default=4, alias="ACADEMIC_LINK_TIMEOUT_SECONDS", gt=0, le=15)
+    academic_link_concurrency: int = Field(default=8, alias="ACADEMIC_LINK_CONCURRENCY", ge=1, le=16)
+
     # Embedding
     embedding_model: str = Field(
         default="BAAI/bge-small-zh-v1.5", alias="EMBEDDING_MODEL"

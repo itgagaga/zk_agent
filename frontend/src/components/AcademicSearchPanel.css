@@ -1,0 +1,65 @@
+.as-source-status {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  margin: 0 0 20px;
+  font-size: 13px;
+}
+
+.as-language-note {
+  margin: 0 0 12px;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.as-live-progress {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 12px;
+  color: #64748b;
+  font-size: 13px;
+  max-width: 100%;
+}
+
+.academic-search-panel .as-results-header-row {
+  flex-wrap: wrap;
+}
+
+.academic-search-panel .as-results-summary {
+  min-width: 0;
+}
+
+@media (max-width: 640px) {
+  .as-live-progress {
+    display: flex;
+    margin: 4px 0 0;
+  }
+}
+
+.as-continue-search {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.as-source-status-item {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  color: #64748b;
+}
+
+.as-source-status-item--success {
+  color: #15803d;
+}
+
+.as-source-status-item--error,
+.as-source-status-item--partial,
+.as-search-error {
+  color: #b45309;
+}

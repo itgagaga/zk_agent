@@ -212,6 +212,16 @@ npm run build
 
 
 
+## 学术搜索的等待与结果展示
+
+学术搜索页面使用 `GET /api/resources/academic/stream` 增量显示结果。Crossref/arXiv 的候选返回后立即进入原文检查队列，不等待其他来源；页面只展示已验证可访问的论文，中文输入优先展示相关中文论文。原有 `GET /api/resources/academic` 和学术工具调用仍返回同一流水线的最终 JSON。
+
+单轮整体预算由 `ACADEMIC_SEARCH_TIMEOUT_SECONDS` 控制，默认 15 秒，包含关键词规划、检索及原文检查。`ACADEMIC_QUERY_TIMEOUT_SECONDS` 默认 4 秒，`ACADEMIC_LINK_TIMEOUT_SECONDS` 默认 4 秒，`ACADEMIC_LINK_CONCURRENCY` 默认 8。常见术语直接检索，复杂描述的关键词规划可短期复用；新搜索仍重新检查原文，不使用跨搜索的成功链接缓存。超时标记为“待确认”，不会当作链接永久失效。
+
+到达预算或点击“停止等待”时保留已验证结果；“继续完善结果”复用候选和已完成的检查。续查记录在当前后端进程内保存约 2 分钟，最多 32 个，过期或重启后需重新搜索。多进程部署如需跨进程续查，应将这部分会话迁至共享存储或配置会话粘性。预算限制的是后端本轮工作，浏览器传输及渲染耗时另计，不保证固定秒数内得到完整列表。
+
+可运行 `python backend/tests/academic_search_browser_check.py` 对生产构建执行本地浏览器回归（需先运行前端构建，并安装 Python Playwright 和 Edge；使用模拟论文接口，不连接真实账号）。
+
 ## 数据与安全说明
 
 - 校园回答以公开来源、已上传文档和结构化工具结果为依据；证据不足时进入兜底，不应凭常识补全校务事实。
@@ -221,8 +231,14 @@ npm run build
 
 ## 项目文档
 
-- [开发说明](docs/ZHKU_Campus_Agent_开发.md)
-- [竞赛统计评测工具](analytics/COMPETITION_ANALYTICS.md)
+- [校园智能体开发说明](docs/校园智能体开发说明.md)
+- [智能体开发大赛通知与参赛要求](docs/智能体开发大赛通知与参赛要求.md)
+- [竞赛统计评测工具使用说明](analytics/竞赛统计评测工具使用说明.md)
 - `docs/competition-analytics/competition_report.md`（运行评测命令后生成）
-- [个人知识范围设计](docs/personal-knowledge-scope.puml)
+- [个人知识库检索范围与边界流程图](docs/个人知识库检索范围与边界流程图.puml)
+- [前端视觉设计规范（Mastercard 风格参考）](frontend/docs/前端视觉设计规范_Mastercard风格参考.md)
+- [前端开源图片与图标素材推荐](frontend/docs/前端开源图片与图标素材推荐.md)
+- [功能改造与问题修复实施计划](docs/superpowers/plans/)
 - [架构图与时序图](PlantUML/)
+
+普通说明文档采用能直接体现用途的中文文件名；实施计划使用 `日期_主题与用途.md`。`README.md` 保留约定名称，供项目元数据和 Git 忽略规则引用；自动生成的评测产物保留脚本约定名称。

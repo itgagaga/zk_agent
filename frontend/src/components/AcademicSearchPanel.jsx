@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect } from 'react'
 import axios from 'axios'
 import { extractTextContent } from '../utils/llmText.js'
+import { streamAcademicSearch } from '../utils/academicSearchStream.js'
+import './AcademicSearchPanel.css'
 
 const EXAMPLE_QUERIES = [
   { q: 'deep learning', label: 'Deep Learning' },
@@ -27,71 +29,110 @@ export default function AcademicSearchPanel() {
   const [analyzing, setAnalyzing] = useState(false)
   const [showAnalysis, setShowAnalysis] = useState(false)
   const [queryOptimization, setQueryOptimization] = useState(null)
-  const [optimizing, setOptimizing] = useState(false)
+  const [sourceStatus, setSourceStatus] = useState({})
+  const [languageSummary, setLanguageSummary] = useState(null)
+  const [linkCheckSummary, setLinkCheckSummary] = useState(null)
+  const [searchError, setSearchError] = useState('')
+  const [searchedQuery, setSearchedQuery] = useState('')
+  const [continuation, setContinuation] = useState(null)
+  const [searchStatus, setSearchStatus] = useState('')
+  const [stage, setStage] = useState('')
+  const searchController = useRef(null)
+  const searchId = useRef(null)
+  const searchVersion = useRef(0)
+  const analysisVersion = useRef(0)
   const inputRef = useRef(null)
   const resultsRef = useRef(null)
   const analysisRef = useRef(null)
 
-  async function doSearch(keyword) {
-    const q = (keyword || query).trim()
+  async function doSearch(keyword, cursor = null) {
+    const q = (cursor ? searchedQuery : keyword || query).trim()
     if (!q) return
     if (keyword) setQuery(keyword)
+    const version = ++searchVersion.current
+    searchController.current?.abort()
+    const controller = new AbortController()
+    searchController.current = controller
+    ++analysisVersion.current
 
     setLoading(true)
     setSearched(true)
-    setAnalysis('')
-    setShowAnalysis(false)
-    setQueryOptimization(null)
-    setOptimizing(true)
-    try {
-      // 先调用 LLM 优化关键词
-      let optResp
-      try {
-        optResp = await axios.get('/api/resources/academic/optimize', {
-          params: { keyword: q },
-        })
-        setQueryOptimization(optResp.data)
-      } catch {
-        // 关键词优化失败不影响主搜索
-      }
-      setOptimizing(false)
-
-      // 再调用搜索 API（后端内部也会走 LLM 优化）
-      const resp = await axios.get('/api/resources/academic', {
-        params: { keyword: q, top_k: 8 },
-      })
-      setResults(resp.data.items || [])
-      setTotal(resp.data.total || 0)
-      // 如果搜索结果中有 LLM 优化信息，也更新
-      if (resp.data.llm_query_optimization && !queryOptimization) {
-        setQueryOptimization(resp.data.llm_query_optimization)
-      }
-    } catch (err) {
-      console.error('学术搜索失败:', err)
+    setSearchedQuery(q)
+    if (!cursor) {
       setResults([])
       setTotal(0)
+      setQueryOptimization(null)
+      setSourceStatus({})
+      setLanguageSummary(null)
+      setLinkCheckSummary(null)
+      searchId.current = null
+    }
+    setAnalysis('')
+    setAnalyzing(false)
+    setShowAnalysis(false)
+    setContinuation(null)
+    setSearchStatus('running')
+    setStage(cursor ? 'resuming' : 'planning')
+    setSearchError('')
+    try {
+      await streamAcademicSearch({ keyword: q, top_k: 8, cursor }, {
+        signal: controller.signal,
+        onEvent(event) {
+          if (version !== searchVersion.current) return
+          if (event.type === 'progress') setStage(event.stage)
+          if (event.result) {
+            const data = event.result
+            const verified = (data.items || []).filter(paper => paper.link_verified)
+            setResults(verified)
+            setTotal(verified.length)
+            setQueryOptimization(data.llm_query_optimization || null)
+            setSourceStatus(data.source_status || {})
+            setLanguageSummary(data.language_summary || null)
+            setLinkCheckSummary(data.link_check_summary || null)
+            setSearchStatus(data.search_status)
+            setContinuation(data.continuation_cursor || null)
+            searchId.current = data.search_id || searchId.current
+            setStage('checking')
+          }
+        },
+      })
+    } catch (err) {
+      if (version !== searchVersion.current) return
+      setSearchStatus('partial')
+      setContinuation(err.code === 'session_expired' ? null : searchId.current)
+      if (err.name !== 'AbortError') setSearchError(err.message || '论文搜索请求失败，请稍后重试。')
+      else if (!searchId.current) setSearchError('已停止等待，可以重新搜索。')
     } finally {
-      setLoading(false)
-      setOptimizing(false)
+      if (version === searchVersion.current) setLoading(false)
     }
   }
 
+  useEffect(() => () => {
+    ++searchVersion.current
+    ++analysisVersion.current
+    searchController.current?.abort()
+  }, [])
+
   async function doAnalyze() {
     if (results.length === 0) return
+    const version = ++analysisVersion.current
     setAnalyzing(true)
     setShowAnalysis(true)
     setAnalysis('')
     try {
       const resp = await axios.post('/api/resources/academic/analyze', {
-        keyword: query,
+        keyword: searchedQuery,
         papers: results,
       })
-      setAnalysis(extractTextContent(resp.data.analysis) || '模型未返回有效解读，请重试。')
+      if (version === analysisVersion.current) {
+        setAnalysis(extractTextContent(resp.data.analysis) || '模型未返回有效解读，请重试。')
+      }
     } catch (err) {
+      if (version !== analysisVersion.current) return
       console.error('AI 解读失败:', err)
       setAnalysis('(AI 解读请求失败，请稍后重试)')
     } finally {
-      setAnalyzing(false)
+      if (version === analysisVersion.current) setAnalyzing(false)
     }
   }
 
@@ -105,7 +146,7 @@ export default function AcademicSearchPanel() {
     if (searched && resultsRef.current) {
       resultsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
     }
-  }, [results, searched])
+  }, [searchedQuery, searched])
 
   // AI 解读完成后滚动
   useEffect(() => {
@@ -113,6 +154,11 @@ export default function AcademicSearchPanel() {
       analysisRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
     }
   }, [analysis, showAnalysis])
+
+  const sources = Object.entries(sourceStatus)
+  const searchUnavailable = Boolean(searchError) || (
+    sources.length > 0 && sources.every(([, info]) => ['error', 'skipped'].includes(info.status))
+  )
 
   return (
     <div className="academic-search-panel">
@@ -202,7 +248,7 @@ export default function AcademicSearchPanel() {
       {/* 搜索结果 */}
       {searched && (
         <div className="as-results" ref={resultsRef}>
-          {/* LLM 关键词优化展示 */}
+          {/* 展示后端本次实际使用的关键词 */}
           {queryOptimization && (
             <div className="as-query-optimization">
               <div className="as-query-opt-header">
@@ -210,44 +256,41 @@ export default function AcademicSearchPanel() {
                   <path d="M12 2a7 7 0 017 7c0 2.38-1.19 4.47-3 5.74V17a1 1 0 01-1 1H9a1 1 0 01-1-1v-2.26C6.19 13.47 5 11.38 5 9a7 7 0 017-7z" />
                   <line x1="9" y1="21" x2="15" y2="21" />
                 </svg>
-                <span>LLM 关键词优化</span>
+                <span>实际检索关键词</span>
               </div>
               <div className="as-query-opt-body">
                 <span className="as-query-opt-original">
-                  原始查询：{queryOptimization.original || query}
+                  原始查询：{queryOptimization.original || searchedQuery}
                 </span>
                 {queryOptimization.zh_keywords && (
                   <span className="as-query-opt-kw">
-                    Crossref → {queryOptimization.zh_keywords}
+                    Crossref → {(queryOptimization.crossref_queries || [queryOptimization.zh_keywords]).join(' / ')}
                   </span>
                 )}
-                {queryOptimization.en_keywords && (
+                {queryOptimization.arxiv_query && (
                   <span className="as-query-opt-kw">
-                    arXiv → {queryOptimization.en_keywords}
+                    arXiv → {queryOptimization.arxiv_query}
                   </span>
                 )}
               </div>
             </div>
           )}
           {/* 关键词优化中 */}
-          {optimizing && !queryOptimization && (
+          {loading && !queryOptimization && (
             <div className="as-query-optimizing">
               <span className="rf-spinner" />
-              <span>LLM 正在优化搜索关键词...</span>
+              <span>正在准备检索关键词...</span>
             </div>
           )}
           <div className="as-results-header">
             <div className="as-results-header-row">
-              {loading ? (
-                <div className="as-results-loading">
-                  <span className="rf-spinner" />
-                  <span>正在搜索 Crossref 和 arXiv...</span>
-                </div>
-              ) : (
-                <div className="as-results-summary">
-                  <span className="as-results-count">{total}</span> 篇相关论文
-                </div>
-              )}
+              <div className="as-results-summary">
+                <span className="as-results-count">{total}</span> 篇已验证论文
+                {loading && <span className="as-live-progress" role="status"><span className="rf-spinner" />
+                  {stage === 'planning' ? '正在准备关键词' : stage === 'resuming' ? '正在继续检查' : '正在检索并检查更多论文'}
+                </span>}
+              </div>
+              {loading && <button className="as-paper-external" type="button" onClick={() => searchController.current?.abort()}>停止等待</button>}
               {!loading && results.length > 0 && (
                 <button
                   className="as-ai-btn"
@@ -269,6 +312,45 @@ export default function AcademicSearchPanel() {
               )}
             </div>
           </div>
+
+          {linkCheckSummary?.checked > 0 && (
+            <p className="as-language-note" role="status">
+              已确认 {linkCheckSummary.returned || 0} 篇原文可访问
+              {linkCheckSummary.rejected > 0 && `，已过滤 ${linkCheckSummary.rejected} 个不可访问链接`}
+              {linkCheckSummary.unconfirmed > 0 && `，${linkCheckSummary.unconfirmed} 个链接超时待确认`}
+              {linkCheckSummary.timed_out && '；部分链接未能在时限内确认，未展示'}
+            </p>
+          )}
+          {results.length > 0 && languageSummary?.preferred === 'zh' && (
+            <p className="as-language-note" role="status">
+              {languageSummary.zh > 0
+                ? `中文优先：中文 ${languageSummary.zh} 篇，英文补充 ${languageSummary.en || 0} 篇`
+                : loading ? '正在继续查找中文论文，以下为已验证的英文结果。' : '本次未确认可访问的相关中文论文，以下为英文补充结果。'}
+            </p>
+          )}
+          {sources.length > 0 && (
+            <div className="as-source-status" aria-live="polite">
+              {sources.map(([source, info]) => (
+                <div key={source} className={`as-source-status-item as-source-status-item--${info.status}`}>
+                  <strong>{source}</strong>
+                  <span>
+                    {info.status === 'success' && `检索完成，展示 ${info.selected_count || 0} 篇`}
+                    {info.status === 'partial' && '部分查询失败，已展示可用结果'}
+                    {info.status === 'error' && '检索失败，请稍后重试'}
+                    {info.status === 'skipped' && '未检索：未生成可用的英文关键词'}
+                    {info.status === 'pending' && (loading ? '仍在检索中' : '本轮尚未完成，可继续搜索')}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+          {!loading && searchError && <p className="as-search-error" role="alert">{searchError}</p>}
+          {!loading && searchStatus === 'partial' && continuation && (
+            <div className="as-continue-search" role="status">
+              <span>已保留验证通过的结果，部分检索或链接检查尚未完成。</span>
+              <button className="as-paper-external" type="button" onClick={() => doSearch(null, continuation)}>继续完善结果</button>
+            </div>
+          )}
 
           {/* AI 解读区 */}
           {showAnalysis && (
@@ -310,7 +392,7 @@ export default function AcademicSearchPanel() {
           {results.length > 0 && (
             <div className="as-results-list">
               {results.map((paper, i) => (
-                <div key={i} className="as-paper-card">
+                <div key={paper.doi || paper.url || paper.title} className="as-paper-card">
                   <div className="as-paper-main">
                     <div className="as-paper-left">
                       <span className="as-paper-index">{i + 1}</span>
@@ -383,8 +465,12 @@ export default function AcademicSearchPanel() {
                   <line x1="8" y1="11" x2="14" y2="11" />
                 </svg>
               </div>
-              <p className="as-no-results-title">未找到相关论文</p>
-              <p className="as-no-results-hint">试试更换关键词，或使用英文搜索以获得更多 arXiv 结果</p>
+              <p className="as-no-results-title">
+                {continuation ? '检查尚未完成' : searchUnavailable ? '搜索暂不可用' : linkCheckSummary?.candidates > 0 ? '未找到可访问的论文原文' : '未找到相关论文'}
+              </p>
+              <p className="as-no-results-hint">
+                {searchUnavailable ? '请稍后重试，本次未能完成论文检索' : linkCheckSummary?.candidates > 0 ? '已找到论文题录，但原文链接暂不可访问或未能确认，请稍后重试或更换关键词' : '试试更具体的研究主题，或补充英文专业术语'}
+              </p>
               <div className="as-no-results-retry">
                 {EXAMPLE_QUERIES.slice(0, 3).map(item => (
                   <button

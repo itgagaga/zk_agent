@@ -1,7 +1,7 @@
 from pathlib import Path
 
 
-DOC_PATH = Path(__file__).resolve().parents[2] / "docs" / "ZHKU_Campus_Agent_开发.md"
+DOC_PATH = Path(__file__).resolve().parents[2] / "docs" / "校园智能体开发说明.md"
 
 
 def test_admin_documentation_matches_registered_routes():
