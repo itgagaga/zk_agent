@@ -8,6 +8,7 @@ from typing import Any
 from sqlalchemy.orm import Session
 
 from backend.database.models import UserSchedule
+from backend.services.schedule_parser import estimate_current_week
 
 
 def load_schedule_data(db: Session, user_id: int) -> dict[str, Any] | None:
@@ -20,6 +21,8 @@ def load_schedule_data(db: Session, user_id: int) -> dict[str, Any] | None:
         data = {}
     if not isinstance(data, dict):
         data = {}
+    # current_week 是动态派生值，不能沿用上传时存入 JSON 的旧周次。
+    data["current_week"] = estimate_current_week(data.get("meta", {}).get("semester", ""))
     if row.file_path:
         data["_file_path"] = row.file_path
     if row.filename:

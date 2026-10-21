@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import re
-from datetime import date, datetime
+from datetime import date, datetime, timedelta, timezone
 from io import BytesIO
 from typing import Any
 
@@ -58,21 +58,19 @@ def week_in_ranges(week: int, ranges: list[tuple[int, int]]) -> bool:
     return any(lo <= week <= hi for lo, hi in ranges)
 
 
+def campus_today() -> date:
+    """校园日期统一使用北京时间，不依赖服务器时区。"""
+    return datetime.now(timezone(timedelta(hours=8))).date()
+
+
 def estimate_current_week(semester: str, today: date | None = None) -> int:
-    """根据学年学期估算当前教学周（1 起）。"""
-    today = today or date.today()
-    m = re.match(r"(\d{4})-(\d{4})-(\d)", semester.strip())
-    if not m:
+    """根据学年学期估算当前教学周，与课表日期统一以周一为起点。"""
+    today = today or campus_today()
+    start = semester_week_start(semester)
+    if start is None:
         return 1
-    y1, y2, term = int(m.group(1)), int(m.group(2)), int(m.group(3))
-    if term == 1:
-        start = date(y1, 9, 1)
-    else:
-        start = date(y2, 2, 24)
     delta = (today - start).days
-    if delta < 0:
-        return 1
-    return delta // 7 + 1
+    return max(1, delta // 7 + 1)
 
 
 def _parse_course_block(block: str) -> dict[str, Any] | None:
@@ -193,11 +191,11 @@ def get_today_courses(
     week: int | None = None,
 ) -> list[dict[str, Any]]:
     """筛选指定日、指定教学周应上的课程。"""
-    today = today or date.today()
+    today = today or campus_today()
     weekday = today.weekday()  # 0=Mon
     day_name = WEEKDAY_HEADERS[weekday]
     if week is None:
-        week = schedule.get("current_week") or estimate_current_week(
+        week = estimate_current_week(
             schedule.get("meta", {}).get("semester", ""), today
         )
 
@@ -224,11 +222,13 @@ def get_semester_week_bounds(courses: list[dict[str, Any]]) -> tuple[int, int]:
 
 
 def semester_week_start(semester: str) -> date | None:
+    """返回第一教学周的周一，沿用现有的学期开学日期估算规则。"""
     m = re.match(r"(\d{4})-(\d{4})-(\d)", (semester or "").strip())
     if not m:
         return None
     y1, y2, term = int(m.group(1)), int(m.group(2)), int(m.group(3))
-    return date(y1, 9, 1) if term == 1 else date(y2, 2, 24)
+    start = date(y1, 9, 1) if term == 1 else date(y2, 2, 24)
+    return start - timedelta(days=start.weekday())
 
 
 def week_calendar_range(semester: str, week: int) -> dict[str, str]:
@@ -236,12 +236,10 @@ def week_calendar_range(semester: str, week: int) -> dict[str, str]:
     start = semester_week_start(semester)
     if not start or week < 1:
         return {}
-    monday = start.fromordinal(start.toordinal() + (week - 1) * 7)
-    # 对齐到周一
-    monday = monday.fromordinal(monday.toordinal() - monday.weekday())
+    monday = start + timedelta(weeks=week - 1)
     days = {}
     for i, name in enumerate(WEEKDAY_HEADERS):
-        d = monday.fromordinal(monday.toordinal() + i)
+        d = monday + timedelta(days=i)
         days[name] = d.strftime("%m/%d")
     return days
 

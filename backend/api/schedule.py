@@ -22,6 +22,7 @@ from backend.database.session import get_db
 from backend.services.schedule_parser import (
     WEEKDAY_HEADERS,
     build_course_legend,
+    campus_today,
     estimate_current_week,
     filter_courses_by_week,
     filter_grid_by_week,
@@ -355,7 +356,7 @@ async def get_today_campus(
     current_user: User | None = Depends(get_current_user_optional),
     db: Session = Depends(get_db),
 ) -> TodayCampusResponse:
-    today = date.today()
+    today = campus_today()
     weekday = WEEKDAY_HEADERS[today.weekday()]
     user_id = current_user.id if current_user else None
 
@@ -387,10 +388,10 @@ async def get_today_campus(
             advice_cached=advice_cached and not refresh_advice,
         )
 
-    week = schedule.get("current_week") or estimate_current_week(
+    week = estimate_current_week(
         schedule.get("meta", {}).get("semester", ""), today
     )
-    today_courses = get_today_courses(schedule, today)
+    today_courses = get_today_courses(schedule, today, week=week)
     meta = schedule.get("meta", {})
 
     advice, advice_cached = await _get_advice(
@@ -443,7 +444,7 @@ async def navigate_campus(
     if not route_result.get("ok"):
         return NavigateResponse(ok=False, error=route_result.get("error", "路线规划失败"))
 
-    today = date.today()
+    today = campus_today()
     weather, _ = await _get_weather(db, today)
     weather_payload = weather if weather and not weather.get("error") else None
 
@@ -483,8 +484,8 @@ async def get_week_grid(
     if not schedule:
         return JSONResponse(status_code=404, content={"ok": False, "detail": "尚未上传课表"})
 
-    current_week = schedule.get("current_week") or estimate_current_week(
-        schedule.get("meta", {}).get("semester", "")
+    current_week = estimate_current_week(
+        schedule.get("meta", {}).get("semester", ""), campus_today()
     )
     min_week, max_week = get_semester_week_bounds(schedule.get("courses", []))
     selected_week = week if week is not None else current_week
